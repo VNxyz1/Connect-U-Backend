@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 /**
@@ -29,6 +29,15 @@ function createSwagger(app: INestApplication) {
   SwaggerModule.setup(SWAGGER_PREFIX, app, documentFactory);
 }
 
+function enableCors(app: INestApplication) {
+  app.enableCors({
+    origin: true,
+    methods: ['GET', 'PUT', 'POST', 'DELETE'],
+    allowedHeaders: ['Content-Type', '*'],
+    credentials: true,
+  });
+}
+
 
 
 async function bootstrap() {
@@ -39,6 +48,17 @@ async function bootstrap() {
   if (!process.env.SWAGGER_ENABLE || process.env.SWAGGER_ENABLE === '1') {
     createSwagger(app);
   }
+
+  if (!process.env.API_CORS || process.env.API_CORS === '1') {
+    enableCors(app);
+  }
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+    }),
+  );
 
   await app.listen(process.env.API_PORT || API_DEFAULT_PORT);
 }
