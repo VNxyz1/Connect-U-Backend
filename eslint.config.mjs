@@ -48,6 +48,7 @@ export default [
         "error",
         "single"
       ],
+      "no-console": "error",
     },
   },
 ];
