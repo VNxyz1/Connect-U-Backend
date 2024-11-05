@@ -40,6 +40,7 @@ jobs:
 
   test:
     name: Run Tests
+    needs: setup
     runs-on: ubuntu-latest
 
     steps:
