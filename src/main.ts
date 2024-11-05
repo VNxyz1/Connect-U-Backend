@@ -17,9 +17,7 @@ const SWAGGER_TITLE = 'Passenger API';
 const SWAGGER_DESCRIPTION = 'API used for passenger management';
 const SWAGGER_PREFIX = '/docs';
 
-
 function createSwagger(app: INestApplication) {
-
   const config = new DocumentBuilder()
     .setTitle(SWAGGER_TITLE)
     .setDescription(SWAGGER_DESCRIPTION)
@@ -37,8 +35,6 @@ function enableCors(app: INestApplication) {
     credentials: true,
   });
 }
-
-
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -63,9 +59,7 @@ async function bootstrap() {
   await app.listen(process.env.API_PORT || API_DEFAULT_PORT);
 }
 
-
-bootstrap().catch(err => {
-
+bootstrap().catch((err) => {
   // eslint-disable-next-line no-console
   console.error(err);
 

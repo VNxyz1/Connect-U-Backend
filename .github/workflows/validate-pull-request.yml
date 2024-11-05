@@ -37,6 +37,41 @@ jobs:
           path: ./*
           key: ${{ github.ref }}-${{ github.sha }}-setup
 
+  lint:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Restore setup
+        uses: actions/cache@v4
+        with:
+          path: ./*
+          key: ${{ github.ref }}-${{ github.sha }}-setup
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Run lint task
+        run: npm run lint
+
+  format-check:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Restore setup
+        uses: actions/cache@v4
+        with:
+          path: ./*
+          key: ${{ github.ref }}-${{ github.sha }}-setup
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Run check-format task
+        run: npm run check-format
 
   test:
     name: Run Tests

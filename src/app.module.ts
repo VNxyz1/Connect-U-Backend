@@ -7,7 +7,7 @@ import { databaseConfig, databaseConfigForFeature } from './database.config';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: ['.env.development.local','.env.development', '.env'],
+      envFilePath: ['.env.development.local', '.env.development', '.env'],
     }),
     databaseConfig(),
     databaseConfigForFeature(),
