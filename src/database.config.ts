@@ -19,6 +19,5 @@ export const databaseConfig = () =>
     synchronize: Boolean(process.env.DATABASE_SYNCHRONIZE) || false,
   });
 
-
 export const databaseConfigForFeature = () =>
   TypeOrmModule.forFeature(typeOrmEntities);
