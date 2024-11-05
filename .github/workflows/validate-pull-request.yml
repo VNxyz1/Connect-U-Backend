@@ -1,0 +1,59 @@
+name: Validate Pull Request
+
+on:
+  merge_group:
+  pull_request:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  NODE_VERSION: 20
+
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repositorycontainer registry push test
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          check-latest: true
+          cache: npm
+
+      - name: Install dependencies
+        run: |
+          npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Cache setup
+        uses: actions/cache@v4
+        with:
+          path: ./*
+          key: ${{ github.ref }}-${{ github.sha }}-setup
+
+
+  test:
+    name: Run Tests
+    needs: setup
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Restore setup
+        uses: actions/cache@v4
+        with:
+          path: ./*
+          key: ${{ github.ref }}-${{ github.sha }}-setup
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Run tests
+        run: npm run test
