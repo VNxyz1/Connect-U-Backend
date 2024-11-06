@@ -13,7 +13,7 @@ export class ListDB {
   @Column()
   title: string;
 
-  @Column()
+  @Column({ nullable: true })
   description: string;
 
   @OneToMany(() => ListEntryDB, (listEntry) => listEntry.list)

@@ -13,7 +13,7 @@ export class SurveyDB {
   @Column()
   title: string;
 
-  @Column()
+  @Column({ nullable: true })
   description: string;
 
   @OneToMany(() => SurveyEntryDB, (surveyEntry) => surveyEntry.survey)

@@ -8,7 +8,7 @@ export class GenderDB {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ default: 0 })
+  @Column()
   gender: GenderEnum;
 
   @ManyToMany(() => EventDB, event => event.preferredGenders)

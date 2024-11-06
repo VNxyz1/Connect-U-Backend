@@ -13,12 +13,12 @@ export class MemoryDB {
   @ManyToOne(() => EventDB)
   event: EventDB;
 
-  @Column()
+  @Column({ nullable: true })
   isPositive: boolean;
 
-  @Column()
+  @Column({ nullable: true })
   picture: string;
 
-  @Column()
+  @Column({ nullable: true })
   song: string;
 }
