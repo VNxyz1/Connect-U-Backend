@@ -8,7 +8,7 @@ export class ReactionDB {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => MessageDB, message => message.reactions)
+  @ManyToOne(() => MessageDB, (message) => message.reactions, { onDelete: 'CASCADE' })
   message: MessageDB;
 
   @ManyToOne(() => UserDB, user => user.reactions)

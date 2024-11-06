@@ -7,7 +7,7 @@ export class SurveyEntryDB {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => SurveyDB)
+  @ManyToOne(() => SurveyDB, (survey) => survey.surveyEntries, { onDelete: 'CASCADE' })
   survey: SurveyDB;
 
   @Column()

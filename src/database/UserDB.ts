@@ -33,8 +33,8 @@ export class UserDB {
   @Column()
   lastName: string;
 
-  @Column()
-  birthday: Date;
+  @Column({ type: 'date' })
+  birthday: string;
 
   @Column({ nullable: true })
   @IsPhoneNumber()

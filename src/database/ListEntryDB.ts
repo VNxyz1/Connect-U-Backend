@@ -7,7 +7,7 @@ export class ListEntryDB {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => ListDB)
+  @ManyToOne(() => ListDB, (list) => list.listEntries, { onDelete: 'CASCADE' })
   list: ListDB;
 
   @ManyToOne(() => UserDB)
