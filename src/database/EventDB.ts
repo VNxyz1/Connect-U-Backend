@@ -21,11 +21,8 @@ export class EventDB {
   @Column({ default: 0 })
   status: StatusEnum;
 
-  @Column()
-  date: Date;
-
-  @Column()
-  time: Date;
+  @Column({ type: 'datetime' })
+  dateAndTime: string;
 
   @Column({ nullable: true })
   description: string;

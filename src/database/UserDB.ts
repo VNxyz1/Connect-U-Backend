@@ -109,4 +109,7 @@ export class UserDB {
   @ManyToMany(() => TagDB, tag => tag.users)
   @JoinTable({ name: 'UserTags' })
   tags: TagDB[];
+
+  @ManyToMany(() => MessageDB, message => message.unreadUsers)
+  unreadMessages: MessageDB[];
 }

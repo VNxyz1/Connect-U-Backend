@@ -1,6 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany } from 'typeorm';
 import { EventDB } from './EventDB';
-import { ListEntryDB } from './ListEntryDB';
 import { SurveyEntryDB } from './SurveyEntryDB';
 
 @Entity()
