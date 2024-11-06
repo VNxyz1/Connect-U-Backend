@@ -4,8 +4,8 @@ import { UserDB } from './UserDB';
 
 @Entity()
 export class TagDB {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryGeneratedColumn()
+  id: number;
 
   @Column({ unique: true })
   title: string;

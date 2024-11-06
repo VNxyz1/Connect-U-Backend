@@ -3,8 +3,8 @@ import { EventDB } from './EventDB';
 
 @Entity()
 export class CategoryDB {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryGeneratedColumn()
+  id: number;
 
   @Column({ unique: true })
   name: string;
