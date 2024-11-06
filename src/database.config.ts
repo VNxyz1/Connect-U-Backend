@@ -1,10 +1,37 @@
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EntityClassOrSchema } from '@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type';
+import { UserDB } from './database/UserDB';
+import { EventDB } from './database/EventDB';
+import { TagDB } from './database/TagDB';
+import { CategoryDB } from './database/CategoryDB';
+import { MessageDB } from './database/MessageDB';
+import { ReactionDB } from './database/ReactionDB';
+import { ListEntryDB } from './database/ListEntryDB';
+import { ListDB } from './database/ListDB';
+import { GenderDB } from './database/GenderDB';
+import { AchievementDB } from './database/AchievementDB';
+import { MemoryDB } from './database/MemoryDB';
+import { RequestDB } from './database/RequestDB';
+import { SurveyDB } from './database/SurveyDB';
+import { SurveyEntryDB } from './database/SurveyEntryDB';
 
-/**
- * All entities of the database.
- */
-export const typeOrmEntities: EntityClassOrSchema[] = [];
+
+export const typeOrmEntities: EntityClassOrSchema[] = [
+  UserDB,
+  EventDB,
+  TagDB,
+  CategoryDB,
+  MessageDB,
+  ReactionDB,
+  AchievementDB,
+  GenderDB,
+  ListDB,
+  ListEntryDB,
+  MemoryDB,
+  RequestDB,
+  SurveyDB,
+  SurveyEntryDB
+];
 
 export const databaseConfig = () =>
   TypeOrmModule.forRoot({
