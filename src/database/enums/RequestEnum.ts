@@ -1,5 +1,4 @@
 export enum RequestEnum {
-  female = 1,
-  male = 2,
-  diverse = 3,
+  joinRequest = 1,
+  invite = 2,
 }

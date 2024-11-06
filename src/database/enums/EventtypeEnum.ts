@@ -1,5 +1,5 @@
 export enum EventtypeEnum {
-  female = 1,
-  male = 2,
-  diverse = 3,
+  public = 1,
+  halfPrivate = 2,
+  private = 3,
 }

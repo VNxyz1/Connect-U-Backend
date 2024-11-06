@@ -1,5 +1,6 @@
 export enum StatusEnum {
-  female = 1,
-  male = 2,
-  diverse = 3,
+  upcoming = 1,
+  live = 2,
+  finished = 3,
+  cancelled = 4,
 }
