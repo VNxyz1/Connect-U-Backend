@@ -1,4 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
 import { EventDB } from './EventDB';
 import { SurveyEntryDB } from './SurveyEntryDB';
 
@@ -18,5 +24,4 @@ export class SurveyDB {
 
   @OneToMany(() => SurveyEntryDB, (surveyEntry) => surveyEntry.survey)
   surveyEntries: SurveyEntryDB[];
-
 }

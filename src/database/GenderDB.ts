@@ -2,7 +2,6 @@ import { Entity, Column, PrimaryGeneratedColumn, ManyToMany } from 'typeorm';
 import { GenderEnum } from './enums/GenderEnum';
 import { EventDB } from './EventDB';
 
-
 @Entity()
 export class GenderDB {
   @PrimaryGeneratedColumn()
@@ -11,6 +10,6 @@ export class GenderDB {
   @Column()
   gender: GenderEnum;
 
-  @ManyToMany(() => EventDB, event => event.preferredGenders)
+  @ManyToMany(() => EventDB, (event) => event.preferredGenders)
   events: EventDB[];
 }

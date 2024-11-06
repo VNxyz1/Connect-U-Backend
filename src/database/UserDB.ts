@@ -1,4 +1,11 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany, JoinTable, ManyToMany } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  OneToMany,
+  JoinTable,
+  ManyToMany,
+} from 'typeorm';
 import { IsEmail, IsPhoneNumber } from 'class-validator';
 import { GenderEnum } from './enums/GenderEnum';
 import { EventDB } from './EventDB';
@@ -10,7 +17,6 @@ import { SurveyEntryDB } from './SurveyEntryDB';
 import { MessageDB } from './MessageDB';
 import { ReactionDB } from './ReactionDB';
 import { TagDB } from './TagDB';
-
 
 @Entity()
 export class UserDB {
@@ -73,43 +79,43 @@ export class UserDB {
   @OneToMany(() => RequestDB, (request) => request.user)
   requests: RequestDB[];
 
-  @ManyToMany(() => EventDB, event => event.participants)
+  @ManyToMany(() => EventDB, (event) => event.participants)
   @JoinTable({ name: 'ParticipateDB' })
   participatedEvents: EventDB[];
 
-  @ManyToMany(() => EventDB, event => event.favorited)
+  @ManyToMany(() => EventDB, (event) => event.favorited)
   @JoinTable({ name: 'FavoriteDB' })
   favoritedEvents: EventDB[];
 
   @OneToMany(() => MemoryDB, (memory) => memory.user)
   memories: MemoryDB[];
 
-  @ManyToMany(() => UserDB, user => user.friendOf)
+  @ManyToMany(() => UserDB, (user) => user.friendOf)
   @JoinTable({ name: 'FriendshipDB' })
   friends: Promise<UserDB[]>;
 
-  @ManyToMany(() => UserDB, user => user.friends)
+  @ManyToMany(() => UserDB, (user) => user.friends)
   friendOf: Promise<UserDB[]>;
 
   @OneToMany(() => ListEntryDB, (listEntry) => listEntry.user)
   listEntries: ListEntryDB[];
 
-  @ManyToMany(() => AchievementDB, achievement => achievement.users)
+  @ManyToMany(() => AchievementDB, (achievement) => achievement.users)
   achievements: Promise<AchievementDB[]>;
 
-  @ManyToMany(() => SurveyEntryDB, surveyEntry => surveyEntry.users)
+  @ManyToMany(() => SurveyEntryDB, (surveyEntry) => surveyEntry.users)
   surveyEntries: Promise<SurveyEntryDB[]>;
 
-  @OneToMany(() => MessageDB, message => message.writer)
+  @OneToMany(() => MessageDB, (message) => message.writer)
   messages: MessageDB[];
 
-  @OneToMany(() => ReactionDB, reaction => reaction.user)
+  @OneToMany(() => ReactionDB, (reaction) => reaction.user)
   reactions: ReactionDB[];
 
-  @ManyToMany(() => TagDB, tag => tag.users)
+  @ManyToMany(() => TagDB, (tag) => tag.users)
   @JoinTable({ name: 'UserTags' })
   tags: TagDB[];
 
-  @ManyToMany(() => MessageDB, message => message.unreadUsers)
+  @ManyToMany(() => MessageDB, (message) => message.unreadUsers)
   unreadMessages: MessageDB[];
 }

@@ -15,6 +15,6 @@ export class AchievementDB {
   @Column()
   text: string;
 
-  @ManyToMany(() => UserDB, user => user.achievements)
+  @ManyToMany(() => UserDB, (user) => user.achievements)
   users: Promise<UserDB[]>;
 }

@@ -1,4 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
 import { EventDB } from './EventDB';
 import { ListEntryDB } from './ListEntryDB';
 
@@ -18,5 +24,4 @@ export class ListDB {
 
   @OneToMany(() => ListEntryDB, (listEntry) => listEntry.list)
   listEntries: ListEntryDB[];
-
 }

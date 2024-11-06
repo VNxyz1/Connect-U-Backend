@@ -10,9 +10,9 @@ export class TagDB {
   @Column({ unique: true })
   title: string;
 
-  @ManyToMany(() => EventDB, event => event.tags)
+  @ManyToMany(() => EventDB, (event) => event.tags)
   events: EventDB[];
 
-  @ManyToMany(() => UserDB, user => user.tags)
+  @ManyToMany(() => UserDB, (user) => user.tags)
   users: UserDB[];
 }

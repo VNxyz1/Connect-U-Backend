@@ -1,4 +1,12 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany, ManyToOne, ManyToMany, JoinTable } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  OneToMany,
+  ManyToOne,
+  ManyToMany,
+  JoinTable,
+} from 'typeorm';
 import { UserDB } from './UserDB';
 import { StatusEnum } from './enums/StatusEnum';
 import { EventtypeEnum } from './enums/EventtypeEnum';
@@ -8,7 +16,6 @@ import { RequestDB } from './RequestDB';
 import { ListDB } from './ListDB';
 import { TagDB } from './TagDB';
 import { CategoryDB } from './CategoryDB';
-
 
 @Entity()
 export class EventDB {
@@ -60,7 +67,7 @@ export class EventDB {
   @Column({ nullable: true })
   endAge: number;
 
-  @ManyToMany(() => UserDB, user => user.participatedEvents)
+  @ManyToMany(() => UserDB, (user) => user.participatedEvents)
   participants: UserDB[];
 
   @OneToMany(() => RequestDB, (request) => request.event)
@@ -69,21 +76,21 @@ export class EventDB {
   @OneToMany(() => ListDB, (list) => list.event)
   lists: ListDB[];
 
-  @ManyToMany(() => UserDB, user => user.favoritedEvents)
+  @ManyToMany(() => UserDB, (user) => user.favoritedEvents)
   favorited: UserDB[];
 
   @OneToMany(() => MemoryDB, (memory) => memory.event)
   memories: MemoryDB[];
 
-  @ManyToMany(() => GenderDB, gender => gender.events)
+  @ManyToMany(() => GenderDB, (gender) => gender.events)
   @JoinTable({ name: 'EventPreferredGenders' })
   preferredGenders: GenderDB[];
 
-  @ManyToMany(() => TagDB, tag => tag.events)
+  @ManyToMany(() => TagDB, (tag) => tag.events)
   @JoinTable({ name: 'EventTags' })
   tags: TagDB[];
 
-  @ManyToMany(() => CategoryDB, category => category.events)
+  @ManyToMany(() => CategoryDB, (category) => category.events)
   @JoinTable({ name: 'EventCategories' })
   categories: CategoryDB[];
 }

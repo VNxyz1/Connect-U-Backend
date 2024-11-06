@@ -16,6 +16,6 @@ export class ListEntryDB {
   @Column()
   content: string;
 
-  @Column({default: false})
+  @Column({ default: false })
   isChecked: boolean;
 }

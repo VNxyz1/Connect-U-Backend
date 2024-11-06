@@ -1,4 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, Unique } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  Unique,
+} from 'typeorm';
 import { MessageDB } from './MessageDB';
 import { UserDB } from './UserDB';
 
@@ -8,10 +14,12 @@ export class ReactionDB {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => MessageDB, (message) => message.reactions, { onDelete: 'CASCADE' })
+  @ManyToOne(() => MessageDB, (message) => message.reactions, {
+    onDelete: 'CASCADE',
+  })
   message: MessageDB;
 
-  @ManyToOne(() => UserDB, user => user.reactions)
+  @ManyToOne(() => UserDB, (user) => user.reactions)
   user: UserDB;
 
   @Column()
