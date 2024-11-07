@@ -3,7 +3,7 @@ import {
   IsEmail,
   IsISO8601,
   IsNotEmpty,
-  IsString,
+  IsString, MinLength,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { GenderEnum } from '../../database/enums/GenderEnum';
@@ -38,6 +38,7 @@ export class CreateUserDTO {
   })
   @IsString()
   @IsNotEmpty()
+  @MinLength(8)
   password: string;
 
   @ApiProperty({
@@ -46,6 +47,7 @@ export class CreateUserDTO {
   })
   @IsString()
   @IsNotEmpty()
+  @MinLength(8)
   passwordConfirm: string;
 
   @ApiProperty({

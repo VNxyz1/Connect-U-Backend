@@ -25,7 +25,8 @@ export class UserService {
       throw new BadRequestException('username is already taken');
     }
 
-    const hashedPassword = await bcrypt.hash(body.password, 10);
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(body.password, salt);
 
     const newUser: UserDB = this.userRepository.create();
     newUser.firstName = body.firstName;
