@@ -1,6 +1,6 @@
 import { UserService } from './user.service';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, InternalServerErrorException, Post } from '@nestjs/common';
 import validator from 'validator';
 import { CreateUserDTO } from './DTO/CreateUserDTO';
 import { OkDTO } from '../serverDTO/OkDTO';
@@ -80,7 +80,12 @@ export class UserController {
       await this.userService.createUser(body);
       return new OkDTO(true, 'User was created');
     } catch (err) {
-      throw err;
+      console.error('Error creating user:', err);
+
+      if (err instanceof BadRequestException) {
+        throw err;
+      }
+      throw new InternalServerErrorException('An unexpected error occurred while creating the user');
     }
   }
 
