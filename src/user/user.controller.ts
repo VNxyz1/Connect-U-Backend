@@ -80,7 +80,6 @@ export class UserController {
       await this.userService.createUser(body);
       return new OkDTO(true, 'User was created');
     } catch (err) {
-      console.error('Error creating user:', err);
 
       if (err instanceof BadRequestException) {
         throw err;
