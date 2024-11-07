@@ -12,9 +12,7 @@ export class UserService {
     private userRepository: Repository<UserDB>,
   ) {}
 
-  async createUser(
-    body: CreateUserDTO,
-  ): Promise<UserDB> {
+  async createUser(body: CreateUserDTO): Promise<UserDB> {
     const [existingEmail, existingUsername] = await Promise.all([
       this.userRepository.findOne({ where: { email: body.email } }),
       this.userRepository.findOne({ where: { username: body.username } }),
@@ -36,7 +34,6 @@ export class UserService {
     newUser.username = body.username;
     newUser.password = hashedPassword;
     newUser.birthday = body.birthday;
-    newUser.phoneNumber = body.phoneNumber;
     newUser.gender = body.gender;
     return await this.userRepository.save(newUser);
   }

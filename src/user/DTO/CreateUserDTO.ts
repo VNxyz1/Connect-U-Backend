@@ -1,10 +1,9 @@
 import {
   IsBoolean,
-  IsDate,
   IsEmail,
+  IsISO8601,
   IsNotEmpty,
   IsString,
-  Matches,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { GenderEnum } from '../../database/enums/GenderEnum';
@@ -32,15 +31,6 @@ export class CreateUserDTO {
   @IsString()
   @IsNotEmpty()
   username: string;
-
-  @ApiProperty({
-    description: 'Approve of the email of the user',
-    example: 'test@gmail.com',
-  })
-  @IsString()
-  @IsNotEmpty()
-  @IsEmail()
-  emailConfirm: string;
 
   @ApiProperty({
     description: 'The password of the user',
@@ -76,9 +66,9 @@ export class CreateUserDTO {
 
   @ApiProperty({
     description: 'The birthday of the user',
-    example: '08.06.2002',
+    example: '2002-08-06',
   })
-  @IsDate()
+  @IsISO8601()
   @IsNotEmpty()
   birthday: string;
 
@@ -86,17 +76,6 @@ export class CreateUserDTO {
     description: 'The gender of the user',
     example: 2,
   })
-  @IsDate()
   @IsNotEmpty()
   gender: GenderEnum;
-
-  @ApiProperty({
-    description: 'The phone number of the user',
-    example: '1234567890',
-  })
-  @IsString()
-  @Matches(/^[+]?\d{1,3}?[-\s.]?\d{3,14}[-\s.]?\d{3,14}$/, {
-    message: 'Invalid phone number',
-  })
-  phoneNumber: string;
 }
