@@ -3,7 +3,8 @@ import {
   IsEmail,
   IsISO8601,
   IsNotEmpty,
-  IsString, MinLength,
+  IsString,
+  MinLength,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { GenderEnum } from '../../database/enums/GenderEnum';

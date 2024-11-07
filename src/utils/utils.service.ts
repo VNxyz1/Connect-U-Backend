@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 
-
 @Injectable()
 export class UtilsService {
   validateUserAge(birthday: Date, minAge: number): boolean {
