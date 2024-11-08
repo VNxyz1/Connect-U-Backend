@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -8,11 +9,14 @@ import {
   Req,
   Res,
   UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
 import { PostLoginBodyDTO } from './DTO/PostLoginBodyDTO';
 import { AuthService } from './auth.service';
 import { Request, Response } from 'express';
 import * as process from 'node:process';
+import { OkDTO } from '../serverDTO/OkDTO';
+import { AuthGuard } from './auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -42,5 +46,14 @@ export class AuthController {
     }
 
     return await this.authService.refreshAccessToken(refreshToken);
+  }
+
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @Delete('logout')
+  async logout(@Res() res: Response) {
+    res
+      .clearCookie('refresh_token')
+      .send(new OkDTO(true, 'User is logged out.'));
   }
 }

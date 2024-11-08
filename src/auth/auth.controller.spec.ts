@@ -11,6 +11,9 @@ import { AuthController } from './auth.controller';
 import { mockAuthService } from './auth.service.spec';
 import { Agent } from 'supertest';
 import * as cookieParser from 'cookie-parser';
+import { JwtService } from '@nestjs/jwt';
+import { JWTConstants } from './constants';
+import { AuthGuard } from './auth.guard';
 
 describe('AuthController', () => {
   let app: INestApplication;
@@ -20,12 +23,34 @@ describe('AuthController', () => {
     const moduleRef = await Test.createTestingModule({
       controllers: [AuthController],
       providers: [
+        AuthGuard,
+        {
+          provide: JwtService,
+          useValue: {
+            verifyAsync: jest.fn().mockReturnValue({
+              sub: 'uuIdMock',
+              username: 'testUser',
+              email: 'test@email.com',
+            }),
+          },
+        },
+        {
+          provide: JWTConstants,
+          useValue: {
+            getConstants: jest.fn().mockReturnValue({ secret: 'seret_token' }),
+          },
+        },
         {
           provide: AuthService,
           useValue: mockAuthService,
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(AuthGuard)
+      .useValue({
+        canActivate: jest.fn().mockReturnValue(true),
+      })
+      .compile();
 
     app = moduleRef.createNestApplication();
     app.use(cookieParser());
@@ -57,6 +82,15 @@ describe('AuthController', () => {
       .expect('Content-Type', /json/)
       .expect(HttpStatus.OK)
       .expect(await mockAuthService.refreshAccessToken(tokens.refresh_token));
+  });
+
+  it('/DELETE logout', async () => {
+    const tokens = await mockAuthService.signIn();
+    return agent
+      .delete('/auth/logout')
+      .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+      .expect(HttpStatus.OK)
+      .expect({ ok: true, message: 'User is logged out.' });
   });
 
   it('should return 401 Unauthorized if refresh_token is missing', async () => {
