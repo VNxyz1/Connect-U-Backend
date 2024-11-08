@@ -31,7 +31,7 @@ export class AuthController {
         !process.env.API_CORS || process.env.API_CORS != '1' ? 'strict' : 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-    res.json(tokens);
+    res.json({access_token: tokens.access_token});
   }
 
   @HttpCode(HttpStatus.OK)

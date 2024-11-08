@@ -2,12 +2,14 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
+import { AuthTokenPayload, JWTConstants, RefreshTokenPayload } from './constants';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly userService: UserService,
     private jwtService: JwtService,
+    private jwtConstants: JWTConstants,
   ) {}
 
   async signIn(
@@ -22,14 +24,19 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    const payload = {
+    const payloadAuth: AuthTokenPayload = {
       sub: user.id,
       email: user.email,
       username: user.username,
     };
+
+    const payloadRefresh: RefreshTokenPayload = {
+      sub: user.id,
+      username: user.username,
+    };
     return {
-      access_token: await this.jwtService.signAsync(payload),
-      refresh_token: await this.jwtService.signAsync(payload, {
+      access_token: await this.jwtService.signAsync(payloadAuth),
+      refresh_token: await this.jwtService.signAsync(payloadRefresh, {
         expiresIn: '7d',
       }),
     };
@@ -39,9 +46,17 @@ export class AuthService {
     access_token: string;
   }> {
     try {
-      const payload = this.jwtService.verify(refreshToken);
+      const payload = this.jwtService.verify<RefreshTokenPayload>(refreshToken, {
+        secret: this.jwtConstants.getConstants().secret,
+      });
+      const user = await this.userService.findById(payload.sub);
+      const newPayload: AuthTokenPayload = {
+        sub: user.id,
+        email: user.email,
+        username: user.username
+      }
       return {
-        access_token: await this.jwtService.signAsync({ sub: payload.sub }),
+        access_token: await this.jwtService.signAsync(newPayload),
       };
     } catch (e) {
       throw new UnauthorizedException('Invalid refresh token', e);
