@@ -1,6 +1,13 @@
 import { UserService } from './user.service';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+} from '@nestjs/common';
 import { CreateUserDTO } from './DTO/CreateUserDTO';
 import { OkDTO } from '../serverDTO/OkDTO';
 import { UtilsService } from '../utils/utils.service';
@@ -13,7 +20,12 @@ export class UserController {
     public readonly utils: UtilsService,
   ) {}
 
-  @ApiResponse({ type: OkDTO, description: 'Creates a new user' })
+  @ApiResponse({
+    type: OkDTO,
+    description: 'Creates a new user',
+    status: HttpStatus.CREATED,
+  })
+  @HttpCode(HttpStatus.CREATED)
   @Post()
   async createUser(@Body() body: CreateUserDTO) {
     if (!body.agb) {

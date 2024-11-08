@@ -17,7 +17,6 @@ describe('UtilsService', () => {
   });
 
   describe('validateAge', () => {
-
     it('should be accepted', () => {
       const validDate = new Date('2002-02-18');
       const ret = service.validateUserAge(validDate, 18);

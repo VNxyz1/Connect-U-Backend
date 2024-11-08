@@ -8,11 +8,9 @@ import {
   Req,
   Res,
   UnauthorizedException,
-  UseGuards,
 } from '@nestjs/common';
 import { PostLoginBodyDTO } from './DTO/PostLoginBodyDTO';
 import { AuthService } from './auth.service';
-import { AuthGuard } from './auth.guard';
 import { Request, Response } from 'express';
 import * as process from 'node:process';
 
@@ -31,7 +29,7 @@ export class AuthController {
         !process.env.API_CORS || process.env.API_CORS != '1' ? 'strict' : 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-    res.json({access_token: tokens.access_token});
+    res.json({ access_token: tokens.access_token });
   }
 
   @HttpCode(HttpStatus.OK)
@@ -44,11 +42,5 @@ export class AuthController {
     }
 
     return await this.authService.refreshAccessToken(refreshToken);
-  }
-
-  @UseGuards(AuthGuard)
-  @Get('profile')
-  getProfile() {
-    return { waaahhh: 'riooooo' };
   }
 }

@@ -29,8 +29,8 @@ export class CreateUserDTO {
     description: 'The username of the user',
     example: 'testUser',
   })
-  @IsString()
   @IsNotEmpty()
+  @IsString()
   username: string;
 
   @ApiProperty({
