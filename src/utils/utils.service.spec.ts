@@ -49,5 +49,5 @@ describe('UtilsService', () => {
       const ret = service.validateUserAge(unvalid, 18);
       expect(ret).toEqual(false);
     });
-  })
+  });
 });

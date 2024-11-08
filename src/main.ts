@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as cookieParser from 'cookie-parser';
 
 /**
  * These are API defaults that can be changed using environment variables,
@@ -31,7 +32,13 @@ function enableCors(app: INestApplication) {
   app.enableCors({
     origin: true,
     methods: ['GET', 'PUT', 'POST', 'DELETE'],
-    allowedHeaders: ['Content-Type', '*'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Requested-With',
+      'Origin',
+      'Accept',
+    ],
     credentials: true,
   });
 }
@@ -48,6 +55,8 @@ async function bootstrap() {
   if (!process.env.API_CORS || process.env.API_CORS === '1') {
     enableCors(app);
   }
+
+  app.use(cookieParser());
 
   app.useGlobalPipes(
     new ValidationPipe({

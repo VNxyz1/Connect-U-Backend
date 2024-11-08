@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserDB } from '../database/UserDB';
@@ -12,6 +16,13 @@ export class UserService {
     private userRepository: Repository<UserDB>,
   ) {}
 
+  /**
+   * Creates a new user in the database.
+   *
+   * @param {CreateUserDTO} body - Data transfer object containing user information.
+   * @returns {Promise<UserDB>} - The newly created user.
+   * @throws {BadRequestException} - If the email or username is already taken.
+   */
   async createUser(body: CreateUserDTO): Promise<UserDB> {
     const [existingEmail, existingUsername] = await Promise.all([
       this.userRepository.findOne({ where: { email: body.email } }),
@@ -37,5 +48,62 @@ export class UserService {
     newUser.birthday = body.birthday;
     newUser.gender = body.gender;
     return await this.userRepository.save(newUser);
+  }
+
+  /**
+   * Finds a user by their email address.
+   *
+   * @param {string} email - The email address to search for.
+   * @returns {Promise<UserDB>} - The user with the specified email.
+   * @throws {NotFoundException} - If no user with the given email is found.
+   */
+  async findByEmail(email: string): Promise<UserDB> {
+    const user = await this.userRepository.findOne({ where: { email } });
+
+    if (user === null) {
+      throw new NotFoundException(
+        `The user with the email \"${email}\" does not exist`,
+      );
+    }
+
+    return user;
+  }
+
+  /**
+   * Finds a user by their username.
+   *
+   * @param {string} username - The username to search for.
+   * @returns {Promise<UserDB>} - The user with the specified username.
+   * @throws {NotFoundException} - If no user with the given username is found.
+   */
+  async findByUsername(username: string): Promise<UserDB> {
+    const user = await this.userRepository.findOne({ where: { username } });
+
+    if (user === null) {
+      throw new NotFoundException(
+        `The user with the username \"${username}\" does not exist`,
+      );
+    }
+
+    return user;
+  }
+
+  /**
+   * Finds a user by their unique ID.
+   *
+   * @param {string} id - The unique ID of the user to find.
+   * @returns {Promise<UserDB>} - The user with the specified ID.
+   * @throws {NotFoundException} - If no user with the given ID is found.
+   */
+  async findById(id: string): Promise<UserDB> {
+    const user = await this.userRepository.findOne({ where: { id } });
+
+    if (user === null) {
+      throw new NotFoundException(
+        `The user with the id \"${id}\" does not exist`,
+      );
+    }
+
+    return user;
   }
 }
