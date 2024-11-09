@@ -17,11 +17,18 @@ import { Request, Response } from 'express';
 import * as process from 'node:process';
 import { OkDTO } from '../serverDTO/OkDTO';
 import { AuthGuard } from './auth.guard';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @ApiResponse({
+    type: OkDTO,
+    description: 'Logs in a user',
+    status: HttpStatus.OK,
+  })
   @HttpCode(HttpStatus.OK)
   @Post('login')
   async login(@Body() body: PostLoginBodyDTO, @Res() res: Response) {
@@ -36,6 +43,10 @@ export class AuthController {
     res.json({ access_token: tokens.access_token });
   }
 
+  @ApiResponse({
+    description: 'refreshes the access token ',
+    status: HttpStatus.OK,
+  })
   @HttpCode(HttpStatus.OK)
   @Get('refresh')
   async refresh(@Req() req: Request) {
@@ -48,6 +59,11 @@ export class AuthController {
     return await this.authService.refreshAccessToken(refreshToken);
   }
 
+  @ApiResponse({
+    type: OkDTO,
+    description: 'Logs out a user',
+    status: HttpStatus.OK,
+  })
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
   @Delete('logout')

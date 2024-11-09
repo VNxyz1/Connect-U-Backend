@@ -14,8 +14,8 @@ const API_DEFAULT_PREFIX = '/api/';
 /**
  * These are the Swagger documentation defaults
  */
-const SWAGGER_TITLE = 'Passenger API';
-const SWAGGER_DESCRIPTION = 'API used for passenger management';
+const SWAGGER_TITLE = 'ConnectU API';
+const SWAGGER_DESCRIPTION = 'API used for ConntectU application';
 const SWAGGER_PREFIX = '/docs';
 
 function createSwagger(app: INestApplication) {
