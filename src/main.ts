@@ -22,6 +22,7 @@ function createSwagger(app: INestApplication) {
   const config = new DocumentBuilder()
     .setTitle(SWAGGER_TITLE)
     .setDescription(SWAGGER_DESCRIPTION)
+    .addBearerAuth()
     .build();
 
   const documentFactory = () => SwaggerModule.createDocument(app, config);
