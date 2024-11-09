@@ -25,7 +25,6 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @ApiResponse({
-    type: OkDTO,
     description: 'Logs in a user',
     status: HttpStatus.OK,
   })
@@ -44,7 +43,7 @@ export class AuthController {
   }
 
   @ApiResponse({
-    description: 'refreshes the access token ',
+    description: 'gets the access token',
     status: HttpStatus.OK,
   })
   @HttpCode(HttpStatus.OK)
