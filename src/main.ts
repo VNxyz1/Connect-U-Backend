@@ -4,16 +4,11 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as cookieParser from 'cookie-parser';
 
-/**
- * These are API defaults that can be changed using environment variables,
- * it is not required to change them (see the `.env.example` file)
- */
+
 const API_DEFAULT_PORT = 3000;
 const API_DEFAULT_PREFIX = '/api/';
 
-/**
- * These are the Swagger documentation defaults
- */
+
 const SWAGGER_TITLE = 'ConnectU API';
 const SWAGGER_DESCRIPTION = 'API used for ConntectU application';
 const SWAGGER_PREFIX = '/docs';
