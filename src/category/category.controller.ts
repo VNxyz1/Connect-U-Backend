@@ -22,8 +22,8 @@ export class CategoryController {
     try {
       const categories = await this.categoryService.getCategories();
       return await Promise.all(
-        categories.map(async (offer) => {
-          return this.utilsService.transformCategoryDBtoGetCategoryDTO(offer);
+        categories.map(async (category) => {
+          return this.utilsService.transformCategoryDBtoGetCategoryDTO(category);
         }),
       );
     } catch (err) {

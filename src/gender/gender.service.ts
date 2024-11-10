@@ -2,6 +2,7 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { GenderDB } from '../database/GenderDB';
+import { CategoryDB } from '../database/CategoryDB';
 
 @Injectable()
 export class GenderService implements OnModuleInit {
@@ -29,6 +30,10 @@ export class GenderService implements OnModuleInit {
         await this.genderRepository.save(gender);
       }
     }
+  }
+
+  async getGenders(): Promise<GenderDB[]> {
+    return await this.genderRepository.find();
   }
 
   async getGendersByIds(ids: number[]): Promise<GenderDB[]> {
