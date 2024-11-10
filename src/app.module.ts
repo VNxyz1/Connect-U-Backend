@@ -34,7 +34,23 @@ import { CategoryService } from './category/category.service';
       }),
     }),
   ],
-  controllers: [AppController, UserController, AuthController, EventController, GenderController, CategoryController],
-  providers: [AppService, UserService, AuthService, JWTConstants, UtilsService, EventService, GenderService, CategoryService],
+  controllers: [
+    AppController,
+    UserController,
+    AuthController,
+    EventController,
+    GenderController,
+    CategoryController,
+  ],
+  providers: [
+    AppService,
+    UserService,
+    AuthService,
+    JWTConstants,
+    UtilsService,
+    EventService,
+    GenderService,
+    CategoryService,
+  ],
 })
 export class AppModule {}

@@ -3,14 +3,19 @@ import {
   IsArray,
   IsBoolean,
   IsISO8601,
-  IsNotEmpty, IsNumber, IsOptional,
-  IsString, ValidateIf,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Matches,
+  Max, MaxLength,
+  Min,
+  ValidateIf,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { EventtypeEnum } from '../../database/enums/EventtypeEnum';
 
 export class CreateEventDTO {
-
   @ApiProperty({
     description: 'Die IDs der für das Event gewählten Kategorien',
     type: [Number],
@@ -35,14 +40,18 @@ export class CreateEventDTO {
   })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(30, { message: 'Title cannot exceed 30 characters' })
+  @Matches(/\S/, { message: 'Title cannot contain only whitespace' })
   title: string;
 
   @ApiProperty({
     description: 'Die Beschreibung des Events',
-    example: 'Kommen Sie zu unserem spannenden und interaktiven Coding-Workshop!',
+    example:
+      'Kommen Sie zu unserem spannenden und interaktiven Coding-Workshop!',
   })
   @IsString()
   @IsNotEmpty()
+  @Matches(/\S/, { message: 'Description cannot contain only whitespace' })
   description: string;
 
   @ApiProperty({
@@ -74,6 +83,7 @@ export class CreateEventDTO {
   @ValidateIf((o) => !o.isOnline)
   @IsString()
   @IsNotEmpty()
+  @Matches(/\S/, { message: 'Street number cannot contain only whitespace' })
   streetNumber?: string;
 
   @ApiProperty({
@@ -84,6 +94,7 @@ export class CreateEventDTO {
   @ValidateIf((o) => !o.isOnline)
   @IsString()
   @IsNotEmpty()
+  @Matches(/\S/, { message: 'Street cannot contain only whitespace' })
   street?: string;
 
   @ApiProperty({
@@ -94,6 +105,7 @@ export class CreateEventDTO {
   @ValidateIf((o) => !o.isOnline)
   @IsString()
   @IsNotEmpty()
+  @Matches(/\S/, { message: 'Zip code cannot contain only whitespace' })
   zipCode?: string;
 
   @ApiProperty({
@@ -104,14 +116,16 @@ export class CreateEventDTO {
   @ValidateIf((o) => !o.isOnline)
   @IsString()
   @IsNotEmpty()
+  @Matches(/\S/, { message: 'City cannot contain only whitespace' })
   city?: string;
 
   @ApiProperty({
-    description: 'Anzahl der erwarteten Teilnehmer',
+    description: 'Anzahl der erlaubten Teilnehmer',
     example: 50,
   })
   @IsNumber()
   @IsNotEmpty()
+  @Max(100, { message: 'Participants number cannot exceed 100' })
   participantsNumber: number;
 
   @ApiProperty({
@@ -130,6 +144,7 @@ export class CreateEventDTO {
     example: 18,
   })
   @IsNumber()
+  @Min(16, { message: 'Minimum age cannot be less than 16' })
   @IsOptional()
   startAge?: number;
 
@@ -139,6 +154,7 @@ export class CreateEventDTO {
     example: 40,
   })
   @IsNumber()
+  @Min(16, { message: 'Maximum age cannot be less than 16' })
   @IsOptional()
   endAge?: number;
 }

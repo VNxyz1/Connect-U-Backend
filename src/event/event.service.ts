@@ -21,7 +21,12 @@ export class EventService {
    * @param {CreateEventDTO} body - Data transfer object containing event information.
    * @returns {Promise<EventDB>} - The newly created user.
    */
-  async createEvent(user: UserDB, categories: CategoryDB[], preferredGenders: GenderDB[], body: CreateEventDTO): Promise<EventDB> {
+  async createEvent(
+    user: UserDB,
+    categories: CategoryDB[],
+    preferredGenders: GenderDB[],
+    body: CreateEventDTO,
+  ): Promise<EventDB> {
     const newEvent: EventDB = this.eventRepository.create();
     newEvent.host = user;
     newEvent.dateAndTime = body.dateAndTime;

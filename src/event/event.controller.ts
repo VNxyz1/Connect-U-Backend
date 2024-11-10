@@ -1,11 +1,5 @@
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import {
-  Body,
-  Controller,
-  HttpCode,
-  HttpStatus,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { OkDTO } from '../serverDTO/OkDTO';
 import { UtilsService } from '../utils/utils.service';
 import { EventService } from './event.service';
@@ -33,9 +27,13 @@ export class EventController {
   @HttpCode(HttpStatus.CREATED)
   @Post()
   async createEvent(@Body() body: CreateEventDTO) {
-    const user = await this.userService.findByUsername('testUser')
-    const categories = await this.categoryService.getCategoriesByIds(body.categories);
-    const genders = await this.genderService.getGendersByIds(body.preferredGenders)
+    const user = await this.userService.findByUsername('testUser');
+    const categories = await this.categoryService.getCategoriesByIds(
+      body.categories,
+    );
+    const genders = await this.genderService.getGendersByIds(
+      body.preferredGenders,
+    );
 
     await this.eventService.createEvent(user, categories, genders, body);
     return new OkDTO(true, 'Event was created');

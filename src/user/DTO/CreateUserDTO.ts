@@ -5,6 +5,7 @@ import {
   IsNotEmpty,
   IsString,
   MinLength,
+  Matches,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { GenderEnum } from '../../database/enums/GenderEnum';
@@ -23,6 +24,7 @@ export class CreateUserDTO {
   @IsString()
   @IsNotEmpty()
   @IsEmail()
+  @Matches(/\S/, { message: 'Email cannot contain only whitespace' })
   email: string;
 
   @ApiProperty({
@@ -31,6 +33,7 @@ export class CreateUserDTO {
   })
   @IsNotEmpty()
   @IsString()
+  @Matches(/\S/, { message: 'Username cannot contain only whitespace' })
   username: string;
 
   @ApiProperty({
@@ -57,6 +60,7 @@ export class CreateUserDTO {
   })
   @IsString()
   @IsNotEmpty()
+  @Matches(/\S/, { message: 'First name cannot contain only whitespace' })
   firstName: string;
 
   @ApiProperty({
@@ -65,6 +69,7 @@ export class CreateUserDTO {
   })
   @IsString()
   @IsNotEmpty()
+  @Matches(/\S/, { message: 'Last name cannot contain only whitespace' })
   lastName: string;
 
   @ApiProperty({

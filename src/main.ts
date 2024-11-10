@@ -4,10 +4,8 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as cookieParser from 'cookie-parser';
 
-
 const API_DEFAULT_PORT = 3000;
 const API_DEFAULT_PREFIX = '/api/';
-
 
 const SWAGGER_TITLE = 'ConnectU API';
 const SWAGGER_DESCRIPTION = 'API used for ConntectU application';

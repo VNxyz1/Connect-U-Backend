@@ -4,7 +4,6 @@ import { CategoryService } from './category.service';
 import { GetCategoryDTO } from './DTO/GetCategoryDTO';
 import { UtilsService } from '../utils/utils.service';
 
-
 @ApiTags('category')
 @Controller('category')
 export class CategoryController {
@@ -23,7 +22,9 @@ export class CategoryController {
       const categories = await this.categoryService.getCategories();
       return await Promise.all(
         categories.map(async (category) => {
-          return this.utilsService.transformCategoryDBtoGetCategoryDTO(category);
+          return this.utilsService.transformCategoryDBtoGetCategoryDTO(
+            category,
+          );
         }),
       );
     } catch (err) {

@@ -4,7 +4,6 @@ import { UtilsService } from '../utils/utils.service';
 import { GetGenderDTO } from './DTO/GetGenderDTO';
 import { GenderService } from './gender.service';
 
-
 @ApiTags('gender')
 @Controller('gender')
 export class GenderController {
