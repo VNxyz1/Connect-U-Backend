@@ -4,7 +4,7 @@ import {
   Controller,
   HttpCode,
   HttpStatus,
-  Post,
+  Post, Req,
 } from '@nestjs/common';
 import { OkDTO } from '../serverDTO/OkDTO';
 import { UtilsService } from '../utils/utils.service';
@@ -30,12 +30,12 @@ export class EventController {
   })
   @HttpCode(HttpStatus.CREATED)
   @Post()
-  async createEvent(@Body() body: CreateEventDTO) {
-
+  async createEvent(@Body() body: CreateEventDTO, @Req() req: Request) {
+    const userId = req['user'].sub;
     const categories = await this.categoryService.getCategoriesByIds(body.categories);
     const genders = await this.genderService.getGendersByIds(body.preferredGenders)
 
-    await this.eventService.createEvent(categories, genders, body);
+    await this.eventService.createEvent(userId, categories, genders, body);
     return new OkDTO(true, 'Event was created');
   }
 }

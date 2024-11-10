@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { CategoryDB } from '../database/CategoryDB';
@@ -40,11 +40,32 @@ export class CategoryService implements OnModuleInit {
     }
   }
 
+  /**
+   * Gets all existing categories.
+   *
+   * @returns {Promise<CategoryDB[]>} - The existing categories.
+   * @throws {NotFoundException} - Throws an exception if no categories are found.
+   */
   async getCategories(): Promise<CategoryDB[]> {
-    return await this.categoryRepository.find();
+    const categories = await this.categoryRepository.find();
+    if (categories.length === 0) {
+      throw new NotFoundException('No categories found');
+    }
+    return categories;
   }
 
+  /**
+   * Finds categories by their ids.
+   *
+   * @param {number[]} ids - The ids to search for.
+   * @returns {Promise<CategoryDB[]>} - The categories with the fitting ids.
+   * @throws {NotFoundException} - Throws an exception if no categories are found for the given ids.
+   */
   async getCategoriesByIds(ids: number[]): Promise<CategoryDB[]> {
-    return await this.categoryRepository.findBy({ id: In(ids) })
+    const categories = await this.categoryRepository.findBy({ id: In(ids) });
+    if (categories.length === 0) {
+      throw new NotFoundException('No categories found with the given ids');
+    }
+    return categories;
   }
 }

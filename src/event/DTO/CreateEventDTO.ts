@@ -12,8 +12,9 @@ import { EventtypeEnum } from '../../database/enums/EventtypeEnum';
 export class CreateEventDTO {
 
   @ApiProperty({
-    description: 'the IDs of the categories chosen for the event',
+    description: 'Die IDs der für das Event gewählten Kategorien',
     type: [Number],
+    example: [1, 3, 5],
   })
   @IsArray()
   @ArrayNotEmpty()
@@ -21,43 +22,46 @@ export class CreateEventDTO {
   categories: number[];
 
   @ApiProperty({
-    description: 'date and time of the event',
+    description: 'Datum und Uhrzeit des Events',
+    example: '2024-12-15T18:00:00Z',
   })
   @IsISO8601()
   @IsNotEmpty()
   dateAndTime: string;
 
   @ApiProperty({
-    description: 'the description of the event',
+    description: 'Die Beschreibung des Events',
+    example: 'Kommen Sie zu unserem spannenden und interaktiven Coding-Workshop!',
   })
   @IsString()
   @IsNotEmpty()
   description: string;
 
   @ApiProperty({
-    description: 'The type of the event',
+    description: 'Der Typ des Events',
     example: 2,
   })
   @IsNotEmpty()
   type: EventtypeEnum;
 
   @ApiProperty({
-    description: 'Checks if the event is online',
+    description: 'Ob das Event online stattfindet',
     example: true,
   })
   @IsBoolean()
   isOnline: boolean;
 
   @ApiProperty({
-    description: 'Checks if the user wants to share their address',
+    description: 'Ob der Benutzer seine Adresse teilen möchte',
     example: true,
   })
   @IsBoolean()
   showAddress: boolean;
 
   @ApiProperty({
-    description: 'Street number of the event location',
+    description: 'Hausnummer des Veranstaltungsortes',
     required: false,
+    example: '123',
   })
   @ValidateIf((o) => !o.isOnline)
   @IsString()
@@ -65,8 +69,9 @@ export class CreateEventDTO {
   streetNumber?: string;
 
   @ApiProperty({
-    description: 'Street name of the event location',
+    description: 'Straßenname des Veranstaltungsortes',
     required: false,
+    example: 'Hauptstraße',
   })
   @ValidateIf((o) => !o.isOnline)
   @IsString()
@@ -74,8 +79,9 @@ export class CreateEventDTO {
   street?: string;
 
   @ApiProperty({
-    description: 'Zip code of the event location',
+    description: 'Postleitzahl des Veranstaltungsortes',
     required: false,
+    example: '12345',
   })
   @ValidateIf((o) => !o.isOnline)
   @IsString()
@@ -83,8 +89,9 @@ export class CreateEventDTO {
   zipCode?: string;
 
   @ApiProperty({
-    description: 'City of the event location',
+    description: 'Stadt des Veranstaltungsortes',
     required: false,
+    example: 'Berlin',
   })
   @ValidateIf((o) => !o.isOnline)
   @IsString()
@@ -92,15 +99,17 @@ export class CreateEventDTO {
   city?: string;
 
   @ApiProperty({
-    description: 'Number of participants expected',
+    description: 'Anzahl der erwarteten Teilnehmer',
+    example: 50,
   })
   @IsNumber()
   @IsNotEmpty()
   participantsNumber: number;
 
   @ApiProperty({
-    description: 'the genders preferred for the event',
+    description: 'Die bevorzugten Geschlechter für das Event',
     type: [Number],
+    example: [1, 2],
   })
   @IsArray()
   @ArrayNotEmpty()
@@ -108,16 +117,18 @@ export class CreateEventDTO {
   preferredGenders: number[];
 
   @ApiProperty({
-    description: 'Minimum age requirement for participants',
+    description: 'Mindestalter für die Teilnehmer',
     required: false,
+    example: 18,
   })
   @IsNumber()
   @IsOptional()
   startAge?: number;
 
   @ApiProperty({
-    description: 'Maximum age limit for participants',
+    description: 'Höchstalter für die Teilnehmer',
     required: false,
+    example: 40,
   })
   @IsNumber()
   @IsOptional()

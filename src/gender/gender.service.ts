@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { GenderDB } from '../database/GenderDB';
@@ -32,11 +32,32 @@ export class GenderService implements OnModuleInit {
     }
   }
 
+  /**
+   * Gets all existing genders.
+   *
+   * @returns {Promise<GenderDB[]>} - The existing genders.
+   * @throws {NotFoundException} - Throws an exception if no genders are found.
+   */
   async getGenders(): Promise<GenderDB[]> {
-    return await this.genderRepository.find();
+    const genders = await this.genderRepository.find();
+    if (genders.length === 0) {
+      throw new NotFoundException('No genders found');
+    }
+    return genders;
   }
 
+  /**
+   * Finds genders by their ids.
+   *
+   * @param {number[]} ids - The ids to search for.
+   * @returns {Promise<GenderDB[]>} - The genders with the fitting ids.
+   * @throws {NotFoundException} - Throws an exception if no genders are found for the given ids.
+   */
   async getGendersByIds(ids: number[]): Promise<GenderDB[]> {
-    return await this.genderRepository.findBy({ id: In(ids) })
+    const genders = await this.genderRepository.findBy({ id: In(ids) });
+    if (genders.length === 0) {
+      throw new NotFoundException('No genders found with the given ids');
+    }
+    return genders;
   }
 }
