@@ -6,6 +6,8 @@ import { AuthService } from '../src/auth/auth.service';
 import { mockAuthService } from '../src/auth/auth.service.spec';
 import { EventService } from '../src/event/event.service';
 import { mockEventService } from '../src/event/event.service.spec';
+import { CategoryService } from '../src/category/category.service';
+import { mockCategoryService } from '../src/category/category.service.spec';
 
 export const mockProviders = [
   {
@@ -35,5 +37,9 @@ export const mockProviders = [
   {
     provide: EventService,
     useValue: mockEventService,
+  },
+  {
+    provide: CategoryService,
+    useValue: mockCategoryService,
   },
 ];

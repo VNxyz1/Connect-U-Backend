@@ -2,14 +2,14 @@ import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { GenderDB } from '../database/GenderDB';
-import { CategoryDB } from '../database/CategoryDB';
+import { GenderEnum } from '../database/enums/GenderEnum';
 
 @Injectable()
 export class GenderService implements OnModuleInit {
   private readonly predefinedGenders = [
-    { gender: 1 },
-    { gender: 2 },
-    { gender: 3 },
+    { gender: GenderEnum.Male },
+    { gender: GenderEnum.Female },
+    { gender: GenderEnum.Diverse },
   ];
 
   constructor(
