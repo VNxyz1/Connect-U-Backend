@@ -4,7 +4,7 @@ import {
   Controller,
   HttpCode,
   HttpStatus,
-  Post, Req,
+  Post,
 } from '@nestjs/common';
 import { OkDTO } from '../serverDTO/OkDTO';
 import { UtilsService } from '../utils/utils.service';
@@ -12,6 +12,7 @@ import { EventService } from './event.service';
 import { CreateEventDTO } from './DTO/CreateEventDTO';
 import { CategoryService } from '../category/category.service';
 import { GenderService } from '../gender/gender.service';
+import { UserService } from '../user/user.service';
 
 @ApiTags('event')
 @Controller('event')
@@ -21,6 +22,7 @@ export class EventController {
     public readonly utils: UtilsService,
     public readonly categoryService: CategoryService,
     public readonly genderService: GenderService,
+    public readonly userService: UserService,
   ) {}
 
   @ApiResponse({
@@ -30,12 +32,12 @@ export class EventController {
   })
   @HttpCode(HttpStatus.CREATED)
   @Post()
-  async createEvent(@Body() body: CreateEventDTO, @Req() req: Request) {
-    const userId = req['user'].sub;
+  async createEvent(@Body() body: CreateEventDTO) {
+    const user = await this.userService.findByUsername('testUser')
     const categories = await this.categoryService.getCategoriesByIds(body.categories);
     const genders = await this.genderService.getGendersByIds(body.preferredGenders)
 
-    await this.eventService.createEvent(userId, categories, genders, body);
+    await this.eventService.createEvent(user, categories, genders, body);
     return new OkDTO(true, 'Event was created');
   }
 }

@@ -30,6 +30,14 @@ export class CreateEventDTO {
   dateAndTime: string;
 
   @ApiProperty({
+    description: 'Der Titel des Events',
+    example: 'Java-Programmierung für Anfänger',
+  })
+  @IsString()
+  @IsNotEmpty()
+  title: string;
+
+  @ApiProperty({
     description: 'Die Beschreibung des Events',
     example: 'Kommen Sie zu unserem spannenden und interaktiven Coding-Workshop!',
   })

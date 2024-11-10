@@ -25,6 +25,7 @@ export class EventService {
     const newEvent: EventDB = this.eventRepository.create();
     newEvent.host = user;
     newEvent.dateAndTime = body.dateAndTime;
+    newEvent.title = body.title;
     newEvent.type = body.type;
     newEvent.isOnline = body.isOnline;
     newEvent.showAddress = body.showAddress;

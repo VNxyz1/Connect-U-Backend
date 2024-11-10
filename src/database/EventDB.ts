@@ -31,6 +31,9 @@ export class EventDB {
   @Column({ type: 'datetime' })
   dateAndTime: string;
 
+  @Column()
+  title: string;
+
   @Column({ nullable: true })
   description: string;
 
