@@ -50,14 +50,14 @@ export class EventService {
   /**
    * Gets all events from the database that were not created by the user logged in.
    *
-   * @param user - the user that creates the event
+   * @param user - the user currently logged in
    * @returns {Promise<EventDB[]>} - The events.
    * @throws {NotFoundException} - If there are no events found.
    */
   async getAllEvents(user: UserDB | null): Promise<EventDB[]> {
     const events = await this.eventRepository.find({
-      relations: ['host', 'categories'],
-      where: user ? { host: Not(user) } : {},
+      relations: ['host', 'categories', 'participants'],
+      where: user ? { host: { id: Not(user.id) } } : {},
     });
 
     if (!events || events.length === 0) {
@@ -66,5 +66,4 @@ export class EventService {
 
     return events;
   }
-
 }

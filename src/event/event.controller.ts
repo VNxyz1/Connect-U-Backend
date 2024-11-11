@@ -43,7 +43,7 @@ export class EventController {
 
   @ApiResponse({
     type: [GetEventCardDTO],
-    description: 'gets all own requests',
+    description: 'gets all events except for the users',
   })
   @Get('/allEvents')
   async getOwnRequests(): Promise<GetEventCardDTO[]> {

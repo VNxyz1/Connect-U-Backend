@@ -52,11 +52,10 @@ export class UtilsService {
     dto.status = event.status;
     dto.type = event.type;
     dto.isOnline = event.isOnline;
-    dto.streetNumber = event.streetNumber;
-    dto.street = event.street;
-    dto.zipCode = event.zipCode;
     dto.city = event.city;
-    dto.participantsNumber = event.participantsNumber;
+    const participants = await event.participants;
+    dto.participantsNumber = participants.length;
+    dto.maxParticipantsNumber = event.participantsNumber;
 
     return dto;
   }

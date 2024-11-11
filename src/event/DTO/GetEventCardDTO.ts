@@ -61,30 +61,6 @@ export class GetEventCardDTO
   isOnline: boolean;
 
   @ApiProperty({
-    description: 'Hausnummer des Veranstaltungsortes',
-    required: false,
-    example: '123',
-  })
-  @IsString()
-  streetNumber?: string;
-
-  @ApiProperty({
-    description: 'Straßenname des Veranstaltungsortes',
-    required: false,
-    example: 'Hauptstraße',
-  })
-  @IsString()
-  street?: string;
-
-  @ApiProperty({
-    description: 'Postleitzahl des Veranstaltungsortes',
-    required: false,
-    example: '12345',
-  })
-  @IsString()
-  zipCode?: string;
-
-  @ApiProperty({
     description: 'Stadt des Veranstaltungsortes',
     required: false,
     example: 'Berlin',
@@ -93,10 +69,16 @@ export class GetEventCardDTO
   city?: string;
 
   @ApiProperty({
+    description: 'Anzahl der aktuellen Teilnehmer',
+    example: 4,
+  })
+  participantsNumber: number;
+
+  @ApiProperty({
     description: 'Anzahl der erlaubten Teilnehmer',
     example: 50,
   })
   @IsNumber()
   @IsNotEmpty()
-  participantsNumber: number;
+  maxParticipantsNumber: number;
 }
