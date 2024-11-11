@@ -29,13 +29,13 @@ export class AuthService {
     }
 
     const payloadAuth: AuthTokenPayload = {
-      sub: user.id,
+      userId: user.id,
       email: user.email,
       username: user.username,
     };
 
     const payloadRefresh: RefreshTokenPayload = {
-      sub: user.id,
+      userId: user.id,
       username: user.username,
     };
     return {
@@ -56,9 +56,9 @@ export class AuthService {
           secret: this.jwtConstants.getConstants().secret,
         },
       );
-      const user = await this.userService.findById(payload.sub);
+      const user = await this.userService.findById(payload.userId);
       const newPayload: AuthTokenPayload = {
-        sub: user.id,
+        userId: user.id,
         email: user.email,
         username: user.username,
       };

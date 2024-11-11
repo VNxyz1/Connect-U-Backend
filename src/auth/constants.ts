@@ -9,14 +9,14 @@ export type RefreshTokenPayload = {
   /**
    * the userId
    */
-  sub: string;
+  userId: string;
   username: string;
 };
 export type AuthTokenPayload = {
   /**
    * the userId
    */
-  sub: string;
+  userId: string;
   email: string;
   username: string;
 };
