@@ -36,7 +36,7 @@ describe('AuthGuard', () => {
     const canActivate = await authGuard.canActivate(mockContext);
     expect(canActivate).toBe(true);
     expect(jwtService.verifyAsync).toHaveBeenCalledWith(
-      'valid.jwt.token',
+      'valid.jwt.access.token',
       jwtConstraints.getConstants(),
     );
   });

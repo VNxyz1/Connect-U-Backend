@@ -69,4 +69,13 @@ export class AuthService {
       throw new UnauthorizedException('Invalid refresh token', e);
     }
   }
+
+  async decodeToken<T>(token: string): Promise<T> {
+    return this.jwtService.decode<T>(token);
+  }
+
+  extractTokenFromHeader(request: any): string | undefined {
+    const [type, token] = request.headers.authorization?.split(' ') ?? [];
+    return type === 'Bearer' ? token : undefined;
+  }
 }

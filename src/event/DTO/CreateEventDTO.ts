@@ -8,7 +8,8 @@ import {
   IsOptional,
   IsString,
   Matches,
-  Max, MaxLength,
+  Max,
+  MaxLength,
   Min,
   ValidateIf,
 } from 'class-validator';
@@ -40,7 +41,7 @@ export class CreateEventDTO {
   })
   @IsString()
   @IsNotEmpty()
-  @MaxLength(30, { message: 'Title cannot exceed 30 characters' })
+  @MaxLength(50, { message: 'Title cannot exceed 50 characters' })
   @Matches(/\S/, { message: 'Title cannot contain only whitespace' })
   title: string;
 

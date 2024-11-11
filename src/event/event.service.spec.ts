@@ -148,4 +148,5 @@ describe('EventService', () => {
 
 export const mockEventService = {
   findById: jest.fn().mockResolvedValue(mockCreateEventDTO[1]),
+  createEvent: jest.fn().mockResolvedValue(new EventDB()),
 };

@@ -1,155 +1,144 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import * as request from 'supertest';
+import { Agent } from 'supertest';
+import { Test } from '@nestjs/testing';
+import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
+import * as cookieParser from 'cookie-parser';
+import { JwtService } from '@nestjs/jwt';
 import { EventController } from './event.controller';
-import { EventService } from './event.service';
+import { AuthGuard } from '../auth/auth.guard';
+import { JWTConstants } from '../auth/constants';
+import { AuthService } from '../auth/auth.service';
+import { mockAuthService } from '../auth/auth.service.spec';
+import { mockProviders } from '../../test/mock-services';
 import { UtilsService } from '../utils/utils.service';
-import { CategoryService } from '../category/category.service';
-import { GenderService } from '../gender/gender.service';
-import { UserService } from '../user/user.service';
 import { CreateEventDTO } from './DTO/CreateEventDTO';
-import { OkDTO } from '../serverDTO/OkDTO';
 import { EventtypeEnum } from '../database/enums/EventtypeEnum';
+import { GenderEnum } from '../database/enums/GenderEnum';
 
 describe('EventController', () => {
-  let eventController: EventController;
-  let eventService: EventService;
-  let categoryService: CategoryService;
-  let genderService: GenderService;
-  let userService: UserService;
+  let app: INestApplication;
+  let agent: Agent;
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+  beforeAll(async () => {
+    const moduleRef = await Test.createTestingModule({
       controllers: [EventController],
       providers: [
+        ...mockProviders,
+        UtilsService,
         {
-          provide: EventService,
+          provide: JwtService,
           useValue: {
-            createEvent: jest.fn(),
+            verifyAsync: jest.fn().mockReturnValue({
+              sub: 'uuIdMock',
+              username: 'testUser',
+              email: 'test@email.com',
+            }),
           },
         },
         {
-          provide: UtilsService,
-          useValue: {},
-        },
-        {
-          provide: CategoryService,
+          provide: JWTConstants,
           useValue: {
-            getCategoriesByIds: jest
-              .fn()
-              .mockResolvedValue(['category1', 'category2']),
+            getConstants: jest.fn().mockReturnValue({ secret: 'seret_token' }),
           },
         },
         {
-          provide: GenderService,
-          useValue: {
-            getGendersByIds: jest.fn().mockResolvedValue(['male', 'female']),
-          },
-        },
-        {
-          provide: UserService,
-          useValue: {
-            findByUsername: jest
-              .fn()
-              .mockResolvedValue({ username: 'testUser', id: 'userId' }),
-          },
+          provide: AuthService,
+          useValue: mockAuthService,
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(AuthGuard)
+      .useValue({
+        canActivate: jest.fn().mockReturnValue(true),
+      })
+      .compile();
 
-    eventController = module.get<EventController>(EventController);
-    eventService = module.get<EventService>(EventService);
-    categoryService = module.get<CategoryService>(CategoryService);
-    genderService = module.get<GenderService>(GenderService);
-    userService = module.get<UserService>(UserService);
+    app = moduleRef.createNestApplication();
+    app.use(cookieParser());
+    app.useGlobalPipes(
+      new ValidationPipe({
+        transform: true,
+        whitelist: true,
+      }),
+    );
+    agent = request.agent(app.getHttpServer());
+    await app.init();
   });
 
-  describe('createEvent', () => {
-    it('should create an event and return success response', async () => {
-      const createEventDTO: CreateEventDTO = {
-        categories: [1, 2],
-        description: 'richtig cooles event yippee',
-        preferredGenders: [2, 3],
-        dateAndTime: '2024-12-01T10:00:00',
-        title: 'Tech Conference 2024',
-        type: EventtypeEnum.public,
-        isOnline: false,
-        showAddress: true,
-        streetNumber: '456',
-        street: 'Tech Ave',
-        zipCode: '67890',
-        city: 'Tech City',
-        participantsNumber: 100,
-        startAge: 18,
-        endAge: 50,
-      };
+  it('/POST event', async () => {
+    const tokens = await mockAuthService.signIn();
+    return agent
+      .post('/event')
+      .send(mockCreateEvent)
+      .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+      .expect('Content-Type', /json/)
+      .expect(HttpStatus.CREATED)
+      .expect({ ok: true, message: 'Event was created' });
+  });
 
-      const result = await eventController.createEvent(createEventDTO);
+  it('should return 400 if required fields are missing', async () => {
+    const tokens = await mockAuthService.signIn();
+    const invalidEvent = {
+      ...mockCreateEvent,
+      title: '', // Invalid as title is required
+      description: '', // Invalid as description is required
+    };
 
-      expect(userService.findByUsername).toHaveBeenCalledWith('testUser');
-      expect(categoryService.getCategoriesByIds).toHaveBeenCalledWith(
-        createEventDTO.categories,
-      );
-      expect(genderService.getGendersByIds).toHaveBeenCalledWith(
-        createEventDTO.preferredGenders,
-      );
-      expect(eventService.createEvent).toHaveBeenCalledWith(
-        { username: 'testUser', id: 'userId' },
-        ['category1', 'category2'],
-        ['male', 'female'],
-        createEventDTO,
-      );
-      expect(result).toEqual(new OkDTO(true, 'Event was created'));
-    });
+    return agent
+      .post('/event')
+      .send(invalidEvent)
+      .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+      .expect('Content-Type', /json/)
+      .expect(HttpStatus.BAD_REQUEST)
+      .expect((response) => {
+        expect(response.body.message).toContain('title should not be empty');
+        expect(response.body.message).toContain(
+          'description should not be empty',
+        );
+      });
+  });
 
-    it('should throw create an online event without needing an address', async () => {
-      jest.spyOn(userService, 'findByUsername').mockResolvedValueOnce(null);
+  it('should return 400 if endAge is less than startAge', async () => {
+    const tokens = await mockAuthService.signIn();
+    const invalidEvent = {
+      ...mockCreateEvent,
+      startAge: 30,
+      endAge: 25,
+    };
 
-      const createEventDTO: CreateEventDTO = {
-        categories: [1, 2],
-        description: 'wir machen die Nacht durch',
-        preferredGenders: [2, 3],
-        dateAndTime: '2024-12-01T10:00:00',
-        title: 'Age of Empires zocken',
-        type: EventtypeEnum.public,
-        isOnline: true,
-        showAddress: true,
-        streetNumber: '',
-        street: '',
-        zipCode: '',
-        city: '',
-        participantsNumber: 100,
-        startAge: 18,
-        endAge: 50,
-      };
+    return agent
+      .post('/event')
+      .send(invalidEvent)
+      .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+      .expect('Content-Type', /json/)
+      .expect(HttpStatus.BAD_REQUEST)
+      .expect((response) => {
+        expect(response.body.message).toContain(
+          'The start age must be lesser then the end age.',
+        );
+      });
+  });
 
-      const result = await eventController.createEvent(createEventDTO);
-
-      expect(result).toEqual(new OkDTO(true, 'Event was created'));
-    });
-
-    it('should create a semi public event', async () => {
-      jest.spyOn(userService, 'findByUsername').mockResolvedValueOnce(null);
-
-      const createEventDTO: CreateEventDTO = {
-        categories: [1, 2],
-        description: 'Wir sind schüchtern. wer bist du?',
-        preferredGenders: [2, 3],
-        dateAndTime: '2024-12-01T10:00:00',
-        title: 'Kennenlernen (oder auch nicht)',
-        type: EventtypeEnum.halfPrivate,
-        isOnline: true,
-        showAddress: true,
-        streetNumber: '',
-        street: '',
-        zipCode: '',
-        city: '',
-        participantsNumber: 100,
-        startAge: 18,
-        endAge: 50,
-      };
-
-      const result = await eventController.createEvent(createEventDTO);
-
-      expect(result).toEqual(new OkDTO(true, 'Event was created'));
-    });
+  afterAll(async () => {
+    await app.close();
   });
 });
+
+const mockCreateEvent: CreateEventDTO = {
+  categories: [1],
+  city: 'Gießen',
+  dateAndTime: '2027-11-12T12:00:00Z',
+  description:
+    'Kommen Sie zu unserem spannenden und interaktiven Coding-Workshop!',
+  endAge: 25,
+  isOnline: false,
+  participantsNumber: 4,
+  preferredGenders: [GenderEnum.Diverse, GenderEnum.Female],
+  showAddress: false,
+  startAge: 20,
+  street: 'Hauptstraße',
+  streetNumber: '123',
+  title: 'Java-Programmierung für Anfänger',
+  type: EventtypeEnum.private,
+  zipCode: '12345',
+};

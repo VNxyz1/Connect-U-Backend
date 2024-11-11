@@ -47,10 +47,12 @@ describe('CategoryService', () => {
         if (category.name === 'outdoor') return undefined;
         if (category.name === 'indoor') return undefined;
         if (category.name === 'music') return undefined;
-        return predefinedCategories.find(c => c.name === category.name);
+        return predefinedCategories.find((c) => c.name === category.name);
       });
 
-      const saveSpy = jest.spyOn(categoryRepository, 'save').mockResolvedValueOnce(undefined);
+      const saveSpy = jest
+        .spyOn(categoryRepository, 'save')
+        .mockResolvedValueOnce(undefined);
 
       await service.onModuleInit();
 
@@ -77,7 +79,10 @@ describe('CategoryService', () => {
 
   describe('getCategoriesByIds', () => {
     it('should return categories for given IDs', async () => {
-      const mockCategories = [{ id: 1, name: 'outdoor' }, { id: 2, name: 'indoor' }];
+      const mockCategories = [
+        { id: 1, name: 'outdoor' },
+        { id: 2, name: 'indoor' },
+      ];
       mockCategoryRepository.findBy.mockResolvedValue(mockCategories);
 
       const categories = await service.getCategoriesByIds([1, 2]);
@@ -88,11 +93,14 @@ describe('CategoryService', () => {
     it('should throw NotFoundException if no categories are found with the given IDs', async () => {
       mockCategoryRepository.findBy.mockResolvedValue([]);
 
-      await expect(service.getCategoriesByIds([99])).rejects.toThrow(NotFoundException);
+      await expect(service.getCategoriesByIds([99])).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });
 
 export const mockCategoryService = {
   findById: jest.fn().mockResolvedValue(mockCategoryRepository[1]),
+  getCategoriesByIds: jest.fn().mockResolvedValue(mockCategoryRepository),
 };

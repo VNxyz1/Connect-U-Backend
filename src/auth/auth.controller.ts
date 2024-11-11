@@ -9,6 +9,7 @@ import {
   Req,
   Res,
   UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
 import { PostLoginBodyDTO } from './DTO/PostLoginBodyDTO';
 import { AuthService } from './auth.service';
@@ -16,6 +17,7 @@ import { Request, Response } from 'express';
 import * as process from 'node:process';
 import { OkDTO } from '../serverDTO/OkDTO';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { AuthGuard } from './auth.guard';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -58,10 +60,11 @@ export class AuthController {
 
   @ApiResponse({
     type: OkDTO,
-    description: 'Logs out a user. The Authtoken has to be deleted in the frontend, when this response is successful.',
+    description:
+      'Logs out a user. The Authtoken has to be deleted in the frontend, when this response is successful.',
     status: HttpStatus.OK,
   })
-  // @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
   @Delete('logout')
   async logout(@Res() res: Response) {
