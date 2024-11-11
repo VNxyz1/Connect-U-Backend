@@ -58,7 +58,7 @@ export class AuthController {
 
   @ApiResponse({
     type: OkDTO,
-    description: 'Logs out a user',
+    description: 'Logs out a user. The Authtoken has to be deleted in the frontend, when this response is successful.',
     status: HttpStatus.OK,
   })
   // @UseGuards(AuthGuard)
