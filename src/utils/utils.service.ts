@@ -3,6 +3,8 @@ import { CategoryDB } from '../database/CategoryDB';
 import { GetCategoryDTO } from '../category/DTO/GetCategoryDTO';
 import { GenderDB } from '../database/GenderDB';
 import { GetGenderDTO } from '../gender/DTO/GetGenderDTO';
+import { EventDB } from '../database/EventDB';
+import { GetEventCardDTO } from '../event/DTO/GetEventCardDTO';
 
 @Injectable()
 export class UtilsService {
@@ -19,9 +21,9 @@ export class UtilsService {
     return age >= minAge;
   }
 
-  async transformCategoryDBtoGetCategoryDTO(
+   transformCategoryDBtoGetCategoryDTO(
     category: CategoryDB,
-  ): Promise<GetCategoryDTO> {
+  ): GetCategoryDTO{
     const dto = new GetCategoryDTO();
     dto.id = category.id;
     dto.name = category.name;
@@ -34,6 +36,28 @@ export class UtilsService {
     const dto = new GetGenderDTO();
     dto.id = gender.id;
     dto.gender = gender.gender;
+    return dto;
+  }
+
+  async transformEventDBtoGetEventCardDTO(
+    event: EventDB,
+  ): Promise<GetEventCardDTO> {
+    const dto = new GetEventCardDTO();
+    dto.id = event.id;
+    const categories = await event.categories;
+    dto.categories = categories.map(this.transformCategoryDBtoGetCategoryDTO);
+    dto.dateAndTime = event.dateAndTime;
+    dto.title = event.title;
+    dto.picture = event.picture;
+    dto.status = event.status;
+    dto.type = event.type;
+    dto.isOnline = event.isOnline;
+    dto.streetNumber = event.streetNumber;
+    dto.street = event.street;
+    dto.zipCode = event.zipCode;
+    dto.city = event.city;
+    dto.participantsNumber = event.participantsNumber;
+
     return dto;
   }
 }

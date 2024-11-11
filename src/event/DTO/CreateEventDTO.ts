@@ -36,7 +36,7 @@ export class CreateEventDTO {
 
   @ApiProperty({
     description: 'Der Titel des Events',
-    example: 'Java-Programmierung für Anfänger',
+    example: 'Java-Programmierung',
   })
   @IsString()
   @IsNotEmpty()
