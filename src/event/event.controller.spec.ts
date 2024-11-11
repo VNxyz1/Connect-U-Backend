@@ -8,6 +8,8 @@ import { UserService } from '../user/user.service';
 import { CreateEventDTO } from './DTO/CreateEventDTO';
 import { OkDTO } from '../serverDTO/OkDTO';
 import { EventtypeEnum } from '../database/enums/EventtypeEnum';
+import { GetEventCardDTO } from './DTO/GetEventCardDTO';
+import { StatusEnum } from '../database/enums/StatusEnum';
 
 describe('EventController', () => {
   let eventController: EventController;
@@ -15,6 +17,101 @@ describe('EventController', () => {
   let categoryService: CategoryService;
   let genderService: GenderService;
   let userService: UserService;
+  let utilsService: UtilsService;
+
+  const mockUser = { username: 'testUser', id: 'userId' };
+
+  const mockEvent: any = {
+    id: '1',
+    dateAndTime: '2024-12-15T18:00:00Z',
+    title: 'Java-Programmierung für Anfänger',
+    picture: 'empty.png',
+    status: StatusEnum.upcoming,
+    type: EventtypeEnum.public,
+    isOnline: true,
+    city: 'Berlin',
+    categories: [],
+    participantsNumber: 50,
+    participants:[
+      {
+        id: '1',
+        email: 'aaa@example.com',
+        username: 'participant1',
+        password: 'hashedpassword',
+        firstName: 'a',
+        lastName: 'User',
+        birthday: '1980-01-01',
+        phoneNumber: '+1234567890',
+        profilePicture: 'profile.png',
+        pronouns: 'he/him',
+        profileText: 'Event organizer and tech enthusiast.',
+        streetNumber: '123',
+        street: 'Main St',
+        zipCode: '12345',
+        city: 'Anytown',
+        isVerified: true,
+        gender: 2,
+        hostedEvents: [],
+        requests: [],
+        participatedEvents: [],
+        favoritedEvents: [],
+        memories: [],
+        friends: Promise.resolve([]),
+        friendOf: Promise.resolve([]),
+        listEntries: [],
+        achievements: Promise.resolve([]),
+        surveyEntries: Promise.resolve([]),
+        messages: [],
+        reactions: [],
+        tags: [],
+        unreadMessages: [],
+      },
+      {  id: '2',
+        email: 'bbb@example.com',
+        username: 'participant2',
+        password: 'hashedpassword',
+        firstName: 'b',
+        lastName: 'User',
+        birthday: '1980-01-01',
+        phoneNumber: '+1234567890',
+        profilePicture: 'profile.png',
+        pronouns: 'he/him',
+        profileText: 'Event organizer and tech enthusiast.',
+        streetNumber: '123',
+        street: 'Main St',
+        zipCode: '12345',
+        city: 'Anytown',
+        isVerified: true,
+        gender: 2,
+        hostedEvents: [],
+        requests: [],
+        participatedEvents: [],
+        favoritedEvents: [],
+        memories: [],
+        friends: Promise.resolve([]),
+        friendOf: Promise.resolve([]),
+        listEntries: [],
+        achievements: Promise.resolve([]),
+        surveyEntries: Promise.resolve([]),
+        messages: [],
+        reactions: [],
+        tags: [],
+        unreadMessages: [], }],
+  };
+
+  const transformedEvent: GetEventCardDTO = {
+    id: '1',
+    dateAndTime: '2024-12-15T18:00:00Z',
+    title: 'Java-Programmierung für Anfänger',
+    picture: 'empty.png',
+    status: StatusEnum.upcoming,
+    type: EventtypeEnum.public,
+    isOnline: true,
+    city: 'Berlin',
+    participantsNumber: 2,
+    maxParticipantsNumber: 50,
+    categories: [],
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -24,18 +121,19 @@ describe('EventController', () => {
           provide: EventService,
           useValue: {
             createEvent: jest.fn(),
+            getAllEvents: jest.fn().mockResolvedValue([mockEvent]),
           },
         },
         {
           provide: UtilsService,
-          useValue: {},
+          useValue: {
+            transformEventDBtoGetEventCardDTO: jest.fn().mockResolvedValue(transformedEvent),
+          },
         },
         {
           provide: CategoryService,
           useValue: {
-            getCategoriesByIds: jest
-              .fn()
-              .mockResolvedValue(['category1', 'category2']),
+            getCategoriesByIds: jest.fn().mockResolvedValue(['category1', 'category2']),
           },
         },
         {
@@ -47,9 +145,7 @@ describe('EventController', () => {
         {
           provide: UserService,
           useValue: {
-            findByUsername: jest
-              .fn()
-              .mockResolvedValue({ username: 'testUser', id: 'userId' }),
+            findByUsername: jest.fn().mockResolvedValue(mockUser),
           },
         },
       ],
@@ -60,6 +156,7 @@ describe('EventController', () => {
     categoryService = module.get<CategoryService>(CategoryService);
     genderService = module.get<GenderService>(GenderService);
     userService = module.get<UserService>(UserService);
+    utilsService = module.get<UtilsService>(UtilsService);
   });
 
   describe('createEvent', () => {
@@ -85,14 +182,10 @@ describe('EventController', () => {
       const result = await eventController.createEvent(createEventDTO);
 
       expect(userService.findByUsername).toHaveBeenCalledWith('testUser');
-      expect(categoryService.getCategoriesByIds).toHaveBeenCalledWith(
-        createEventDTO.categories,
-      );
-      expect(genderService.getGendersByIds).toHaveBeenCalledWith(
-        createEventDTO.preferredGenders,
-      );
+      expect(categoryService.getCategoriesByIds).toHaveBeenCalledWith(createEventDTO.categories);
+      expect(genderService.getGendersByIds).toHaveBeenCalledWith(createEventDTO.preferredGenders);
       expect(eventService.createEvent).toHaveBeenCalledWith(
-        { username: 'testUser', id: 'userId' },
+        mockUser,
         ['category1', 'category2'],
         ['male', 'female'],
         createEventDTO,
@@ -100,9 +193,7 @@ describe('EventController', () => {
       expect(result).toEqual(new OkDTO(true, 'Event was created'));
     });
 
-    it('should throw create an online event without needing an address', async () => {
-      jest.spyOn(userService, 'findByUsername').mockResolvedValueOnce(null);
-
+    it('should create an online event without needing an address', async () => {
       const createEventDTO: CreateEventDTO = {
         categories: [1, 2],
         description: 'wir machen die Nacht durch',
@@ -126,9 +217,7 @@ describe('EventController', () => {
       expect(result).toEqual(new OkDTO(true, 'Event was created'));
     });
 
-    it('should create a semi public event', async () => {
-      jest.spyOn(userService, 'findByUsername').mockResolvedValueOnce(null);
-
+    it('should create a semi-public event', async () => {
       const createEventDTO: CreateEventDTO = {
         categories: [1, 2],
         description: 'Wir sind schüchtern. wer bist du?',
@@ -150,6 +239,23 @@ describe('EventController', () => {
       const result = await eventController.createEvent(createEventDTO);
 
       expect(result).toEqual(new OkDTO(true, 'Event was created'));
+    });
+  });
+
+  describe('getOwnRequests', () => {
+    it('should return a list of events for the user', async () => {
+      const result = await eventController.getOwnRequests();
+
+      expect(userService.findByUsername).toHaveBeenCalledWith('testUser');
+      expect(eventService.getAllEvents).toHaveBeenCalledWith(mockUser);
+      expect(utilsService.transformEventDBtoGetEventCardDTO).toHaveBeenCalledWith(mockEvent);
+      expect(result).toEqual([transformedEvent]);
+    });
+
+    it('should handle errors', async () => {
+      jest.spyOn(eventService, 'getAllEvents').mockRejectedValue(new Error('Failed to fetch events'));
+
+      await expect(eventController.getOwnRequests()).rejects.toThrow('Failed to fetch events');
     });
   });
 });
