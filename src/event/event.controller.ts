@@ -15,7 +15,6 @@ import { EventService } from './event.service';
 import { CreateEventDTO } from './DTO/CreateEventDTO';
 import { CategoryService } from '../category/category.service';
 import { GenderService } from '../gender/gender.service';
-import { UserService } from '../user/user.service';
 import { AuthGuard } from '../auth/auth.guard';
 import { User } from '../utils/user.decorator';
 import { UserDB } from '../database/UserDB';
@@ -29,7 +28,6 @@ export class EventController {
     public readonly utilsService: UtilsService,
     public readonly categoryService: CategoryService,
     public readonly genderService: GenderService,
-    public readonly userService: UserService,
   ) {}
 
   @ApiResponse({
@@ -85,7 +83,9 @@ export class EventController {
   @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard)
   @Get('/participatingEvents')
-  async getParticipatingEvents(@User() user: UserDB): Promise<GetEventCardDTO[]> {
+  async getParticipatingEvents(
+    @User() user: UserDB,
+  ): Promise<GetEventCardDTO[]> {
     const events = await this.eventService.getParticipatingEvents(user);
 
     return await Promise.all(
