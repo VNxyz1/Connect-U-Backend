@@ -119,13 +119,11 @@ describe('EventController', () => {
       });
   });
 
-  describe('EventController - getOwnRequests', () => {
-    it('/GET event/allEvents should return a list of events for the user', async () => {
-      const tokens = await mockAuthService.signIn();
+  describe('EventController - getAllEvents', () => {
+    it('/GET event/allEvents should return all events', async () => {
 
       return agent
         .get('/event/allEvents')
-        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
         .expect('Content-Type', /json/)
         .expect(HttpStatus.OK)
         .expect((response) => {

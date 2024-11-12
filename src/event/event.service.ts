@@ -1,5 +1,5 @@
 import { InjectRepository } from '@nestjs/typeorm';
-import { Not, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { EventDB } from '../database/EventDB';
 import { CreateEventDTO } from './DTO/CreateEventDTO';
 import { UserDB } from '../database/UserDB';
@@ -51,14 +51,12 @@ export class EventService {
   /**
    * Gets all events from the database that were not created by the user logged in.
    *
-   * @param user - the user currently logged in
    * @returns {Promise<EventDB[]>} - The events.
    * @throws {NotFoundException} - If there are no events found.
    */
-  async getAllEvents(user: UserDB | null): Promise<EventDB[]> {
+  async getAllEvents(): Promise<EventDB[]> {
     const events = await this.eventRepository.find({
-      relations: ['host', 'categories', 'participants'],
-      where: user ? { host: { id: Not(user.id) } } : {},
+      relations: ['categories', 'participants'],
     });
 
     if (!events || events.length === 0) {

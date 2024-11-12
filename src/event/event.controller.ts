@@ -52,12 +52,11 @@ export class EventController {
 
   @ApiResponse({
     type: [GetEventCardDTO],
-    description: 'gets all events except for the users',
+    description: 'gets all events',
   })
   @Get('/allEvents')
-  async getOwnRequests(): Promise<GetEventCardDTO[]> {
-    const user  = await this.userService.findByUsername('testUser');
-      const events = await this.eventService.getAllEvents(user);
+  async getAllEvents(): Promise<GetEventCardDTO[]> {
+      const events = await this.eventService.getAllEvents();
       return await Promise.all(
         events.map(async (event) => {
           return this.utilsService.transformEventDBtoGetEventCardDTO(event);

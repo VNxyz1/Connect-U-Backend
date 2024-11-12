@@ -10,7 +10,6 @@ import { CreateEventDTO } from './DTO/CreateEventDTO';
 import { EventtypeEnum } from '../database/enums/EventtypeEnum';
 import { GenderEnum } from '../database/enums/GenderEnum';
 import { NotFoundException } from '@nestjs/common';
-import { Not } from 'typeorm';
 import { StatusEnum } from '../database/enums/StatusEnum';
 
 const mockEventRepository = {
@@ -206,14 +205,13 @@ describe('EventService', () => {
     ).rejects.toThrowError('Error saving event');
   });
 
-  it('should get all events not created by the user', async () => {
+  it('should get all events', async () => {
     mockEventRepository.find.mockResolvedValue(mockEventList);
 
-    const result = await service.getAllEvents(mockUser);
+    const result = await service.getAllEvents();
 
     expect(mockEventRepository.find).toHaveBeenCalledWith({
-      relations: ['host', 'categories','participants'],
-      where: { host: { id: Not(mockUser.id) } },
+      relations: ['categories','participants'],
     });
     expect(result).toEqual(mockEventList);
   });
@@ -221,7 +219,7 @@ describe('EventService', () => {
   it('should throw a NotFoundException if no events are found', async () => {
     mockEventRepository.find.mockResolvedValue([]);
 
-    await expect(service.getAllEvents(mockUser)).rejects.toThrow(
+    await expect(service.getAllEvents()).rejects.toThrow(
       NotFoundException,
     );
   });
