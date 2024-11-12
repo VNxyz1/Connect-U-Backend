@@ -1,12 +1,16 @@
 import * as request from 'supertest';
 import { Agent } from 'supertest';
 import { Test } from '@nestjs/testing';
-import { HttpStatus, INestApplication, NotFoundException, ValidationPipe } from '@nestjs/common';
+import {
+  HttpStatus,
+  INestApplication,
+  NotFoundException,
+  ValidationPipe,
+} from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import { JwtService } from '@nestjs/jwt';
 import { EventController } from './event.controller';
-import { AuthGuard } from '../auth/auth.guard';
-import { JWTConstants } from '../auth/constants';
+import { AuthTokenPayload, JWTConstants } from '../auth/constants';
 import { AuthService } from '../auth/auth.service';
 import { mockAuthService } from '../auth/auth.service.spec';
 import { mockProviders } from '../../test/mock-services';
@@ -14,9 +18,7 @@ import { UtilsService } from '../utils/utils.service';
 import { CreateEventDTO } from './DTO/CreateEventDTO';
 import { EventtypeEnum } from '../database/enums/EventtypeEnum';
 import { GenderEnum } from '../database/enums/GenderEnum';
-import { EventDB } from '../database/EventDB';
 import { UserDB } from '../database/UserDB';
-import { StatusEnum } from '../database/enums/StatusEnum';
 
 describe('EventController', () => {
   let app: INestApplication;
@@ -49,12 +51,7 @@ describe('EventController', () => {
           useValue: mockAuthService,
         },
       ],
-    })
-      .overrideGuard(AuthGuard)
-      .useValue({
-        canActivate: jest.fn().mockReturnValue(true),
-      })
-      .compile();
+    }).compile();
 
     app = moduleRef.createNestApplication();
     app.use(cookieParser());
@@ -236,40 +233,9 @@ describe('EventController', () => {
     it('/GET event/hostingEvents should return events hosted by the user', async () => {
       const tokens = await mockAuthService.signIn();
 
-      // Mocking service response for hosted events
-      const mockHostedEvents: EventDB[] = [
-        {
-          id: '1',
-          title: 'Java-Workshop',
-          dateAndTime: '2027-11-12T12:00:00Z',
-          city: 'Gießen',
-          categories: [],
-          participantsNumber: 4,
-          preferredGenders: [],
-          host: mockUser,
-          status: StatusEnum.upcoming,
-          description: '',
-          type: EventtypeEnum.public,
-          picture: '',
-          isOnline: false,
-          showAddress: false,
-          streetNumber: '',
-          street: '',
-          zipCode: '',
-          startAge: 0,
-          endAge: 0,
-          participants: [],
-          requests: [],
-          lists: [],
-          favorited: [],
-          memories: [],
-          tags: [],
-        },
-      ];
-
       jest
-        .spyOn(app.get(EventController).eventService, 'getHostingEvents')
-        .mockResolvedValue(mockHostedEvents);
+        .spyOn(app.get(JwtService), 'verifyAsync')
+        .mockResolvedValue(mockAuthPayload);
 
       return agent
         .get('/event/hostingEvents')
@@ -293,7 +259,9 @@ describe('EventController', () => {
 
       jest
         .spyOn(app.get(EventController).eventService, 'getHostingEvents')
-        .mockRejectedValue(new NotFoundException('No events found for this user'));
+        .mockRejectedValue(
+          new NotFoundException('No events found for this user'),
+        );
 
       return agent
         .get('/event/hostingEvents')
@@ -305,7 +273,6 @@ describe('EventController', () => {
         });
     });
   });
-
 
   afterAll(async () => {
     await app.close();
@@ -330,7 +297,6 @@ const mockCreateEvent: CreateEventDTO = {
   type: EventtypeEnum.private,
   zipCode: '12345',
 };
-
 
 const mockUser: UserDB = {
   id: '1',
@@ -364,4 +330,10 @@ const mockUser: UserDB = {
   reactions: [],
   tags: [],
   unreadMessages: [],
+};
+
+const mockAuthPayload: AuthTokenPayload = {
+  userId: mockUser.id,
+  username: mockUser.username,
+  email: mockUser.email,
 };

@@ -78,8 +78,8 @@ export class EventController {
   @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard)
   @Get('/hostingEvents')
-  async getHostingEvents( @User() user: UserDB): Promise<GetEventCardDTO[]> {
-    const events = await this.eventService.getHostingEvents(user);
+  async getHostingEvents(@User() user: UserDB): Promise<GetEventCardDTO[]> {
+    const events = await this.eventService.getHostingEvents(user.id);
     return await Promise.all(
       events.map(async (event) => {
         return this.utilsService.transformEventDBtoGetEventCardDTO(event);

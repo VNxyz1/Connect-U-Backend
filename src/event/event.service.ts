@@ -69,17 +69,17 @@ export class EventService {
   /**
    * Gets the events the user is hosting from the database.
    *
-   * @param user - the user that is logged in
+   * @param userId - the user that is logged in
    * @returns {Promise<EventDB[]>} - The events.
    * @throws {NotFoundException} - If there are no events found.
    */
-  async getHostingEvents(user: UserDB): Promise<EventDB[]> {
-      const events = await this.eventRepository.find({
-        where: { host: { id: user.id } },
-        relations: ['host', 'categories', 'participants'],
-      });
+  async getHostingEvents(userId: string): Promise<EventDB[]> {
+    const events = await this.eventRepository.find({
+      where: { host: { id: userId } },
+      relations: ['host', 'categories', 'participants'],
+    });
 
-      if (!events || events.length === 0) {
+    if (!events || events.length === 0) {
       throw new NotFoundException('No events found for this user');
     }
 
