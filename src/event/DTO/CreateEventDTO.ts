@@ -1,7 +1,8 @@
 import {
   ArrayNotEmpty,
   IsArray,
-  IsBoolean, IsInt,
+  IsBoolean,
+  IsInt,
   IsISO8601,
   IsNotEmpty,
   IsNumber,

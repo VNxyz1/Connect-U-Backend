@@ -53,7 +53,8 @@ describe('UtilsService', () => {
     });
 
     it('should calculate the correct number of participants', async () => {
-      const result: GetEventCardDTO = await service.transformEventDBtoGetEventCardDTO(mockEvent as EventDB);
+      const result: GetEventCardDTO =
+        await service.transformEventDBtoGetEventCardDTO(mockEvent as EventDB);
       expect(result.participantsNumber).toEqual(3);
       expect(result.maxParticipantsNumber).toEqual(10);
     });
@@ -158,7 +159,7 @@ describe('UtilsService', () => {
       reactions: [],
       tags: [],
       unreadMessages: [],
-    }
+    },
   ];
 
   const mockEvent: Partial<EventDB> = {

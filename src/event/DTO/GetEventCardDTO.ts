@@ -1,12 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { EventtypeEnum } from '../../database/enums/EventtypeEnum';
-import { IsBoolean, IsISO8601, IsNotEmpty, IsNumber, IsString, ValidateNested } from 'class-validator';
+import {
+  IsBoolean,
+  IsISO8601,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 import { StatusEnum } from '../../database/enums/StatusEnum';
 import { GetCategoryDTO } from '../../category/DTO/GetCategoryDTO';
 import { Type } from 'class-transformer';
 
-export class GetEventCardDTO
-{
+export class GetEventCardDTO {
   @ApiProperty({ description: 'the ID of the event', example: 1 })
   id: string;
 

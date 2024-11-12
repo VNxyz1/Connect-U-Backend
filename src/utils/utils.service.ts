@@ -21,9 +21,7 @@ export class UtilsService {
     return age >= minAge;
   }
 
-   transformCategoryDBtoGetCategoryDTO(
-    category: CategoryDB,
-  ): GetCategoryDTO{
+  transformCategoryDBtoGetCategoryDTO(category: CategoryDB): GetCategoryDTO {
     const dto = new GetCategoryDTO();
     dto.id = category.id;
     dto.name = category.name;

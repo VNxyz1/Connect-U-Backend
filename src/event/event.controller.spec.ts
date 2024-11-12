@@ -90,7 +90,9 @@ describe('EventController', () => {
       .expect('Content-Type', /json/)
       .expect(HttpStatus.BAD_REQUEST)
       .expect((response) => {
-        expect(response.body.message).toContain('Title cannot contain only whitespace');
+        expect(response.body.message).toContain(
+          'Title cannot contain only whitespace',
+        );
       });
   });
 
@@ -117,7 +119,6 @@ describe('EventController', () => {
 
   describe('EventController - getAllEvents', () => {
     it('/GET event/allEvents should return all events', async () => {
-
       return agent
         .get('/event/allEvents')
         .expect('Content-Type', /json/)
@@ -147,7 +148,9 @@ describe('EventController', () => {
         .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
         .expect(HttpStatus.BAD_REQUEST)
         .expect((response) => {
-          expect(response.body.message).toContain('categories should not be empty');
+          expect(response.body.message).toContain(
+            'categories should not be empty',
+          );
         });
     });
 
@@ -164,7 +167,9 @@ describe('EventController', () => {
         .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
         .expect(HttpStatus.BAD_REQUEST)
         .expect((response) => {
-          expect(response.body.message).toContain('dateAndTime must be a valid ISO 8601 date string');
+          expect(response.body.message).toContain(
+            'dateAndTime must be a valid ISO 8601 date string',
+          );
         });
     });
 
@@ -181,7 +186,9 @@ describe('EventController', () => {
         .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
         .expect(HttpStatus.BAD_REQUEST)
         .expect((response) => {
-          expect(response.body.message).toContain('Participants number must be at least 2');
+          expect(response.body.message).toContain(
+            'Participants number must be at least 2',
+          );
         });
     });
 
@@ -202,7 +209,6 @@ describe('EventController', () => {
         });
     });
 
-
     it('should return 400 if zipCode is missing', async () => {
       const tokens = await mockAuthService.signIn();
       const invalidEvent = {
@@ -216,12 +222,12 @@ describe('EventController', () => {
         .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
         .expect(HttpStatus.BAD_REQUEST)
         .expect((response) => {
-          expect(response.body.message).toContain('zipCode should not be empty');
+          expect(response.body.message).toContain(
+            'zipCode should not be empty',
+          );
         });
     });
   });
-
-
 
   afterAll(async () => {
     await app.close();
@@ -246,4 +252,3 @@ const mockCreateEvent: CreateEventDTO = {
   type: EventtypeEnum.private,
   zipCode: '12345',
 };
-

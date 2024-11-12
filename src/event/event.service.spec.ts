@@ -211,7 +211,7 @@ describe('EventService', () => {
     const result = await service.getAllEvents();
 
     expect(mockEventRepository.find).toHaveBeenCalledWith({
-      relations: ['categories','participants'],
+      relations: ['categories', 'participants'],
     });
     expect(result).toEqual(mockEventList);
   });
@@ -219,14 +219,12 @@ describe('EventService', () => {
   it('should throw a NotFoundException if no events are found', async () => {
     mockEventRepository.find.mockResolvedValue([]);
 
-    await expect(service.getAllEvents()).rejects.toThrow(
-      NotFoundException,
-    );
+    await expect(service.getAllEvents()).rejects.toThrow(NotFoundException);
   });
 });
 
 export const mockEventService = {
   findById: jest.fn().mockResolvedValue(mockCreateEventDTO[1]),
   createEvent: jest.fn().mockResolvedValue(new EventDB()),
-  getAllEvents: jest.fn().mockResolvedValue(mockEventList)
+  getAllEvents: jest.fn().mockResolvedValue(mockEventList),
 };

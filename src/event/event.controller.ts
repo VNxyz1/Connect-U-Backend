@@ -1,5 +1,14 @@
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { BadRequestException, Body, Controller, Get, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { OkDTO } from '../serverDTO/OkDTO';
 import { UtilsService } from '../utils/utils.service';
 import { EventService } from './event.service';
@@ -56,11 +65,11 @@ export class EventController {
   })
   @Get('/allEvents')
   async getAllEvents(): Promise<GetEventCardDTO[]> {
-      const events = await this.eventService.getAllEvents();
-      return await Promise.all(
-        events.map(async (event) => {
-          return this.utilsService.transformEventDBtoGetEventCardDTO(event);
-        }),
-      );
+    const events = await this.eventService.getAllEvents();
+    return await Promise.all(
+      events.map(async (event) => {
+        return this.utilsService.transformEventDBtoGetEventCardDTO(event);
+      }),
+    );
   }
 }
