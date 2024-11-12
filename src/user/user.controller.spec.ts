@@ -50,7 +50,10 @@ describe('UserController', () => {
       .expect('Content-Type', /json/)
       .expect(HttpStatus.BAD_REQUEST)
       .expect({
-        message: ['username should not be empty'],
+        message: [
+          'Username cannot contain only whitespace',
+          'username should not be empty',
+        ],
         error: 'Bad Request',
         statusCode: 400,
       });

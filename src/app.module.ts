@@ -10,6 +10,12 @@ import { AuthService } from './auth/auth.service';
 import { JwtModule } from '@nestjs/jwt';
 import { JWTConstants } from './auth/constants';
 import { UtilsService } from './utils/utils.service';
+import { EventController } from './event/event.controller';
+import { GenderController } from './gender/gender.controller';
+import { CategoryController } from './category/category.controller';
+import { EventService } from './event/event.service';
+import { GenderService } from './gender/gender.service';
+import { CategoryService } from './category/category.service';
 
 @Module({
   imports: [
@@ -28,7 +34,23 @@ import { UtilsService } from './utils/utils.service';
       }),
     }),
   ],
-  controllers: [AppController, UserController, AuthController],
-  providers: [AppService, UserService, AuthService, JWTConstants, UtilsService],
+  controllers: [
+    AppController,
+    UserController,
+    AuthController,
+    EventController,
+    GenderController,
+    CategoryController,
+  ],
+  providers: [
+    AppService,
+    UserService,
+    AuthService,
+    JWTConstants,
+    UtilsService,
+    EventService,
+    GenderService,
+    CategoryService,
+  ],
 })
 export class AppModule {}

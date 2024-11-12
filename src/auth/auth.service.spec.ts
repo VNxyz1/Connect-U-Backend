@@ -29,4 +29,5 @@ export const mockAuthService = {
   refreshAccessToken: jest
     .fn()
     .mockResolvedValue({ access_token: 'valid.jwt.access.token' }),
+  extractTokenFromHeader: jest.fn().mockReturnValue('valid.jwt.access.token'),
 };
