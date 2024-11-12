@@ -17,7 +17,7 @@ function createSwagger(app: INestApplication) {
     .setDescription(SWAGGER_DESCRIPTION)
     .addBearerAuth(
       {
-        description: `[just text field] Please enter token in following format: Bearer <JWT>`,
+        description: '[just text field] Please enter token in following format: Bearer <JWT>',
         name: 'Authorization',
         bearerFormat: 'JWT',
         scheme: 'Bearer',
