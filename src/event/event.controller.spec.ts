@@ -14,6 +14,7 @@ import { UtilsService } from '../utils/utils.service';
 import { CreateEventDTO } from './DTO/CreateEventDTO';
 import { EventtypeEnum } from '../database/enums/EventtypeEnum';
 import { GenderEnum } from '../database/enums/GenderEnum';
+import { EventService } from './event.service';
 
 describe('EventController', () => {
   let app: INestApplication;
@@ -119,6 +120,46 @@ describe('EventController', () => {
       });
   });
 
+  describe('EventController - getOwnRequests', () => {
+    it('/GET event/allEvents should return a list of events for the user', async () => {
+      const tokens = await mockAuthService.signIn();
+
+      return agent
+        .get('/event/allEvents')
+        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.OK)
+        .expect((response) => {
+          expect(Array.isArray(response.body)).toBe(true);
+          response.body.forEach((event) => {
+            expect(event).toHaveProperty('id');
+            expect(event).toHaveProperty('title');
+            expect(event).toHaveProperty('dateAndTime');
+          });
+        });
+    });
+
+    it('should handle errors gracefully', async () => {
+      const tokens = await mockAuthService.signIn();
+
+      // Here, let's mock a service error by having `getAllEvents` throw an error
+      jest.spyOn(EventService.prototype, 'getAllEvents').mockImplementationOnce(() => {
+        throw new Error('Unable to fetch events');
+      });
+
+      return agent
+        .get('/event/allEvents')
+        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.INTERNAL_SERVER_ERROR)
+        .expect((response) => {
+          expect(response.body.message).toBe('Unable to fetch events');
+        });
+    });
+  });
+
+
+
   afterAll(async () => {
     await app.close();
   });
@@ -142,3 +183,4 @@ const mockCreateEvent: CreateEventDTO = {
   type: EventtypeEnum.private,
   zipCode: '12345',
 };
+
