@@ -15,7 +15,7 @@ const mockGenderRepository = {
 
 const predefinedGenders = [
   { gender: GenderEnum.Female },
-  { gender: GenderEnum.Male},
+  { gender: GenderEnum.Male },
   { gender: GenderEnum.Diverse },
 ];
 
@@ -28,7 +28,7 @@ describe('GenderService', () => {
         GenderService,
         {
           provide: getRepositoryToken(GenderDB),
-          useValue: mockGenderRepository,  // Mock repository here
+          useValue: mockGenderRepository, // Mock repository here
         },
       ],
     }).compile();
@@ -42,12 +42,15 @@ describe('GenderService', () => {
 
   describe('onModuleInit', () => {
     it('should initialize predefined genders if not already existing', async () => {
-      jest.spyOn(mockGenderRepository, 'findOne')
+      jest
+        .spyOn(mockGenderRepository, 'findOne')
         .mockResolvedValueOnce(undefined)
         .mockResolvedValueOnce(undefined)
         .mockResolvedValueOnce(undefined);
 
-      const saveSpy = jest.spyOn(mockGenderRepository, 'save').mockResolvedValue(undefined);
+      const saveSpy = jest
+        .spyOn(mockGenderRepository, 'save')
+        .mockResolvedValue(undefined);
 
       await service.onModuleInit();
 
@@ -58,7 +61,9 @@ describe('GenderService', () => {
   describe('getGenders', () => {
     it('should return an array of genders if found', async () => {
       const mockGenders = [{ gender: 1 }, { gender: 2 }];
-      jest.spyOn(mockGenderRepository, 'find').mockResolvedValue(mockGenders as GenderDB[]);
+      jest
+        .spyOn(mockGenderRepository, 'find')
+        .mockResolvedValue(mockGenders as GenderDB[]);
 
       const genders = await service.getGenders();
 
@@ -75,7 +80,9 @@ describe('GenderService', () => {
   describe('getGendersByIds', () => {
     it('should return genders for given IDs', async () => {
       const mockGenders = [{ gender: 1 }, { gender: 2 }];
-      jest.spyOn(mockGenderRepository, 'findBy').mockResolvedValue(mockGenders as GenderDB[]);
+      jest
+        .spyOn(mockGenderRepository, 'findBy')
+        .mockResolvedValue(mockGenders as GenderDB[]);
 
       const genders = await service.getGendersByIds([1, 2]);
 
@@ -85,7 +92,21 @@ describe('GenderService', () => {
     it('should throw NotFoundException if no genders are found with the given IDs', async () => {
       jest.spyOn(mockGenderRepository, 'findBy').mockResolvedValue([]);
 
-      await expect(service.getGendersByIds([99])).rejects.toThrow(NotFoundException);
+      await expect(service.getGendersByIds([99])).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });
+
+export const mockGenderService = {
+  getGendersByIds: jest.fn().mockResolvedValue([
+    { id: 1, gender: 1 },
+    { id: 2, gender: 2 },
+    { id: 3, gender: 3 },
+  ]),
+  getGenders: jest.fn().mockResolvedValue([
+    { id: 1, gender: 1 },
+    { id: 3, gender: 3 },
+  ]),
+};

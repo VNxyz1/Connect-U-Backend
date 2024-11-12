@@ -54,16 +54,22 @@ describe('CategoryController', () => {
 
       // Assertions
       expect(mockCategoryService.getCategories).toHaveBeenCalled();
-      expect(mockUtilsService.transformCategoryDBtoGetCategoryDTO).toHaveBeenCalledTimes(mockCategories.length);
+      expect(
+        mockUtilsService.transformCategoryDBtoGetCategoryDTO,
+      ).toHaveBeenCalledTimes(mockCategories.length);
       expect(result).toEqual(transformedCategoryDTO);
     });
 
     it('should throw BadRequestException if service fails', async () => {
       // Setup mock to throw an error
-      mockCategoryService.getCategories.mockRejectedValue(new Error('Service failed'));
+      mockCategoryService.getCategories.mockRejectedValue(
+        new Error('Service failed'),
+      );
 
       // Call the controller method and expect it to throw
-      await expect(controller.getAllCategories()).rejects.toThrow(BadRequestException);
+      await expect(controller.getAllCategories()).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 });

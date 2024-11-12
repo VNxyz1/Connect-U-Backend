@@ -52,14 +52,20 @@ describe('GenderController', () => {
       const result = await controller.getAllCategories();
 
       expect(mockGenderService.getGenders).toHaveBeenCalled();
-      expect(mockUtilsService.transformGenderDBtoGetGenderDTO).toHaveBeenCalledTimes(mockGenders.length);
+      expect(
+        mockUtilsService.transformGenderDBtoGetGenderDTO,
+      ).toHaveBeenCalledTimes(mockGenders.length);
       expect(result).toEqual(transformedGenderDTO);
     });
 
     it('should throw BadRequestException if service fails', async () => {
-      mockGenderService.getGenders.mockRejectedValue(new Error('Service failed'));
+      mockGenderService.getGenders.mockRejectedValue(
+        new Error('Service failed'),
+      );
 
-      await expect(controller.getAllCategories()).rejects.toThrow(BadRequestException);
+      await expect(controller.getAllCategories()).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 });

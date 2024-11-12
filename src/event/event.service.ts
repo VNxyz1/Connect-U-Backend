@@ -42,6 +42,7 @@ export class EventService {
     newEvent.participantsNumber = body.participantsNumber;
     newEvent.startAge = body.startAge;
     newEvent.endAge = body.endAge;
+    newEvent.description = body.description;
     newEvent.categories = categories;
     newEvent.preferredGenders = preferredGenders;
     return await this.eventRepository.save(newEvent);
