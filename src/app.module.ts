@@ -11,6 +11,12 @@ import { JwtModule } from '@nestjs/jwt';
 import { JWTConstants } from './auth/constants';
 import { UtilsService } from './utils/utils.service';
 import { SocketGateway } from './socket/socket.gateway';
+import { EventController } from './event/event.controller';
+import { GenderController } from './gender/gender.controller';
+import { CategoryController } from './category/category.controller';
+import { EventService } from './event/event.service';
+import { GenderService } from './gender/gender.service';
+import { CategoryService } from './category/category.service';
 
 @Module({
   imports: [
@@ -29,7 +35,14 @@ import { SocketGateway } from './socket/socket.gateway';
       }),
     }),
   ],
-  controllers: [AppController, UserController, AuthController],
+  controllers: [
+    AppController,
+    UserController,
+    AuthController,
+    EventController,
+    GenderController,
+    CategoryController,
+  ],
   providers: [
     AppService,
     UserService,
@@ -37,6 +50,9 @@ import { SocketGateway } from './socket/socket.gateway';
     JWTConstants,
     UtilsService,
     SocketGateway,
+    EventService,
+    GenderService,
+    CategoryService,
   ],
 })
 export class AppModule {}

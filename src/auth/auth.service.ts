@@ -29,13 +29,13 @@ export class AuthService {
     }
 
     const payloadAuth: AuthTokenPayload = {
-      sub: user.id,
+      userId: user.id,
       email: user.email,
       username: user.username,
     };
 
     const payloadRefresh: RefreshTokenPayload = {
-      sub: user.id,
+      userId: user.id,
       username: user.username,
     };
     return {
@@ -56,9 +56,9 @@ export class AuthService {
           secret: this.jwtConstants.getConstants().secret,
         },
       );
-      const user = await this.userService.findById(payload.sub);
+      const user = await this.userService.findById(payload.userId);
       const newPayload: AuthTokenPayload = {
-        sub: user.id,
+        userId: user.id,
         email: user.email,
         username: user.username,
       };
@@ -68,5 +68,14 @@ export class AuthService {
     } catch (e) {
       throw new UnauthorizedException('Invalid refresh token', e);
     }
+  }
+
+  async decodeToken<T>(token: string): Promise<T> {
+    return this.jwtService.decode<T>(token);
+  }
+
+  extractTokenFromHeader(request: any): string | undefined {
+    const [type, token] = request.headers.authorization?.split(' ') ?? [];
+    return type === 'Bearer' ? token : undefined;
   }
 }

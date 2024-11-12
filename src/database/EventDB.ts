@@ -16,6 +16,7 @@ import { RequestDB } from './RequestDB';
 import { ListDB } from './ListDB';
 import { TagDB } from './TagDB';
 import { CategoryDB } from './CategoryDB';
+import { MessageDB } from './MessageDB';
 
 @Entity()
 export class EventDB {
@@ -30,6 +31,9 @@ export class EventDB {
 
   @Column({ type: 'datetime' })
   dateAndTime: string;
+
+  @Column()
+  title: string;
 
   @Column({ nullable: true })
   description: string;
@@ -72,6 +76,9 @@ export class EventDB {
 
   @OneToMany(() => RequestDB, (request) => request.event)
   requests: RequestDB[];
+
+  @OneToMany(() => MessageDB, (message) => message.event)
+  messages: MessageDB[];
 
   @OneToMany(() => ListDB, (list) => list.event)
   lists: ListDB[];

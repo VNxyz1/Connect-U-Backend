@@ -4,6 +4,12 @@ import { JwtService } from '@nestjs/jwt';
 import { JWTConstants } from '../src/auth/constants';
 import { AuthService } from '../src/auth/auth.service';
 import { mockAuthService } from '../src/auth/auth.service.spec';
+import { EventService } from '../src/event/event.service';
+import { mockEventService } from '../src/event/event.service.spec';
+import { CategoryService } from '../src/category/category.service';
+import { mockCategoryService } from '../src/category/category.service.spec';
+import { GenderService } from '../src/gender/gender.service';
+import { mockGenderService } from '../src/gender/gender.service.spec';
 
 export const mockProviders = [
   {
@@ -29,5 +35,17 @@ export const mockProviders = [
   {
     provide: AuthService,
     useValue: mockAuthService,
+  },
+  {
+    provide: EventService,
+    useValue: mockEventService,
+  },
+  {
+    provide: CategoryService,
+    useValue: mockCategoryService,
+  },
+  {
+    provide: GenderService,
+    useValue: mockGenderService,
   },
 ];

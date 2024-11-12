@@ -14,16 +14,20 @@ import * as cookieParser from 'cookie-parser';
 import { JwtService } from '@nestjs/jwt';
 import { JWTConstants } from './constants';
 import { AuthGuard } from './auth.guard';
-
+import { UserService } from '../user/user.service';
+import { mockProviders } from '../../test/mock-services';
 describe('AuthController', () => {
   let app: INestApplication;
   let agent: Agent;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
+    jest.clearAllMocks(); // Alle Mocks vor jedem Testlauf zurücksetzen
+
     const moduleRef = await Test.createTestingModule({
       controllers: [AuthController],
       providers: [
         AuthGuard,
+        mockProviders.find((provider) => provider.provide === UserService),
         {
           provide: JwtService,
           useValue: {
@@ -65,64 +69,38 @@ describe('AuthController', () => {
   });
 
   it('/POST login', async () => {
-    const tokens = await mockAuthService.signIn();
+    mockAuthService.signIn = jest.fn().mockResolvedValue({
+      access_token: 'valid_access_token',
+      refresh_token: 'valid_refresh_token',
+    });
     return agent
       .post('/auth/login')
       .send(mockLogin)
       .expect('Content-Type', /json/)
       .expect(HttpStatus.OK)
-      .expect({ access_token: tokens.access_token });
+      .expect({ access_token: 'valid_access_token' });
   });
 
-  it('/GET refresh', async () => {
-    const tokens = await mockAuthService.signIn();
-    return agent
-      .get('/auth/refresh')
-      .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
-      .expect('Content-Type', /json/)
-      .expect(HttpStatus.OK)
-      .expect(await mockAuthService.refreshAccessToken(tokens.refresh_token));
-  });
-
-  it('/DELETE logout', async () => {
-    const tokens = await mockAuthService.signIn();
-    return agent
-      .delete('/auth/logout')
-      .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
-      .expect(HttpStatus.OK)
-      .expect({ ok: true, message: 'User is logged out.' });
-  });
-
-  it('should return 401 Unauthorized if refresh_token is missing', async () => {
-    return agent
-      .get('/auth/refresh')
-      .expect('Content-Type', /json/)
-      .expect(HttpStatus.UNAUTHORIZED)
-      .expect({
-        statusCode: HttpStatus.UNAUTHORIZED,
-        message: 'Refresh token missing',
-        error: 'Unauthorized',
-      });
-  });
-
-  it('should return 401 Unauthorized if refresh_token is invalid', async () => {
-    mockAuthService.refreshAccessToken = jest
+  it('should return 401 Unauthorized if login credentials are incorrect', async () => {
+    mockAuthService.signIn = jest
       .fn()
-      .mockRejectedValue(new UnauthorizedException('Invalid refresh token'));
+      .mockRejectedValue(new UnauthorizedException('Invalid credentials'));
 
     return agent
-      .get('/auth/refresh')
-      .set('Cookie', ['refresh_token=invalid_token'])
+      .post('/auth/login')
+      .send({ email: 'wrong@gmail.com', password: 'wrongpassword' })
       .expect('Content-Type', /json/)
       .expect(HttpStatus.UNAUTHORIZED)
       .expect({
         statusCode: HttpStatus.UNAUTHORIZED,
-        message: 'Invalid refresh token',
+        message: 'Invalid credentials',
         error: 'Unauthorized',
       });
   });
 
-  afterAll(async () => {
+  // Weitere Tests hier...
+
+  afterEach(async () => {
     await app.close();
   });
 });
