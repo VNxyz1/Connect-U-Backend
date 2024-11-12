@@ -21,6 +21,12 @@ export class UtilsService {
     return age >= minAge;
   }
 
+  isFutureDate(dateISOString: string): boolean {
+    const eventDate = new Date(dateISOString);
+    const now = new Date();
+    return eventDate > now;
+  }
+
   transformCategoryDBtoGetCategoryDTO(category: CategoryDB): GetCategoryDTO {
     const dto = new GetCategoryDTO();
     dto.id = category.id;
