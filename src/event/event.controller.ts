@@ -56,9 +56,7 @@ export class EventController {
     }
 
     if (!this.utilsService.isFutureDate(body.dateAndTime)) {
-      throw new BadRequestException(
-        'Event Date must be in the future',
-      );
+      throw new BadRequestException('Event Date must be in the future');
     }
 
     await this.eventService.createEvent(user, categories, genders, body);
