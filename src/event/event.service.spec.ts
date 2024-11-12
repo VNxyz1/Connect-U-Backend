@@ -107,6 +107,7 @@ const mockEventList: EventDB[] = [
     favorited: [],
     memories: [],
     tags: [],
+    messages: [],
   },
   {
     id: '2',
@@ -134,6 +135,7 @@ const mockEventList: EventDB[] = [
     favorited: [],
     memories: [],
     tags: [],
+    messages: [],
   },
 ];
 
