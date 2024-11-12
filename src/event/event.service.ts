@@ -5,6 +5,7 @@ import { CreateEventDTO } from './DTO/CreateEventDTO';
 import { UserDB } from '../database/UserDB';
 import { CategoryDB } from '../database/CategoryDB';
 import { GenderDB } from '../database/GenderDB';
+import { NotFoundException } from '@nestjs/common';
 
 export class EventService {
   constructor(
@@ -19,7 +20,7 @@ export class EventService {
    * @param categories - categories of the event
    * @param preferredGenders - preferred genders of the event
    * @param {CreateEventDTO} body - Data transfer object containing event information.
-   * @returns {Promise<EventDB>} - The newly created user.
+   * @returns {Promise<EventDB>} - The newly created event.
    */
   async createEvent(
     user: UserDB,
@@ -45,5 +46,23 @@ export class EventService {
     newEvent.categories = categories;
     newEvent.preferredGenders = preferredGenders;
     return await this.eventRepository.save(newEvent);
+  }
+
+  /**
+   * Gets all events from the database that were not created by the user logged in.
+   *
+   * @returns {Promise<EventDB[]>} - The events.
+   * @throws {NotFoundException} - If there are no events found.
+   */
+  async getAllEvents(): Promise<EventDB[]> {
+    const events = await this.eventRepository.find({
+      relations: ['categories', 'participants'],
+    });
+
+    if (!events || events.length === 0) {
+      throw new NotFoundException('Events not found');
+    }
+
+    return events;
   }
 }

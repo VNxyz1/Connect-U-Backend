@@ -9,10 +9,13 @@ import { UserDB } from '../database/UserDB';
 import { CreateEventDTO } from './DTO/CreateEventDTO';
 import { EventtypeEnum } from '../database/enums/EventtypeEnum';
 import { GenderEnum } from '../database/enums/GenderEnum';
+import { NotFoundException } from '@nestjs/common';
+import { StatusEnum } from '../database/enums/StatusEnum';
 
 const mockEventRepository = {
   create: jest.fn(),
   save: jest.fn(),
+  find: jest.fn(),
 };
 
 const mockCategoryList: CategoryDB[] = [
@@ -76,6 +79,65 @@ const mockCreateEventDTO: CreateEventDTO = {
   startAge: 18,
   endAge: 50,
 };
+
+const mockEventList: EventDB[] = [
+  {
+    id: '1',
+    title: 'Tech Conference 2024',
+    description: 'A conference for tech enthusiasts.',
+    dateAndTime: '2024-12-01T10:00:00',
+    categories: mockCategoryList,
+    host: mockUser,
+    type: EventtypeEnum.halfPrivate,
+    isOnline: false,
+    showAddress: true,
+    streetNumber: '456',
+    street: 'Tech Ave',
+    zipCode: '67890',
+    city: 'Tech City',
+    participantsNumber: 100,
+    preferredGenders: mockGenderList,
+    status: StatusEnum.upcoming,
+    picture: '',
+    startAge: 0,
+    endAge: 0,
+    participants: [],
+    requests: [],
+    lists: [],
+    favorited: [],
+    memories: [],
+    tags: [],
+    messages: [],
+  },
+  {
+    id: '2',
+    title: 'Game Jam 2024',
+    description: 'Game Jam to create awesome new games!',
+    dateAndTime: '2024-12-01T10:00:00',
+    categories: mockCategoryList,
+    host: mockUser,
+    type: EventtypeEnum.halfPrivate,
+    isOnline: true,
+    showAddress: true,
+    streetNumber: '',
+    street: '',
+    zipCode: '',
+    city: '',
+    participantsNumber: 23,
+    preferredGenders: mockGenderList,
+    status: StatusEnum.upcoming,
+    picture: '',
+    startAge: 0,
+    endAge: 0,
+    participants: [],
+    requests: [],
+    lists: [],
+    favorited: [],
+    memories: [],
+    tags: [],
+    messages: [],
+  },
+];
 
 describe('EventService', () => {
   let service: EventService;
@@ -144,9 +206,27 @@ describe('EventService', () => {
       ),
     ).rejects.toThrowError('Error saving event');
   });
+
+  it('should get all events', async () => {
+    mockEventRepository.find.mockResolvedValue(mockEventList);
+
+    const result = await service.getAllEvents();
+
+    expect(mockEventRepository.find).toHaveBeenCalledWith({
+      relations: ['categories', 'participants'],
+    });
+    expect(result).toEqual(mockEventList);
+  });
+
+  it('should throw a NotFoundException if no events are found', async () => {
+    mockEventRepository.find.mockResolvedValue([]);
+
+    await expect(service.getAllEvents()).rejects.toThrow(NotFoundException);
+  });
 });
 
 export const mockEventService = {
   findById: jest.fn().mockResolvedValue(mockCreateEventDTO[1]),
   createEvent: jest.fn().mockResolvedValue(new EventDB()),
+  getAllEvents: jest.fn().mockResolvedValue(mockEventList),
 };

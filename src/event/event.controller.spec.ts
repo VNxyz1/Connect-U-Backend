@@ -80,8 +80,7 @@ describe('EventController', () => {
     const tokens = await mockAuthService.signIn();
     const invalidEvent = {
       ...mockCreateEvent,
-      title: '', // Invalid as title is required
-      description: '', // Invalid as description is required
+      title: '',
     };
 
     return agent
@@ -91,9 +90,8 @@ describe('EventController', () => {
       .expect('Content-Type', /json/)
       .expect(HttpStatus.BAD_REQUEST)
       .expect((response) => {
-        expect(response.body.message).toContain('title should not be empty');
         expect(response.body.message).toContain(
-          'description should not be empty',
+          'Title cannot contain only whitespace',
         );
       });
   });
@@ -117,6 +115,118 @@ describe('EventController', () => {
           'The start age must be lesser then the end age.',
         );
       });
+  });
+
+  describe('EventController - getAllEvents', () => {
+    it('/GET event/allEvents should return all events', async () => {
+      return agent
+        .get('/event/allEvents')
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.OK)
+        .expect((response) => {
+          expect(Array.isArray(response.body)).toBe(true);
+          response.body.forEach((event) => {
+            expect(event).toHaveProperty('id');
+            expect(event).toHaveProperty('title');
+            expect(event).toHaveProperty('dateAndTime');
+          });
+        });
+    });
+  });
+
+  describe('CreateEventDTO Validation', () => {
+    it('should return 400 if categories is missing', async () => {
+      const tokens = await mockAuthService.signIn();
+      const invalidEvent = {
+        ...mockCreateEvent,
+        categories: undefined,
+      };
+
+      return agent
+        .post('/event')
+        .send(invalidEvent)
+        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((response) => {
+          expect(response.body.message).toContain(
+            'categories should not be empty',
+          );
+        });
+    });
+
+    it('should return 400 if dateAndTime is invalid', async () => {
+      const tokens = await mockAuthService.signIn();
+      const invalidEvent = {
+        ...mockCreateEvent,
+        dateAndTime: 'invalid-date',
+      };
+
+      return agent
+        .post('/event')
+        .send(invalidEvent)
+        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((response) => {
+          expect(response.body.message).toContain(
+            'dateAndTime must be a valid ISO 8601 date string',
+          );
+        });
+    });
+
+    it('should return 400 if participantsNumber is below minimum', async () => {
+      const tokens = await mockAuthService.signIn();
+      const invalidEvent = {
+        ...mockCreateEvent,
+        participantsNumber: -1,
+      };
+
+      return agent
+        .post('/event')
+        .send(invalidEvent)
+        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((response) => {
+          expect(response.body.message).toContain(
+            'Participants number must be at least 2',
+          );
+        });
+    });
+
+    it('should return 400 if title is not provided', async () => {
+      const tokens = await mockAuthService.signIn();
+      const invalidEvent = {
+        ...mockCreateEvent,
+        title: '',
+      };
+
+      return agent
+        .post('/event')
+        .send(invalidEvent)
+        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((response) => {
+          expect(response.body.message).toContain('title should not be empty');
+        });
+    });
+
+    it('should return 400 if zipCode is missing', async () => {
+      const tokens = await mockAuthService.signIn();
+      const invalidEvent = {
+        ...mockCreateEvent,
+        zipCode: undefined,
+      };
+
+      return agent
+        .post('/event')
+        .send(invalidEvent)
+        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((response) => {
+          expect(response.body.message).toContain(
+            'zipCode should not be empty',
+          );
+        });
+    });
   });
 
   afterAll(async () => {

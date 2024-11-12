@@ -3,6 +3,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Post,
@@ -16,15 +17,16 @@ import { CategoryService } from '../category/category.service';
 import { GenderService } from '../gender/gender.service';
 import { UserService } from '../user/user.service';
 import { AuthGuard } from '../auth/auth.guard';
-import { UserDB } from '../database/UserDB';
 import { User } from '../utils/user.decorator';
+import { UserDB } from '../database/UserDB';
+import { GetEventCardDTO } from './DTO/GetEventCardDTO';
 
 @ApiTags('event')
 @Controller('event')
 export class EventController {
   constructor(
     public readonly eventService: EventService,
-    public readonly utils: UtilsService,
+    public readonly utilsService: UtilsService,
     public readonly categoryService: CategoryService,
     public readonly genderService: GenderService,
     public readonly userService: UserService,
@@ -53,7 +55,25 @@ export class EventController {
       );
     }
 
+    if (!this.utilsService.isFutureDate(body.dateAndTime)) {
+      throw new BadRequestException('Event Date must be in the future');
+    }
+
     await this.eventService.createEvent(user, categories, genders, body);
     return new OkDTO(true, 'Event was created');
+  }
+
+  @ApiResponse({
+    type: [GetEventCardDTO],
+    description: 'gets all events',
+  })
+  @Get('/allEvents')
+  async getAllEvents(): Promise<GetEventCardDTO[]> {
+    const events = await this.eventService.getAllEvents();
+    return await Promise.all(
+      events.map(async (event) => {
+        return this.utilsService.transformEventDBtoGetEventCardDTO(event);
+      }),
+    );
   }
 }
