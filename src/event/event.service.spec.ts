@@ -221,6 +221,27 @@ describe('EventService', () => {
 
     await expect(service.getAllEvents()).rejects.toThrow(NotFoundException);
   });
+
+  describe('EventService - getHostingEvents', () => {
+    it('should get events hosted by a specific user', async () => {
+      mockEventRepository.find.mockResolvedValue(mockEventList);
+
+      const result = await service.getHostingEvents(mockUser);
+
+      expect(mockEventRepository.find).toHaveBeenCalledWith({
+        where: { host: { id: mockUser.id } },
+        relations: ['host', 'categories', 'participants'],
+      });
+      expect(result).toEqual(mockEventList);
+    });
+
+    it('should throw a NotFoundException if no hosting events are found for the user', async () => {
+      mockEventRepository.find.mockResolvedValue([]);
+
+      await expect(service.getHostingEvents(mockUser)).rejects.toThrow(NotFoundException);
+    });
+  });
+
 });
 
 export const mockEventService = {
