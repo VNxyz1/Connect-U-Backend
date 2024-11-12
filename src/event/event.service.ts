@@ -65,4 +65,27 @@ export class EventService {
 
     return events;
   }
+
+  /**
+   * Gets all events where the user is a participant.
+   *
+   * @param user - the user who is a participant
+   * @returns {Promise<EventDB[]>} - The events where the user is a participant.
+   * @throws {NotFoundException} - If no events are found.
+   */
+  async getParticipatingEvents(user: UserDB): Promise<EventDB[]> {
+    const events = await this.eventRepository
+      .createQueryBuilder('event')
+      .leftJoinAndSelect('event.participants', 'participant')
+      .leftJoinAndSelect('event.categories', 'category')
+      .leftJoinAndSelect('event.host', 'host')
+      .where('participant.id = :userId', { userId: user.id })
+      .getMany();
+
+    if (!events || events.length === 0) {
+      throw new NotFoundException('No events found');
+    }
+
+    return events;
+  }
 }

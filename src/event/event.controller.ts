@@ -76,4 +76,22 @@ export class EventController {
       }),
     );
   }
+
+  @ApiResponse({
+    type: [GetEventCardDTO],
+    description: 'Gets events where the current user is a participant',
+    status: HttpStatus.OK,
+  })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard)
+  @Get('/participatingEvents')
+  async getParticipatingEvents(@User() user: UserDB): Promise<GetEventCardDTO[]> {
+    const events = await this.eventService.getParticipatingEvents(user);
+
+    return await Promise.all(
+      events.map(async (event) => {
+        return this.utilsService.transformEventDBtoGetEventCardDTO(event);
+      }),
+    );
+  }
 }
