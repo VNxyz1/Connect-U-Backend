@@ -1,7 +1,7 @@
 import {
   ArrayNotEmpty,
   IsArray,
-  IsBoolean,
+  IsBoolean, IsInt,
   IsISO8601,
   IsNotEmpty,
   IsNumber,
@@ -51,8 +51,6 @@ export class CreateEventDTO {
       'Kommen Sie zu unserem spannenden und interaktiven Coding-Workshop!',
   })
   @IsString()
-  @IsNotEmpty()
-  @Matches(/\S/, { message: 'Description cannot contain only whitespace' })
   description: string;
 
   @ApiProperty({
@@ -126,6 +124,8 @@ export class CreateEventDTO {
   })
   @IsNumber()
   @IsNotEmpty()
+  @IsInt({ message: 'Participants number must be an integer' })
+  @Min(2, { message: 'Participants number must be at least 2' })
   @Max(100, { message: 'Participants number cannot exceed 100' })
   participantsNumber: number;
 
