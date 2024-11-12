@@ -1,8 +1,8 @@
 import {
   ArrayNotEmpty,
+  ArrayMaxSize,
   IsArray,
   IsBoolean,
-  IsInt,
   IsISO8601,
   IsNotEmpty,
   IsNumber,
@@ -13,6 +13,7 @@ import {
   MaxLength,
   Min,
   ValidateIf,
+  IsInt,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { EventtypeEnum } from '../../database/enums/EventtypeEnum';
@@ -25,6 +26,7 @@ export class CreateEventDTO {
   })
   @IsArray()
   @ArrayNotEmpty()
+  @ArrayMaxSize(3, { message: 'A maximum of 3 categories can be selected' })
   @IsNumber({}, { each: true })
   categories: number[];
 
@@ -52,6 +54,8 @@ export class CreateEventDTO {
       'Kommen Sie zu unserem spannenden und interaktiven Coding-Workshop!',
   })
   @IsString()
+  @IsNotEmpty()
+  @Matches(/\S/, { message: 'Description cannot contain only whitespace' })
   description: string;
 
   @ApiProperty({
@@ -123,8 +127,6 @@ export class CreateEventDTO {
     description: 'Anzahl der erlaubten Teilnehmer',
     example: 50,
   })
-  @IsNumber()
-  @IsNotEmpty()
   @IsInt({ message: 'Participants number must be an integer' })
   @Min(2, { message: 'Participants number must be at least 2' })
   @Max(100, { message: 'Participants number cannot exceed 100' })
@@ -147,6 +149,7 @@ export class CreateEventDTO {
   })
   @IsNumber()
   @Min(16, { message: 'Minimum age cannot be less than 16' })
+  @Max(150, { message: 'Minimum age cannot exceed 150' })
   @IsOptional()
   startAge?: number;
 
@@ -157,6 +160,7 @@ export class CreateEventDTO {
   })
   @IsNumber()
   @Min(16, { message: 'Maximum age cannot be less than 16' })
+  @Max(150, { message: 'Maximum age cannot exceed 150' })
   @IsOptional()
   endAge?: number;
 }
