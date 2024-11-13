@@ -49,7 +49,7 @@ export class EventService {
   }
 
   /**
-   * Gets all events from the database that were not created by the user logged in.
+   * Gets all events from the database.
    *
    * @returns {Promise<EventDB[]>} - The events.
    * @throws {NotFoundException} - If there are no events found.
@@ -84,6 +84,26 @@ export class EventService {
 
     if (!events || events.length === 0) {
       throw new NotFoundException('No events found');
+    }
+
+    return events;
+  }
+
+  /**
+   * Gets the events the user is hosting from the database.
+   *
+   * @param userId - the user that is logged in
+   * @returns {Promise<EventDB[]>} - The events.
+   * @throws {NotFoundException} - If there are no events found.
+   */
+  async getHostingEvents(userId: string): Promise<EventDB[]> {
+    const events = await this.eventRepository.find({
+      where: { host: { id: userId } },
+      relations: ['host', 'categories', 'participants'],
+    });
+
+    if (!events || events.length === 0) {
+      throw new NotFoundException('No events found for this user');
     }
 
     return events;

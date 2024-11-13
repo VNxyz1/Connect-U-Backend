@@ -1,12 +1,16 @@
 import * as request from 'supertest';
 import { Agent } from 'supertest';
 import { Test } from '@nestjs/testing';
-import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
+import {
+  HttpStatus,
+  INestApplication,
+  NotFoundException,
+  ValidationPipe,
+} from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import { JwtService } from '@nestjs/jwt';
 import { EventController } from './event.controller';
-import { AuthGuard } from '../auth/auth.guard';
-import { JWTConstants } from '../auth/constants';
+import { AuthTokenPayload, JWTConstants } from '../auth/constants';
 import { AuthService } from '../auth/auth.service';
 import { mockAuthService } from '../auth/auth.service.spec';
 import { mockProviders } from '../../test/mock-services';
@@ -14,6 +18,7 @@ import { UtilsService } from '../utils/utils.service';
 import { CreateEventDTO } from './DTO/CreateEventDTO';
 import { EventtypeEnum } from '../database/enums/EventtypeEnum';
 import { GenderEnum } from '../database/enums/GenderEnum';
+import { UserDB } from '../database/UserDB';
 
 describe('EventController', () => {
   let app: INestApplication;
@@ -46,12 +51,7 @@ describe('EventController', () => {
           useValue: mockAuthService,
         },
       ],
-    })
-      .overrideGuard(AuthGuard)
-      .useValue({
-        canActivate: jest.fn().mockReturnValue(true),
-      })
-      .compile();
+    }).compile();
 
     app = moduleRef.createNestApplication();
     app.use(cookieParser());
@@ -229,6 +229,51 @@ describe('EventController', () => {
     });
   });
 
+  describe('EventController - getHostingEvents', () => {
+    it('/GET event/hostingEvents should return events hosted by the user', async () => {
+      const tokens = await mockAuthService.signIn();
+
+      jest
+        .spyOn(app.get(JwtService), 'verifyAsync')
+        .mockResolvedValue(mockAuthPayload);
+
+      return agent
+        .get('/event/hostingEvents')
+        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.OK)
+        .expect((response) => {
+          expect(Array.isArray(response.body)).toBe(true);
+          expect(response.body.length).toBeGreaterThan(0);
+          response.body.forEach((event) => {
+            expect(event).toHaveProperty('id');
+            expect(event).toHaveProperty('title');
+            expect(event).toHaveProperty('dateAndTime');
+            expect(event).toHaveProperty('city');
+          });
+        });
+    });
+
+    it('/GET event/hostingEvents should return 404 if user has no hosted events', async () => {
+      const tokens = await mockAuthService.signIn();
+
+      jest
+        .spyOn(app.get(EventController).eventService, 'getHostingEvents')
+        .mockRejectedValue(
+          new NotFoundException('No events found for this user'),
+        );
+
+      return agent
+        .get('/event/hostingEvents')
+        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.NOT_FOUND)
+        .expect((response) => {
+          expect(response.body.message).toBe('No events found for this user');
+        });
+    });
+  });
+
   afterAll(async () => {
     await app.close();
   });
@@ -251,4 +296,44 @@ const mockCreateEvent: CreateEventDTO = {
   title: 'Java-Programmierung für Anfänger',
   type: EventtypeEnum.private,
   zipCode: '12345',
+};
+
+const mockUser: UserDB = {
+  id: '1',
+  email: 'host@example.com',
+  username: 'hostuser',
+  password: 'hashedpassword',
+  firstName: 'Host',
+  lastName: 'User',
+  birthday: '1980-01-01',
+  phoneNumber: '+1234567890',
+  profilePicture: 'profile.png',
+  pronouns: 'he/him',
+  profileText: 'Event organizer and tech enthusiast.',
+  streetNumber: '123',
+  street: 'Main St',
+  zipCode: '12345',
+  city: 'Anytown',
+  isVerified: true,
+  gender: 2,
+  hostedEvents: [],
+  requests: [],
+  participatedEvents: [],
+  favoritedEvents: [],
+  memories: [],
+  friends: Promise.resolve([]),
+  friendOf: Promise.resolve([]),
+  listEntries: [],
+  achievements: Promise.resolve([]),
+  surveyEntries: Promise.resolve([]),
+  messages: [],
+  reactions: [],
+  tags: [],
+  unreadMessages: [],
+};
+
+const mockAuthPayload: AuthTokenPayload = {
+  userId: mockUser.id,
+  username: mockUser.username,
+  email: mockUser.email,
 };
