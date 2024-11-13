@@ -19,7 +19,6 @@ import { AuthGuard } from '../auth/auth.guard';
 import { User } from '../utils/user.decorator';
 import { UserDB } from '../database/UserDB';
 import { GetEventCardDTO } from './DTO/GetEventCardDTO';
-import { EventDB } from '../database/EventDB';
 
 @ApiTags('event')
 @Controller('event')
@@ -120,7 +119,7 @@ export class EventController {
    * @returns {Promise<EventDB>} - The updated event.
    */
   @ApiResponse({
-    type: EventDB,
+    type: OkDTO,
     description: 'Adds the user to the event participants list',
     status: HttpStatus.OK,
   })
@@ -130,9 +129,10 @@ export class EventController {
   async addUserToEvent(
     @User() user: UserDB,
     @Param('eventId') eventId: string,
-  ): Promise<EventDB> {
+  ): Promise<OkDTO> {
     try {
-      return await this.eventService.addUserToEvent(user, eventId);
+       await this.eventService.addUserToEvent(user, eventId);
+      return new OkDTO(true, 'Event was created');
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw new NotFoundException(error.message);
