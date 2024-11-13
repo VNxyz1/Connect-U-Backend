@@ -16,6 +16,11 @@ const mockEventRepository = {
   create: jest.fn(),
   save: jest.fn(),
   find: jest.fn(),
+  createQueryBuilder: jest.fn(() => ({
+    leftJoinAndSelect: jest.fn().mockReturnThis(),
+    where: jest.fn().mockReturnThis(),
+    getMany: jest.fn(),
+  })),
 };
 
 const mockCategoryList: CategoryDB[] = [
@@ -244,6 +249,47 @@ describe('EventService', () => {
         NotFoundException,
       );
     });
+
+    describe('EventService - getParticipatingEvents', () => {
+      it('should get events where the user is a participant', async () => {
+        const mockParticipatingEvents = [
+          {
+            id: '3',
+            title: 'Hackathon 2024',
+            dateAndTime: '2024-12-15T10:00:00Z',
+            participants: [mockUser],
+            categories: mockCategoryList,
+            host: mockUser,
+            type: EventtypeEnum.private,
+            isOnline: true,
+            city: 'Tech City',
+          },
+        ] as EventDB[];
+
+        const queryBuilderMock = mockEventRepository.createQueryBuilder();
+        queryBuilderMock.getMany.mockResolvedValue(mockParticipatingEvents);
+
+        const result = await service.getParticipatingEvents(mockUser);
+
+        expect(result).toEqual(mockParticipatingEvents);
+        expect(queryBuilderMock.where).toHaveBeenCalledWith(
+          'participant.id = :userId',
+          { userId: mockUser.id },
+        );
+        expect(queryBuilderMock.getMany).toHaveBeenCalled();
+      });
+
+      it('should throw a NotFoundException if no participating events are found for the user', async () => {
+        const queryBuilderMock = mockEventRepository.createQueryBuilder();
+        queryBuilderMock.getMany.mockResolvedValue([]);
+
+        await expect(service.getParticipatingEvents(mockUser)).rejects.toThrow(
+          NotFoundException,
+        );
+      });
+    });
+
+
   });
 });
 
