@@ -29,7 +29,7 @@ const mockGenderList: GenderDB[] = [
 ];
 
 const mockUser: UserDB = {
-  id: '1',
+  id: 'uuIdMock',
   email: 'host@example.com',
   username: 'hostuser',
   password: 'hashedpassword',
@@ -223,10 +223,33 @@ describe('EventService', () => {
 
     await expect(service.getAllEvents()).rejects.toThrow(NotFoundException);
   });
+
+  describe('EventService - getHostingEvents', () => {
+    it('should get events hosted by a specific user', async () => {
+      mockEventRepository.find.mockResolvedValue(mockEventList);
+
+      const result = await service.getHostingEvents(mockUser.id);
+
+      expect(mockEventRepository.find).toHaveBeenCalledWith({
+        where: { host: { id: mockUser.id } },
+        relations: ['host', 'categories', 'participants'],
+      });
+      expect(result).toEqual(mockEventList);
+    });
+
+    it('should throw a NotFoundException if no hosting events are found for the user', async () => {
+      mockEventRepository.find.mockResolvedValue([]);
+
+      await expect(service.getHostingEvents(mockUser.id)).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+  });
 });
 
 export const mockEventService = {
   findById: jest.fn().mockResolvedValue(mockCreateEventDTO[1]),
   createEvent: jest.fn().mockResolvedValue(new EventDB()),
   getAllEvents: jest.fn().mockResolvedValue(mockEventList),
+  getHostingEvents: jest.fn().mockResolvedValue(mockEventList),
 };
