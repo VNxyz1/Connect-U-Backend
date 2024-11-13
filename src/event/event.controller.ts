@@ -5,7 +5,7 @@ import {
   Controller,
   Get,
   HttpCode,
-  HttpStatus,
+  HttpStatus, NotFoundException, Param,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -19,6 +19,7 @@ import { AuthGuard } from '../auth/auth.guard';
 import { User } from '../utils/user.decorator';
 import { UserDB } from '../database/UserDB';
 import { GetEventCardDTO } from './DTO/GetEventCardDTO';
+import { EventDB } from '../database/EventDB';
 
 @ApiTags('event')
 @Controller('event')
@@ -109,5 +110,37 @@ export class EventController {
         return this.utilsService.transformEventDBtoGetEventCardDTO(event);
       }),
     );
+  }
+
+  /**
+   * Adds the current user to an event's participants list.
+   *
+   * @param user - The logged-in user.
+   * @param eventId - The ID of the event to join.
+   * @returns {Promise<EventDB>} - The updated event.
+   */
+  @ApiResponse({
+    type: EventDB,
+    description: 'Adds the user to the event participants list',
+    status: HttpStatus.OK,
+  })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard)
+  @Post('/join/:eventId')
+  async addUserToEvent(
+    @User() user: UserDB,
+    @Param('eventId') eventId: string,
+  ): Promise<EventDB> {
+    try {
+      return await this.eventService.addUserToEvent(user, eventId);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw new NotFoundException(error.message);
+      }
+      if (error instanceof BadRequestException) {
+        throw new BadRequestException(error.message);
+      }
+      throw error;
+    }
   }
 }

@@ -5,7 +5,7 @@ import { CreateEventDTO } from './DTO/CreateEventDTO';
 import { UserDB } from '../database/UserDB';
 import { CategoryDB } from '../database/CategoryDB';
 import { GenderDB } from '../database/GenderDB';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 export class EventService {
   constructor(
@@ -107,5 +107,28 @@ export class EventService {
     }
 
     return events;
+  }
+
+  async addUserToEvent(user: UserDB, eventId: string): Promise<EventDB> {
+    const event = await this.eventRepository.findOne({
+      where: { id: eventId },
+      relations: ['participants', 'host'],
+    });
+    if (!event) {
+      throw new NotFoundException(`Event with ID ${eventId} not found`);
+    }
+    const isHost = event.host.id == user.id;
+    if (isHost) {
+      throw new BadRequestException('user is the host of this event');
+    }
+    const isAlreadyParticipant = event.participants.some(
+      (participant) => participant.id === user.id,
+    );
+    if (isAlreadyParticipant) {
+      throw new BadRequestException('User is already a participant in this event');
+    }
+    event.participants.push(user);
+
+    return await this.eventRepository.save(event);
   }
 }
