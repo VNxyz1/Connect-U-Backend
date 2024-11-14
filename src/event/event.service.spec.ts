@@ -67,7 +67,6 @@ const mockUser: UserDB = {
   unreadMessages: [],
 };
 
-
 const participantUser: UserDB = {
   id: 'uuIdMock2',
   email: 'participant@example.com',
@@ -186,8 +185,6 @@ const queryBuilderMock = {
 };
 
 mockEventRepository.createQueryBuilder.mockReturnValue(queryBuilderMock);
-
-
 
 describe('EventService', () => {
   let service: EventService;

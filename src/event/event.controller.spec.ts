@@ -321,8 +321,6 @@ describe('EventController', () => {
   });
 });
 
-
-
 const mockCreateEvent: CreateEventDTO = {
   categories: [1],
   city: 'Gießen',
