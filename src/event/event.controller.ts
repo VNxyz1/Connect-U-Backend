@@ -86,7 +86,7 @@ export class EventController {
   async getParticipatingEvents(
     @User() user: UserDB,
   ): Promise<GetEventCardDTO[]> {
-    const events = await this.eventService.getParticipatingEvents(user);
+    const events = await this.eventService.getParticipatingEvents(user.id);
 
     return await Promise.all(
       events.map(async (event) => {

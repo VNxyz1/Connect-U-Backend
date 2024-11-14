@@ -67,6 +67,40 @@ const mockUser: UserDB = {
   unreadMessages: [],
 };
 
+const participantUser: UserDB = {
+  id: 'uuIdMock2',
+  email: 'participant@example.com',
+  username: 'participantUser',
+  password: 'hashedpassword',
+  firstName: 'Host',
+  lastName: 'User',
+  birthday: '1980-01-01',
+  phoneNumber: '+1234567890',
+  profilePicture: 'profile.png',
+  pronouns: 'he/him',
+  profileText: 'Event organizer and tech enthusiast.',
+  streetNumber: '123',
+  street: 'Main St',
+  zipCode: '12345',
+  city: 'Anytown',
+  isVerified: true,
+  gender: 2,
+  hostedEvents: [],
+  requests: [],
+  participatedEvents: [],
+  favoritedEvents: [],
+  memories: [],
+  friends: Promise.resolve([]),
+  friendOf: Promise.resolve([]),
+  listEntries: [],
+  achievements: Promise.resolve([]),
+  surveyEntries: Promise.resolve([]),
+  messages: [],
+  reactions: [],
+  tags: [],
+  unreadMessages: [],
+};
+
 const mockCreateEventDTO: CreateEventDTO = {
   categories: [],
   description: '',
@@ -106,7 +140,7 @@ const mockEventList: EventDB[] = [
     picture: '',
     startAge: 0,
     endAge: 0,
-    participants: [],
+    participants: [participantUser],
     requests: [],
     lists: [],
     favorited: [],
@@ -143,6 +177,14 @@ const mockEventList: EventDB[] = [
     messages: [],
   },
 ];
+
+const queryBuilderMock = {
+  leftJoinAndSelect: jest.fn().mockReturnThis(),
+  where: jest.fn().mockReturnThis(),
+  getMany: jest.fn().mockResolvedValue(mockEventList),
+};
+
+mockEventRepository.createQueryBuilder.mockReturnValue(queryBuilderMock);
 
 describe('EventService', () => {
   let service: EventService;
@@ -249,47 +291,39 @@ describe('EventService', () => {
         NotFoundException,
       );
     });
+  });
 
-    describe('EventService - getParticipatingEvents', () => {
-      it('should get events where the user is a participant', async () => {
-        const mockParticipatingEvents = [
-          {
-            id: '3',
-            title: 'Hackathon 2024',
-            dateAndTime: '2024-12-15T10:00:00Z',
-            participants: [mockUser],
-            categories: mockCategoryList,
-            host: mockUser,
-            type: EventtypeEnum.private,
-            isOnline: true,
-            city: 'Tech City',
-          },
-        ] as EventDB[];
+  describe('EventService - getParticipatingEvents', () => {
+    let queryBuilderMock;
 
-        const queryBuilderMock = mockEventRepository.createQueryBuilder();
-        queryBuilderMock.getMany.mockResolvedValue(mockParticipatingEvents);
-
-        const result = await service.getParticipatingEvents(mockUser);
-
-        expect(result).toEqual(mockParticipatingEvents);
-        expect(queryBuilderMock.where).toHaveBeenCalledWith(
-          'participant.id = :userId',
-          { userId: mockUser.id },
-        );
-        expect(queryBuilderMock.getMany).toHaveBeenCalled();
-      });
-
-      it('should throw a NotFoundException if no participating events are found for the user', async () => {
-        const queryBuilderMock = mockEventRepository.createQueryBuilder();
-        queryBuilderMock.getMany.mockResolvedValue([]);
-
-        await expect(service.getParticipatingEvents(mockUser)).rejects.toThrow(
-          NotFoundException,
-        );
-      });
+    beforeEach(() => {
+      queryBuilderMock = mockEventRepository.createQueryBuilder();
+      jest.clearAllMocks();
     });
 
+    it('should return participating events when the user is a participant', async () => {
+      queryBuilderMock.where.mockReturnThis();
+      queryBuilderMock.leftJoinAndSelect.mockReturnThis();
+      queryBuilderMock.getMany.mockResolvedValue(mockEventList);
 
+      const result = await service.getParticipatingEvents('uuIdMock2');
+
+      expect(result).toEqual(mockEventList);
+      expect(queryBuilderMock.where).toHaveBeenCalledWith(
+        'participant.id = :userId',
+        { userId: 'uuIdMock2' },
+      );
+      expect(queryBuilderMock.getMany).toHaveBeenCalled();
+    });
+
+    it('should throw a NotFoundException when the user is not a participant in any events', async () => {
+      queryBuilderMock.where.mockReturnThis();
+      queryBuilderMock.getMany.mockResolvedValue([]);
+
+      await expect(service.getParticipatingEvents('uuIdMock')).rejects.toThrow(
+        NotFoundException,
+      );
+    });
   });
 });
 
@@ -298,4 +332,5 @@ export const mockEventService = {
   createEvent: jest.fn().mockResolvedValue(new EventDB()),
   getAllEvents: jest.fn().mockResolvedValue(mockEventList),
   getHostingEvents: jest.fn().mockResolvedValue(mockEventList),
+  getParticipatingEvents: jest.fn().mockResolvedValue(mockEventList),
 };

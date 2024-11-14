@@ -10,6 +10,7 @@ import { AuthService } from './auth/auth.service';
 import { JwtModule } from '@nestjs/jwt';
 import { JWTConstants } from './auth/constants';
 import { UtilsService } from './utils/utils.service';
+import { SocketGateway } from './socket/socket.gateway';
 import { EventController } from './event/event.controller';
 import { GenderController } from './gender/gender.controller';
 import { CategoryController } from './category/category.controller';
@@ -48,6 +49,7 @@ import { CategoryService } from './category/category.service';
     AuthService,
     JWTConstants,
     UtilsService,
+    SocketGateway,
     EventService,
     GenderService,
     CategoryService,
