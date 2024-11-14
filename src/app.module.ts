@@ -17,6 +17,8 @@ import { CategoryController } from './category/category.controller';
 import { EventService } from './event/event.service';
 import { GenderService } from './gender/gender.service';
 import { CategoryService } from './category/category.service';
+import { RequestController } from './request/request.controller';
+import { RequestService } from './request/request.service';
 
 @Module({
   imports: [
@@ -42,6 +44,7 @@ import { CategoryService } from './category/category.service';
     EventController,
     GenderController,
     CategoryController,
+    RequestController
   ],
   providers: [
     AppService,
@@ -53,6 +56,7 @@ import { CategoryService } from './category/category.service';
     EventService,
     GenderService,
     CategoryService,
+    RequestService
   ],
 })
 export class AppModule {}
