@@ -4,6 +4,7 @@ import { RequestService } from './request.service';
 import { AuthGuard } from '../auth/auth.guard';
 import { User } from '../utils/user.decorator';
 import { UserDB } from '../database/UserDB';
+import { OkDTO } from '../serverDTO/OkDTO';
 
 @ApiTags('request')
 @Controller('request')
@@ -11,6 +12,7 @@ export class RequestController {
   constructor(private readonly requestService: RequestService) {}
 
   @ApiResponse({
+    type: OkDTO,
     description: 'Creates a join request for a user to join an event',
     status: HttpStatus.CREATED,
   })
@@ -23,8 +25,8 @@ export class RequestController {
     @User() user: UserDB
   ) {
     try {
-      const request = await this.requestService.postJoinRequest(eventId, user.id);
-      return { success: true, message: 'Request created', data: request };
+      await this.requestService.postJoinRequest(eventId, user.id);
+      return new OkDTO(true, 'Request was sent')
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw new NotFoundException(error.message);
