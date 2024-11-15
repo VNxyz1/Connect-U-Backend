@@ -16,6 +16,11 @@ const mockEventRepository = {
   create: jest.fn(),
   save: jest.fn(),
   find: jest.fn(),
+  createQueryBuilder: jest.fn(() => ({
+    leftJoinAndSelect: jest.fn().mockReturnThis(),
+    where: jest.fn().mockReturnThis(),
+    getMany: jest.fn(),
+  })),
 };
 
 const mockCategoryList: CategoryDB[] = [
@@ -32,6 +37,40 @@ const mockUser: UserDB = {
   id: 'uuIdMock',
   email: 'host@example.com',
   username: 'hostuser',
+  password: 'hashedpassword',
+  firstName: 'Host',
+  lastName: 'User',
+  birthday: '1980-01-01',
+  phoneNumber: '+1234567890',
+  profilePicture: 'profile.png',
+  pronouns: 'he/him',
+  profileText: 'Event organizer and tech enthusiast.',
+  streetNumber: '123',
+  street: 'Main St',
+  zipCode: '12345',
+  city: 'Anytown',
+  isVerified: true,
+  gender: 2,
+  hostedEvents: [],
+  requests: [],
+  participatedEvents: [],
+  favoritedEvents: [],
+  memories: [],
+  friends: Promise.resolve([]),
+  friendOf: Promise.resolve([]),
+  listEntries: [],
+  achievements: Promise.resolve([]),
+  surveyEntries: Promise.resolve([]),
+  messages: [],
+  reactions: [],
+  tags: [],
+  unreadMessages: [],
+};
+
+const participantUser: UserDB = {
+  id: 'uuIdMock2',
+  email: 'participant@example.com',
+  username: 'participantUser',
   password: 'hashedpassword',
   firstName: 'Host',
   lastName: 'User',
@@ -101,7 +140,7 @@ const mockEventList: EventDB[] = [
     picture: '',
     startAge: 0,
     endAge: 0,
-    participants: [],
+    participants: [participantUser],
     requests: [],
     lists: [],
     favorited: [],
@@ -138,6 +177,14 @@ const mockEventList: EventDB[] = [
     messages: [],
   },
 ];
+
+const queryBuilderMock = {
+  leftJoinAndSelect: jest.fn().mockReturnThis(),
+  where: jest.fn().mockReturnThis(),
+  getMany: jest.fn().mockResolvedValue(mockEventList),
+};
+
+mockEventRepository.createQueryBuilder.mockReturnValue(queryBuilderMock);
 
 describe('EventService', () => {
   let service: EventService;
@@ -245,6 +292,39 @@ describe('EventService', () => {
       );
     });
   });
+
+  describe('EventService - getParticipatingEvents', () => {
+    let queryBuilderMock;
+
+    beforeEach(() => {
+      queryBuilderMock = mockEventRepository.createQueryBuilder();
+      jest.clearAllMocks();
+    });
+
+    it('should return participating events when the user is a participant', async () => {
+      queryBuilderMock.where.mockReturnThis();
+      queryBuilderMock.leftJoinAndSelect.mockReturnThis();
+      queryBuilderMock.getMany.mockResolvedValue(mockEventList);
+
+      const result = await service.getParticipatingEvents('uuIdMock2');
+
+      expect(result).toEqual(mockEventList);
+      expect(queryBuilderMock.where).toHaveBeenCalledWith(
+        'participant.id = :userId',
+        { userId: 'uuIdMock2' },
+      );
+      expect(queryBuilderMock.getMany).toHaveBeenCalled();
+    });
+
+    it('should throw a NotFoundException when the user is not a participant in any events', async () => {
+      queryBuilderMock.where.mockReturnThis();
+      queryBuilderMock.getMany.mockResolvedValue([]);
+
+      await expect(service.getParticipatingEvents('uuIdMock')).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+  });
 });
 
 export const mockEventService = {
@@ -252,4 +332,5 @@ export const mockEventService = {
   createEvent: jest.fn().mockResolvedValue(new EventDB()),
   getAllEvents: jest.fn().mockResolvedValue(mockEventList),
   getHostingEvents: jest.fn().mockResolvedValue(mockEventList),
+  getParticipatingEvents: jest.fn().mockResolvedValue(mockEventList),
 };
