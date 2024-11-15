@@ -138,7 +138,6 @@ export class CreateEventDTO {
     example: [1, 2],
   })
   @IsArray()
-  @ArrayNotEmpty()
   @IsNumber({}, { each: true })
   preferredGenders: number[];
 
