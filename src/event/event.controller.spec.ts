@@ -274,6 +274,48 @@ describe('EventController', () => {
     });
   });
 
+  describe('EventController - getParticipatingEvents', () => {
+    it('/GET event/participatingEvents should return events where the user is a participant', async () => {
+      const tokens = await mockAuthService.signIn();
+
+      jest
+        .spyOn(app.get(JwtService), 'verifyAsync')
+        .mockResolvedValue(mockAuthPayload);
+
+      return agent
+        .get('/event/participatingEvents')
+        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.OK)
+        .expect((response) => {
+          expect(Array.isArray(response.body)).toBe(true);
+          expect(response.body.length).toBeGreaterThan(0);
+          response.body.forEach((event) => {
+            expect(event).toHaveProperty('id');
+            expect(event).toHaveProperty('title');
+            expect(event).toHaveProperty('dateAndTime');
+            expect(event).toHaveProperty('city');
+          });
+        });
+    });
+
+    it('/GET event/participatingEvents should return 404 if no participating events are found', async () => {
+      const tokens = await mockAuthService.signIn();
+
+      jest
+        .spyOn(app.get(EventController).eventService, 'getParticipatingEvents')
+        .mockRejectedValue(new NotFoundException('No events found'));
+
+      return agent
+        .get('/event/participatingEvents')
+        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.NOT_FOUND)
+        .expect((response) => {
+          expect(response.body.message).toBe('No events found');
+        });
+    });
+  });
   afterAll(async () => {
     await app.close();
   });
