@@ -49,6 +49,24 @@ export class EventService {
   }
 
   /**
+   * Finds a specific event by its ID
+   * @param eventId - The ID of the event.
+   *
+   * @returns The event.
+   *
+   * @throws NotFoundException If the event with the given `eventId` does not exist.
+   */
+  async getEventById(eventId: string): Promise<EventDB> {
+    const event = await this.eventRepository.findOne({
+      where: { id: eventId },
+    });
+    if (!event) {
+      throw new NotFoundException(`Event with ID ${eventId} not found`);
+    }
+    return event;
+  }
+
+  /**
    * Gets all events from the database.
    *
    * @returns {Promise<EventDB[]>} - The events.

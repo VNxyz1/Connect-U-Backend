@@ -20,6 +20,8 @@ import { AuthGuard } from '../auth/auth.guard';
 import { User } from '../utils/user.decorator';
 import { UserDB } from '../database/UserDB';
 import { GetEventCardDTO } from './DTO/GetEventCardDTO';
+import { EventDB } from '../database/EventDB';
+import { EventtypeEnum } from '../database/enums/EventtypeEnum';
 
 @ApiTags('event')
 @Controller('event')
@@ -115,7 +117,7 @@ export class EventController {
   @ApiResponse({
     type: OkDTO,
     description: 'Adds the user to the event participants list',
-    status: HttpStatus.OK,
+    status: HttpStatus.CREATED,
   })
   @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard)
@@ -124,6 +126,10 @@ export class EventController {
     @User() user: UserDB,
     @Param('eventId') eventId: string,
   ): Promise<OkDTO> {
+    const event: EventDB = await this.eventService.getEventById(eventId);
+    if ( event.type != EventtypeEnum.public) {
+      throw new BadRequestException('Event has to be public')
+    }
     await this.eventService.addUserToEvent(user, eventId);
     return new OkDTO(true, 'user was added to participant list');
   }

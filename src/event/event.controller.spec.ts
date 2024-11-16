@@ -19,6 +19,8 @@ import { CreateEventDTO } from './DTO/CreateEventDTO';
 import { EventtypeEnum } from '../database/enums/EventtypeEnum';
 import { GenderEnum } from '../database/enums/GenderEnum';
 import { UserDB } from '../database/UserDB';
+import { EventDB } from '../database/EventDB';
+import { StatusEnum } from '../database/enums/StatusEnum';
 
 describe('EventController', () => {
   let app: INestApplication;
@@ -316,6 +318,48 @@ describe('EventController', () => {
         });
     });
   });
+
+  describe('EventController - addUserToEvent', () => {
+    it('/POST event/join/:eventId should add user to event participants list', async () => {
+      const tokens = await mockAuthService.signIn();
+
+      jest
+        .spyOn(app.get(EventController).eventService, 'addUserToEvent')
+        .mockResolvedValue(MockPublicEvent);
+
+      jest
+        .spyOn(app.get(EventController).eventService, 'getEventById')
+        .mockResolvedValue(MockPublicEvent);
+
+      return agent
+        .post('/event/join/1')
+        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.CREATED)
+        .expect({
+          ok: true,
+          message: 'user was added to participant list',
+        });
+    });
+
+    it('/POST event/join/:eventId should return 400 if the event type is not public', async () => {
+      const tokens = await mockAuthService.signIn();
+
+      jest
+        .spyOn(app.get(EventController).eventService, 'getEventById')
+        .mockResolvedValue(MockPrivateEvent);
+
+      return agent
+        .post('/event/join/1')
+        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((response) => {
+          expect(response.body.message).toBe('Event has to be public');
+        });
+    });
+  });
+
   afterAll(async () => {
     await app.close();
   });
@@ -373,6 +417,65 @@ const mockUser: UserDB = {
   tags: [],
   unreadMessages: [],
 };
+const MockPublicEvent: EventDB =
+  {
+    id: '1',
+    title: 'Tech Conference 2024',
+    description: 'A conference for tech enthusiasts.',
+    dateAndTime: '2024-12-01T10:00:00',
+    categories: [],
+    host: mockUser,
+    type: EventtypeEnum.public,
+    isOnline: false,
+    showAddress: true,
+    streetNumber: '456',
+    street: 'Tech Ave',
+    zipCode: '67890',
+    city: 'Tech City',
+    participantsNumber: 100,
+    preferredGenders: [],
+    status: StatusEnum.upcoming,
+    picture: '',
+    startAge: 0,
+    endAge: 0,
+    participants: [],
+    requests: [],
+    lists: [],
+    favorited: [],
+    memories: [],
+    tags: [],
+    messages: [],
+  };
+
+const MockPrivateEvent: EventDB =
+  {
+    id: '1',
+    title: 'Tech Conference 2024',
+    description: 'A conference for tech enthusiasts.',
+    dateAndTime: '2024-12-01T10:00:00',
+    categories: [],
+    host: mockUser,
+    type: EventtypeEnum.private,
+    isOnline: false,
+    showAddress: true,
+    streetNumber: '456',
+    street: 'Tech Ave',
+    zipCode: '67890',
+    city: 'Tech City',
+    participantsNumber: 100,
+    preferredGenders: [],
+    status: StatusEnum.upcoming,
+    picture: '',
+    startAge: 0,
+    endAge: 0,
+    participants: [],
+    requests: [],
+    lists: [],
+    favorited: [],
+    memories: [],
+    tags: [],
+    messages: [],
+  };
 
 const mockAuthPayload: AuthTokenPayload = {
   userId: mockUser.id,
