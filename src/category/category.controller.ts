@@ -1,5 +1,5 @@
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { BadRequestException, Controller, Get } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { GetCategoryDTO } from './DTO/GetCategoryDTO';
 import { UtilsService } from '../utils/utils.service';
@@ -18,13 +18,11 @@ export class CategoryController {
   })
   @Get('/all')
   async getAllCategories() {
-      const categories = await this.categoryService.getCategories();
-      return await Promise.all(
-        categories.map(async (category) => {
-          return this.utilsService.transformCategoryDBtoGetCategoryDTO(
-            category,
-          );
-        }),
-      );
+    const categories = await this.categoryService.getCategories();
+    return await Promise.all(
+      categories.map(async (category) => {
+        return this.utilsService.transformCategoryDBtoGetCategoryDTO(category);
+      }),
+    );
   }
 }

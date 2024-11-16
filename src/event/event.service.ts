@@ -135,7 +135,9 @@ export class EventService {
       (participant) => participant.id === user.id,
     );
     if (isAlreadyParticipant) {
-      throw new BadRequestException('User is already a participant in this event');
+      throw new BadRequestException(
+        'User is already a participant in this event',
+      );
     }
     event.participants.push(user);
 

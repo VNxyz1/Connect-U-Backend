@@ -1,4 +1,11 @@
-import { Controller, Post, Param, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Param,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RequestService } from './request.service';
 import { AuthGuard } from '../auth/auth.guard';
@@ -22,9 +29,9 @@ export class RequestController {
   @HttpCode(HttpStatus.CREATED)
   async createJoinRequest(
     @Param('eventId') eventId: string,
-    @User() user: UserDB
+    @User() user: UserDB,
   ) {
-      await this.requestService.postJoinRequest(eventId, user.id);
-      return new OkDTO(true, 'Request was sent')
+    await this.requestService.postJoinRequest(eventId, user.id);
+    return new OkDTO(true, 'Request was sent');
   }
 }

@@ -18,11 +18,11 @@ export class GenderController {
   })
   @Get('/all')
   async getAllCategories() {
-      const genders = await this.genderService.getGenders();
-      return await Promise.all(
-        genders.map(async (gender) => {
-          return this.utilsService.transformGenderDBtoGetGenderDTO(gender);
-        }),
-      );
+    const genders = await this.genderService.getGenders();
+    return await Promise.all(
+      genders.map(async (gender) => {
+        return this.utilsService.transformGenderDBtoGetGenderDTO(gender);
+      }),
+    );
   }
 }

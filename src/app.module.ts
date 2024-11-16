@@ -44,7 +44,7 @@ import { RequestService } from './request/request.service';
     EventController,
     GenderController,
     CategoryController,
-    RequestController
+    RequestController,
   ],
   providers: [
     AppService,
@@ -56,7 +56,7 @@ import { RequestService } from './request/request.service';
     EventService,
     GenderService,
     CategoryService,
-    RequestService
+    RequestService,
   ],
 })
 export class AppModule {}

@@ -124,7 +124,7 @@ export class EventController {
     @User() user: UserDB,
     @Param('eventId') eventId: string,
   ): Promise<OkDTO> {
-       await this.eventService.addUserToEvent(user, eventId);
-      return new OkDTO(true, 'user was added to participant list');
+    await this.eventService.addUserToEvent(user, eventId);
+    return new OkDTO(true, 'user was added to participant list');
   }
 }
