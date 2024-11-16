@@ -5,6 +5,7 @@ import { GenderDB } from '../database/GenderDB';
 import { GetGenderDTO } from '../gender/DTO/GetGenderDTO';
 import { EventDB } from '../database/EventDB';
 import { GetEventCardDTO } from '../event/DTO/GetEventCardDTO';
+import { GetEventDetailsDTO } from '../event/DTO/GetEventDetailsDTO';
 
 @Injectable()
 export class UtilsService {
@@ -47,6 +48,27 @@ export class UtilsService {
     event: EventDB,
   ): Promise<GetEventCardDTO> {
     const dto = new GetEventCardDTO();
+    dto.id = event.id;
+    const categories = await event.categories;
+    dto.categories = categories.map(this.transformCategoryDBtoGetCategoryDTO);
+    dto.dateAndTime = event.dateAndTime;
+    dto.title = event.title;
+    dto.picture = event.picture;
+    dto.status = event.status;
+    dto.type = event.type;
+    dto.isOnline = event.isOnline;
+    dto.city = event.city;
+    const participants = await event.participants;
+    dto.participantsNumber = participants.length;
+    dto.maxParticipantsNumber = event.participantsNumber;
+
+    return dto;
+  }
+
+  async transformEventDBtoGetEventDetailsDTO(
+    event: EventDB,
+  ): Promise<GetEventDetailsDTO> {
+    const dto = new GetEventDetailsDTO();
     dto.id = event.id;
     const categories = await event.categories;
     dto.categories = categories.map(this.transformCategoryDBtoGetCategoryDTO);

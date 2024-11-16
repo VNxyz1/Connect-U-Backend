@@ -22,6 +22,7 @@ import { UserDB } from '../database/UserDB';
 import { GetEventCardDTO } from './DTO/GetEventCardDTO';
 import { EventDB } from '../database/EventDB';
 import { EventtypeEnum } from '../database/enums/EventtypeEnum';
+import { GetEventDetailsDTO } from './DTO/GetEventDetailsDTO';
 
 @ApiTags('event')
 @Controller('event')
@@ -62,6 +63,18 @@ export class EventController {
 
     await this.eventService.createEvent(user, categories, genders, body);
     return new OkDTO(true, 'Event was created');
+  }
+
+  @ApiResponse({
+    type: GetEventDetailsDTO,
+    description: 'gets all events',
+  })
+  @Get('/eventDetails/:eventId')
+  async getEventById(
+    @Param('eventId') eventId: string,
+  ): Promise<GetEventDetailsDTO> {
+    const event = await this.eventService.getEventById(eventId);
+    return await this.utilsService.transformEventDBtoGetEventDetailsDTO(event);
   }
 
   @ApiResponse({
