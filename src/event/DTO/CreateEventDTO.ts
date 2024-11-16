@@ -54,7 +54,7 @@ export class CreateEventDTO {
       'Kommen Sie zu unserem spannenden und interaktiven Coding-Workshop!',
   })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @Matches(/\S/, { message: 'Description cannot contain only whitespace' })
   description: string;
 
@@ -138,7 +138,7 @@ export class CreateEventDTO {
     example: [1, 2],
   })
   @IsArray()
-  @ArrayNotEmpty()
+  @IsOptional()
   @IsNumber({}, { each: true })
   preferredGenders: number[];
 
