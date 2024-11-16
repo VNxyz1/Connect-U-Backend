@@ -10,11 +10,11 @@ import { EventtypeEnum } from '../database/enums/EventtypeEnum';
 export class RequestService {
   constructor(
     @InjectRepository(RequestDB)
-    private requestRepository: Repository<RequestDB>,
+    private readonly requestRepository: Repository<RequestDB>,
     @InjectRepository(EventDB)
-    private eventRepository: Repository<EventDB>,
+    private readonly eventRepository: Repository<EventDB>,
     @InjectRepository(UserDB)
-    private userRepository: Repository<UserDB>,
+    private readonly userRepository: Repository<UserDB>,
   ) {}
 
   async postJoinRequest(eventId: string, userId: string) {
