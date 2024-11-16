@@ -127,8 +127,8 @@ export class EventController {
     @Param('eventId') eventId: string,
   ): Promise<OkDTO> {
     const event: EventDB = await this.eventService.getEventById(eventId);
-    if ( event.type != EventtypeEnum.public) {
-      throw new BadRequestException('Event has to be public')
+    if (event.type != EventtypeEnum.public) {
+      throw new BadRequestException('Event has to be public');
     }
     await this.eventService.addUserToEvent(user, eventId);
     return new OkDTO(true, 'user was added to participant list');
