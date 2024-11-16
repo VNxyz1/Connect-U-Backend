@@ -109,6 +109,16 @@ export class EventService {
     return events;
   }
 
+  /**
+   * Adds a user as a participant to a specific event.
+   * @param user - The user to be added to the event.
+   * @param eventId - The ID of the event to which the user is being added.
+   *
+   * @returns The updated event after the user has been added as a participant.
+   *
+   * @throws NotFoundException If the event with the given `eventId` does not exist.
+   * @throws BadRequestException If the user is the host of the event or is already a participant in the event.
+   */
   async addUserToEvent(user: UserDB, eventId: string): Promise<EventDB> {
     const event = await this.eventRepository.findOne({
       where: { id: eventId },

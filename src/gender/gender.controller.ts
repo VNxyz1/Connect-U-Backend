@@ -1,5 +1,5 @@
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { BadRequestException, Controller, Get } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { UtilsService } from '../utils/utils.service';
 import { GetGenderDTO } from './DTO/GetGenderDTO';
 import { GenderService } from './gender.service';
@@ -18,15 +18,11 @@ export class GenderController {
   })
   @Get('/all')
   async getAllCategories() {
-    try {
       const genders = await this.genderService.getGenders();
       return await Promise.all(
         genders.map(async (gender) => {
           return this.utilsService.transformGenderDBtoGetGenderDTO(gender);
         }),
       );
-    } catch (err) {
-      throw new BadRequestException('An error occurred: ' + err.message);
-    }
   }
 }

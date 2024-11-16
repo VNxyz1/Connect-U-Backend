@@ -5,7 +5,8 @@ import {
   Controller,
   Get,
   HttpCode,
-  HttpStatus, NotFoundException, Param,
+  HttpStatus,
+  Param,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -111,13 +112,6 @@ export class EventController {
     );
   }
 
-  /**
-   * Adds the current user to an event's participants list.
-   *
-   * @param user - The logged-in user.
-   * @param eventId - The ID of the event to join.
-   * @returns {Promise<EventDB>} - The updated event.
-   */
   @ApiResponse({
     type: OkDTO,
     description: 'Adds the user to the event participants list',
@@ -130,17 +124,7 @@ export class EventController {
     @User() user: UserDB,
     @Param('eventId') eventId: string,
   ): Promise<OkDTO> {
-    try {
        await this.eventService.addUserToEvent(user, eventId);
-      return new OkDTO(true, 'Event was created');
-    } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw new NotFoundException(error.message);
-      }
-      if (error instanceof BadRequestException) {
-        throw new BadRequestException(error.message);
-      }
-      throw error;
-    }
+      return new OkDTO(true, 'user was added to participant list');
   }
 }

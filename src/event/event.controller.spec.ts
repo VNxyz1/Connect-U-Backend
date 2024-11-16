@@ -125,7 +125,7 @@ describe('EventController', () => {
         .expect(HttpStatus.OK)
         .expect((response) => {
           expect(Array.isArray(response.body)).toBe(true);
-          response.body.forEach((event) => {
+          response.body.forEach((event: any) => {
             expect(event).toHaveProperty('id');
             expect(event).toHaveProperty('title');
             expect(event).toHaveProperty('dateAndTime');
@@ -245,7 +245,7 @@ describe('EventController', () => {
         .expect((response) => {
           expect(Array.isArray(response.body)).toBe(true);
           expect(response.body.length).toBeGreaterThan(0);
-          response.body.forEach((event) => {
+          response.body.forEach((event: any) => {
             expect(event).toHaveProperty('id');
             expect(event).toHaveProperty('title');
             expect(event).toHaveProperty('dateAndTime');
@@ -290,7 +290,7 @@ describe('EventController', () => {
         .expect((response) => {
           expect(Array.isArray(response.body)).toBe(true);
           expect(response.body.length).toBeGreaterThan(0);
-          response.body.forEach((event) => {
+          response.body.forEach((event: any) => {
             expect(event).toHaveProperty('id');
             expect(event).toHaveProperty('title');
             expect(event).toHaveProperty('dateAndTime');

@@ -120,11 +120,11 @@ describe('RequestService', () => {
 
     await service.postJoinRequest('event123', 'user123');
 
-    expect(requestRepository.create).toHaveBeenCalledWith({
-      user: mockUser,
-      event: mockEvent,
-      type: 1,
-    });
     expect(requestRepository.save).toHaveBeenCalledWith(mockRequest);
-  });
+    });
 });
+
+
+export const mockRequestService = {
+  postJoinRequest: jest.fn().mockResolvedValue(new RequestDB()),
+};

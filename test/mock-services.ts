@@ -10,6 +10,8 @@ import { CategoryService } from '../src/category/category.service';
 import { mockCategoryService } from '../src/category/category.service.spec';
 import { GenderService } from '../src/gender/gender.service';
 import { mockGenderService } from '../src/gender/gender.service.spec';
+import { RequestService } from '../src/request/request.service';
+import { mockRequestService } from '../src/request/request.service.spec';
 
 export const mockProviders = [
   {
@@ -47,5 +49,9 @@ export const mockProviders = [
   {
     provide: GenderService,
     useValue: mockGenderService,
+  },
+  {
+    provide: RequestService,
+    useValue: mockRequestService,
   },
 ];

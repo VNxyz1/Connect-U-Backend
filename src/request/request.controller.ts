@@ -1,4 +1,4 @@
-import { Controller, Post, Param, UseGuards, HttpCode, HttpStatus, NotFoundException } from '@nestjs/common';
+import { Controller, Post, Param, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RequestService } from './request.service';
 import { AuthGuard } from '../auth/auth.guard';
@@ -24,15 +24,7 @@ export class RequestController {
     @Param('eventId') eventId: string,
     @User() user: UserDB
   ) {
-    try {
       await this.requestService.postJoinRequest(eventId, user.id);
       return new OkDTO(true, 'Request was sent')
-    } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw new NotFoundException(error.message);
-      } else {
-        throw error;
-      }
-    }
   }
 }

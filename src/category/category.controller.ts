@@ -18,7 +18,6 @@ export class CategoryController {
   })
   @Get('/all')
   async getAllCategories() {
-    try {
       const categories = await this.categoryService.getCategories();
       return await Promise.all(
         categories.map(async (category) => {
@@ -27,8 +26,5 @@ export class CategoryController {
           );
         }),
       );
-    } catch (err) {
-      throw new BadRequestException('An error occurred: ' + err.message);
-    }
   }
 }
