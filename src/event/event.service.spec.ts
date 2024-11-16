@@ -330,7 +330,10 @@ describe('EventService', () => {
   describe('addUserToEvent', () => {
     it('should add user to event successfully', async () => {
       mockEventRepository.findOne.mockResolvedValue(mockEventList[1]);
-      mockEventRepository.save.mockResolvedValue({ ...mockEventList[1], participants: [participantUser] });
+      mockEventRepository.save.mockResolvedValue({
+        ...mockEventList[1],
+        participants: [participantUser],
+      });
 
       const result = await service.addUserToEvent(participantUser, '2');
 
@@ -367,7 +370,9 @@ describe('EventService', () => {
         participants: [participantUser],
       });
 
-      await expect(service.addUserToEvent(participantUser, 'event1')).rejects.toThrow(
+      await expect(
+        service.addUserToEvent(participantUser, 'event1'),
+      ).rejects.toThrow(
         new BadRequestException('User is already a participant in this event'),
       );
     });
