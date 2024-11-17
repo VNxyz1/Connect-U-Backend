@@ -140,7 +140,7 @@ export class CreateEventDTO {
   @IsArray()
   @IsOptional()
   @IsNumber({}, { each: true })
-  preferredGenders: number[];
+  preferredGenders: number[] = [];
 
   @ApiProperty({
     description: 'Mindestalter für die Teilnehmer',
