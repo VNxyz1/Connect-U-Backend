@@ -26,7 +26,10 @@ export class UtilsService {
     const today = new Date();
     let age = today.getFullYear() - birthday.getFullYear();
     const monthDifference = today.getMonth() - birthday.getMonth();
-    if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthday.getDate())) {
+    if (
+      monthDifference < 0 ||
+      (monthDifference === 0 && today.getDate() < birthday.getDate())
+    ) {
       age--;
     }
     return age <= maxAge;
@@ -54,9 +57,9 @@ export class UtilsService {
         this.validateUserAge(birthday, event.startAge) &&
         this.validateUserAgeMax(birthday, event.endAge);
       if (!isAgeValid) {
-          throw new BadRequestException(
-            'You do not meet the age requirements for this event.',
-          );
+        throw new BadRequestException(
+          'You do not meet the age requirements for this event.',
+        );
       }
     }
     if (event.preferredGenders && event.preferredGenders.length > 0) {
