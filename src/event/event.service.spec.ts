@@ -258,8 +258,6 @@ describe('EventService', () => {
   });
 
   describe('EventService - getEventById', () => {
-
-
     it('should return an event by its ID', async () => {
       const eventId = '1';
       const mockEvent = mockEventList.find((event) => event.id === eventId);
@@ -288,7 +286,6 @@ describe('EventService', () => {
       });
     });
   });
-
 
   it('should get all events', async () => {
     mockEventRepository.find.mockResolvedValue(mockEventList);

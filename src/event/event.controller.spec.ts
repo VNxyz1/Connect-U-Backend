@@ -21,6 +21,7 @@ import { GenderEnum } from '../database/enums/GenderEnum';
 import { UserDB } from '../database/UserDB';
 import { EventDB } from '../database/EventDB';
 import { StatusEnum } from '../database/enums/StatusEnum';
+import { GetEventDetailsDTO } from './DTO/GetEventDetailsDTO';
 
 describe('EventController', () => {
   let app: INestApplication;
@@ -117,6 +118,78 @@ describe('EventController', () => {
           'The start age must be lesser then the end age.',
         );
       });
+  });
+
+  describe('EventController - getEventById', () => {
+    it('/GET eventDetails/:eventId should return event details for a valid ID', async () => {
+      jest
+        .spyOn(app.get(EventController).eventService, 'getEventById')
+        .mockResolvedValue(MockPrivateEvent);
+
+      return agent
+        .get(`/event/eventDetails/${MockPrivateEvent.id}`)
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.OK)
+        .expect((response) => {
+          expect(response.body).toEqual(MockEventDetailsDTO);
+          expect(response.body).toHaveProperty('id', MockEventDetailsDTO.id);
+          expect(response.body).toHaveProperty(
+            'title',
+            MockEventDetailsDTO.title,
+          );
+          expect(response.body).toHaveProperty(
+            'dateAndTime',
+            MockEventDetailsDTO.dateAndTime,
+          );
+        });
+    });
+
+    it('/GET eventDetails/:eventId should return event details for a valid ID, and not show address when showAddress is false', async () => {
+      const eventWithHiddenAddress = {
+        ...MockPrivateEvent,
+        showAddress: false,
+      };
+      jest
+        .spyOn(app.get(EventController).eventService, 'getEventById')
+        .mockResolvedValue(eventWithHiddenAddress);
+
+      return agent
+        .get(`/event/eventDetails/${eventWithHiddenAddress.id}`)
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.OK)
+        .expect((response) => {
+          expect(response.body).toEqual(MockEventDetailsWOAddress);
+          expect(response.body).toHaveProperty('id', MockEventDetailsDTO.id);
+          expect(response.body).toHaveProperty(
+            'title',
+            MockEventDetailsDTO.title,
+          );
+          expect(response.body).toHaveProperty(
+            'dateAndTime',
+            MockEventDetailsDTO.dateAndTime,
+          );
+          // Ensure address is not included when showAddress is false
+          expect(response.body).not.toHaveProperty('address');
+        });
+    });
+
+    it('/GET eventDetails/:eventId should return 404 for an invalid ID', async () => {
+      const tokens = await mockAuthService.signIn();
+      const invalidEventId = '999';
+
+      jest
+        .spyOn(app.get(EventController).eventService, 'getEventById')
+        .mockRejectedValue(new NotFoundException('Event not found'));
+
+      return agent
+        .get(`/event/eventDetails/${invalidEventId}`)
+        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.NOT_FOUND)
+        .expect((response) => {
+          expect(response.body.message).toBe('Event not found');
+        });
+    });
   });
 
   describe('EventController - getAllEvents', () => {
@@ -426,7 +499,7 @@ const MockPublicEvent: EventDB = {
   host: mockUser,
   type: EventtypeEnum.public,
   isOnline: false,
-  showAddress: true,
+  showAddress: false,
   streetNumber: '456',
   street: 'Tech Ave',
   zipCode: '67890',
@@ -475,6 +548,46 @@ const MockPrivateEvent: EventDB = {
   memories: [],
   tags: [],
   messages: [],
+};
+
+const MockEventDetailsDTO: GetEventDetailsDTO = {
+  id: '1',
+  categories: [],
+  preferredGenders: [],
+  dateAndTime: '2024-12-01T10:00:00',
+  title: 'Tech Conference 2024',
+  description: 'A conference for tech enthusiasts.',
+  picture: '',
+  status: StatusEnum.upcoming,
+  type: EventtypeEnum.private,
+  isOnline: false,
+  streetNumber: '456',
+  street: 'Tech Ave',
+  zipCode: '67890',
+  city: 'Tech City',
+  participantsNumber: 0,
+  maxParticipantsNumber: 100,
+  startAge: null,
+  endAge: null,
+};
+
+const MockEventDetailsWOAddress: GetEventDetailsDTO = {
+  id: '1',
+  categories: [],
+  preferredGenders: [],
+  dateAndTime: '2024-12-01T10:00:00',
+  title: 'Tech Conference 2024',
+  description: 'A conference for tech enthusiasts.',
+  picture: '',
+  status: StatusEnum.upcoming,
+  type: EventtypeEnum.private,
+  isOnline: false,
+  zipCode: '67890',
+  city: 'Tech City',
+  participantsNumber: 0,
+  maxParticipantsNumber: 100,
+  startAge: null,
+  endAge: null,
 };
 
 const mockAuthPayload: AuthTokenPayload = {
