@@ -35,9 +35,7 @@ export class UtilsService {
     return dto;
   }
 
-  transformGenderDBtoGetGenderDTO(
-    gender: GenderDB,
-  ): GetGenderDTO {
+  transformGenderDBtoGetGenderDTO(gender: GenderDB): GetGenderDTO {
     const dto = new GetGenderDTO();
     dto.id = gender.id;
     dto.gender = gender.gender;
@@ -91,7 +89,9 @@ export class UtilsService {
     dto.startAge = event.startAge || null;
     dto.endAge = event.endAge || null;
     const preferredGenders = event.preferredGenders;
-    dto.preferredGenders = preferredGenders.map(this.transformGenderDBtoGetGenderDTO);
+    dto.preferredGenders = preferredGenders.map(
+      this.transformGenderDBtoGetGenderDTO,
+    );
 
     return dto;
   }

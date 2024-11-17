@@ -257,6 +257,39 @@ describe('EventService', () => {
     ).rejects.toThrowError('Error saving event');
   });
 
+  describe('EventService - getEventById', () => {
+
+
+    it('should return an event by its ID', async () => {
+      const eventId = '1';
+      const mockEvent = mockEventList.find((event) => event.id === eventId);
+      mockEventRepository.findOne.mockResolvedValue(mockEvent);
+
+      const result = await service.getEventById(eventId);
+
+      expect(mockEventRepository.findOne).toHaveBeenCalledWith({
+        where: { id: eventId },
+        relations: ['categories', 'participants', 'preferredGenders'],
+      });
+      expect(result).toEqual(mockEvent);
+    });
+
+    it('should throw a NotFoundException if the event is not found', async () => {
+      const eventId = 'nonexistent-id';
+      mockEventRepository.findOne.mockResolvedValue(null);
+
+      await expect(service.getEventById(eventId)).rejects.toThrow(
+        new NotFoundException(`Event with ID ${eventId} not found`),
+      );
+
+      expect(mockEventRepository.findOne).toHaveBeenCalledWith({
+        where: { id: eventId },
+        relations: ['categories', 'participants', 'preferredGenders'],
+      });
+    });
+  });
+
+
   it('should get all events', async () => {
     mockEventRepository.find.mockResolvedValue(mockEventList);
 
