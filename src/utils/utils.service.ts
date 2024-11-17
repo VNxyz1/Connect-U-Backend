@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CategoryDB } from '../database/CategoryDB';
 import { GetCategoryDTO } from '../category/DTO/GetCategoryDTO';
 import { GenderDB } from '../database/GenderDB';
 import { GetGenderDTO } from '../gender/DTO/GetGenderDTO';
 import { EventDB } from '../database/EventDB';
 import { GetEventCardDTO } from '../event/DTO/GetEventCardDTO';
+import { UserDB } from '../database/UserDB';
 
 @Injectable()
 export class UtilsService {
@@ -25,6 +26,33 @@ export class UtilsService {
     const eventDate = new Date(dateISOString);
     const now = new Date();
     return eventDate > now;
+  }
+
+  /**
+   * Checks if a user is allowed to join an event.
+   * @param user - The user attempting to join the event.
+   * @param event - The event the user wants to join.
+   * @returns {boolean} - True if the user meets the age and gender requirements, otherwise false.
+   */
+  async isUserAllowedToJoinEvent(user: UserDB, event: EventDB): Promise<boolean> {
+    const birthday = new Date(user.birthday);
+    const isAgeValid = this.validateUserAge(birthday, event.startAge) &&
+      this.validateUserAge(birthday, event.endAge);
+    if (!isAgeValid) {
+      if (!isAgeValid) {
+        throw new BadRequestException('You do not meet the age requirements for this event.');
+      }
+    }
+    if (event.preferredGenders && event.preferredGenders.length > 0) {
+      const isGenderValid = event.preferredGenders.some(
+        (gender: GenderDB) => gender.gender === user.gender
+      );
+      if (!isGenderValid) {
+        throw new BadRequestException('Your gender does not match the preferred genders for this event.');
+      }
+    }
+
+    return true;
   }
 
   transformCategoryDBtoGetCategoryDTO(category: CategoryDB): GetCategoryDTO {

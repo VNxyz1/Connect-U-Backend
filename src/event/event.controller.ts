@@ -130,6 +130,8 @@ export class EventController {
     if (event.type != EventtypeEnum.public) {
       throw new BadRequestException('Event has to be public');
     }
+    await this.utilsService.isUserAllowedToJoinEvent(user, event);
+
     await this.eventService.addUserToEvent(user, eventId);
     return new OkDTO(true, 'user was added to participant list');
   }
