@@ -55,7 +55,6 @@ export class CreateEventDTO {
   })
   @IsString()
   @IsOptional()
-  @Matches(/\S/, { message: 'Description cannot contain only whitespace' })
   description: string;
 
   @ApiProperty({
