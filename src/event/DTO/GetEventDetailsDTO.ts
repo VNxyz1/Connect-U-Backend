@@ -11,21 +11,21 @@ import {
 import { StatusEnum } from '../../database/enums/StatusEnum';
 import { GetCategoryDTO } from '../../category/DTO/GetCategoryDTO';
 import { Type } from 'class-transformer';
+import { GetGenderDTO } from '../../gender/DTO/GetGenderDTO';
 
 export class GetEventDetailsDTO {
   @ApiProperty({ description: 'The ID of the event', example: '1' })
   id: string;
 
-  @ApiProperty({
-    description: 'The user hosting the event',
-    example: { id: '123', name: 'John Doe' },
-  })
-  host: Record<string, any>;
-
   @ApiProperty({ type: [GetCategoryDTO] })
   @ValidateNested({ each: true })
   @Type(() => GetCategoryDTO)
   categories: GetCategoryDTO[];
+
+  @ApiProperty({ type: [GetGenderDTO] })
+  @ValidateNested({ each: true })
+  @Type(() => GetGenderDTO)
+  preferredGenders: GetGenderDTO[];
 
   @ApiProperty({
     description: 'Date and time of the event',
@@ -78,13 +78,6 @@ export class GetEventDetailsDTO {
   })
   @IsBoolean()
   isOnline: boolean;
-
-  @ApiProperty({
-    description: 'Whether to show the address publicly',
-    example: true,
-  })
-  @IsBoolean()
-  showAddress: boolean;
 
   @ApiProperty({
     description: 'Street number of the event location',
@@ -141,17 +134,4 @@ export class GetEventDetailsDTO {
   })
   @IsNumber()
   endAge?: number;
-
-  @ApiProperty({
-    description: 'Preferred genders for the event',
-    example: ['Male', 'Female'],
-  })
-  preferredGenders: string[];
-
-  @ApiProperty({
-    description: 'Participants of the event',
-    example: [{ id: '1', name: 'Jane Doe' }],
-  })
-  participants: Record<string, any>[];
-
 }

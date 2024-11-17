@@ -35,9 +35,9 @@ export class UtilsService {
     return dto;
   }
 
-  async transformGenderDBtoGetGenderDTO(
+  transformGenderDBtoGetGenderDTO(
     gender: GenderDB,
-  ): Promise<GetGenderDTO> {
+  ): GetGenderDTO {
     const dto = new GetGenderDTO();
     dto.id = gender.id;
     dto.gender = gender.gender;
@@ -49,7 +49,7 @@ export class UtilsService {
   ): Promise<GetEventCardDTO> {
     const dto = new GetEventCardDTO();
     dto.id = event.id;
-    const categories = await event.categories;
+    const categories = event.categories;
     dto.categories = categories.map(this.transformCategoryDBtoGetCategoryDTO);
     dto.dateAndTime = event.dateAndTime;
     dto.title = event.title;
@@ -58,7 +58,7 @@ export class UtilsService {
     dto.type = event.type;
     dto.isOnline = event.isOnline;
     dto.city = event.city;
-    const participants = await event.participants;
+    const participants = event.participants;
     dto.participantsNumber = participants.length;
     dto.maxParticipantsNumber = event.participantsNumber;
 
@@ -70,18 +70,28 @@ export class UtilsService {
   ): Promise<GetEventDetailsDTO> {
     const dto = new GetEventDetailsDTO();
     dto.id = event.id;
-    const categories = await event.categories;
-    dto.categories = categories.map(this.transformCategoryDBtoGetCategoryDTO);
     dto.dateAndTime = event.dateAndTime;
     dto.title = event.title;
+    dto.description = event.description;
     dto.picture = event.picture;
     dto.status = event.status;
     dto.type = event.type;
     dto.isOnline = event.isOnline;
-    dto.city = event.city;
-    const participants = await event.participants;
+    if (event.showAddress) {
+      dto.streetNumber = event.streetNumber || null;
+      dto.street = event.street || null;
+    }
+    dto.zipCode = event.zipCode || null;
+    dto.city = event.city || null;
+    const categories = event.categories;
+    dto.categories = categories.map(this.transformCategoryDBtoGetCategoryDTO);
+    const participants = event.participants;
     dto.participantsNumber = participants.length;
     dto.maxParticipantsNumber = event.participantsNumber;
+    dto.startAge = event.startAge || null;
+    dto.endAge = event.endAge || null;
+    const preferredGenders = event.preferredGenders;
+    dto.preferredGenders = preferredGenders.map(this.transformGenderDBtoGetGenderDTO);
 
     return dto;
   }
