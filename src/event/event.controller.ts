@@ -67,7 +67,7 @@ export class EventController {
 
   @ApiResponse({
     type: GetEventDetailsDTO,
-    description: 'gets all events',
+    description: 'gets an event by its ID',
   })
   @Get('/eventDetails/:eventId')
   async getEventById(
