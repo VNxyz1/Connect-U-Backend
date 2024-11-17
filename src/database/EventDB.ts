@@ -17,6 +17,7 @@ import { ListDB } from './ListDB';
 import { TagDB } from './TagDB';
 import { CategoryDB } from './CategoryDB';
 import { MessageDB } from './MessageDB';
+import { SurveyDB } from './SurveyDB';
 
 @Entity()
 export class EventDB {
@@ -35,13 +36,13 @@ export class EventDB {
   @Column()
   title: string;
 
-  @Column({ nullable: true })
+  @Column({ default: '' })
   description: string;
 
   @Column({ default: 0 })
   type: EventtypeEnum;
 
-  @Column({ default: 'empty.png' })
+  @Column({ default: '' })
   picture: string;
 
   @Column({ default: false })
@@ -82,6 +83,9 @@ export class EventDB {
 
   @OneToMany(() => ListDB, (list) => list.event)
   lists: ListDB[];
+
+  @OneToMany(() => SurveyDB, (survey) => survey.event)
+  surveys: SurveyDB[];
 
   @ManyToMany(() => UserDB, (user) => user.favoritedEvents)
   favorited: UserDB[];
