@@ -18,7 +18,11 @@ import { UtilsService } from '../utils/utils.service';
 @ApiTags('request')
 @Controller('request')
 export class RequestController {
-  constructor(private readonly requestService: RequestService,  private readonly utilsService: UtilsService,  private readonly eventService: EventService) {}
+  constructor(
+    private readonly requestService: RequestService,
+    private readonly utilsService: UtilsService,
+    private readonly eventService: EventService,
+  ) {}
 
   @ApiResponse({
     type: OkDTO,
