@@ -23,6 +23,7 @@ import { GetEventCardDTO } from './DTO/GetEventCardDTO';
 import { EventDB } from '../database/EventDB';
 import { EventtypeEnum } from '../database/enums/EventtypeEnum';
 import { CreateEventResDTO } from './DTO/CreateEventResDTO';
+import { GetEventDetailsDTO } from './DTO/GetEventDetailsDTO';
 
 @ApiTags('event')
 @Controller('event')
@@ -69,6 +70,18 @@ export class EventController {
       body,
     );
     return new CreateEventResDTO(true, 'Event was created', newEvent.id);
+  }
+
+  @ApiResponse({
+    type: GetEventDetailsDTO,
+    description: 'gets an event by its ID',
+  })
+  @Get('/eventDetails/:eventId')
+  async getEventById(
+    @Param('eventId') eventId: string,
+  ): Promise<GetEventDetailsDTO> {
+    const event = await this.eventService.getEventById(eventId);
+    return await this.utilsService.transformEventDBtoGetEventDetailsDTO(event);
   }
 
   @ApiResponse({
