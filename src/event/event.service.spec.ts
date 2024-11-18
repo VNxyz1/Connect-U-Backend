@@ -9,13 +9,14 @@ import { UserDB } from '../database/UserDB';
 import { CreateEventDTO } from './DTO/CreateEventDTO';
 import { EventtypeEnum } from '../database/enums/EventtypeEnum';
 import { GenderEnum } from '../database/enums/GenderEnum';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { StatusEnum } from '../database/enums/StatusEnum';
 
 const mockEventRepository = {
   create: jest.fn(),
   save: jest.fn(),
   find: jest.fn(),
+  findOne: jest.fn(),
   createQueryBuilder: jest.fn(() => ({
     leftJoinAndSelect: jest.fn().mockReturnThis(),
     where: jest.fn().mockReturnThis(),
@@ -325,12 +326,65 @@ describe('EventService', () => {
       );
     });
   });
+
+  describe('addUserToEvent', () => {
+    it('should add user to event successfully', async () => {
+      mockEventRepository.findOne.mockResolvedValue(mockEventList[1]);
+      mockEventRepository.save.mockResolvedValue({
+        ...mockEventList[1],
+        participants: [participantUser],
+      });
+
+      const result = await service.addUserToEvent(participantUser, '2');
+
+      expect(mockEventRepository.findOne).toHaveBeenCalledWith({
+        where: { id: '2' },
+        relations: ['participants', 'host'],
+      });
+      expect(mockEventRepository.save).toHaveBeenCalledWith({
+        ...mockEventList[1],
+        participants: [participantUser],
+      });
+      expect(result.participants).toContain(participantUser);
+    });
+
+    it('should throw NotFoundException if event is not found', async () => {
+      mockEventRepository.findOne.mockResolvedValue(null);
+
+      await expect(service.addUserToEvent(mockUser, 'event1')).rejects.toThrow(
+        new NotFoundException('Event with ID event1 not found'),
+      );
+    });
+
+    it('should throw BadRequestException if user is the host of the event', async () => {
+      mockEventRepository.findOne.mockResolvedValue(mockEventList[1]);
+
+      await expect(service.addUserToEvent(mockUser, 'event1')).rejects.toThrow(
+        new BadRequestException('user is the host of this event'),
+      );
+    });
+
+    it('should throw BadRequestException if user is already a participant', async () => {
+      mockEventRepository.findOne.mockResolvedValue({
+        ...mockEventList[1],
+        participants: [participantUser],
+      });
+
+      await expect(
+        service.addUserToEvent(participantUser, 'event1'),
+      ).rejects.toThrow(
+        new BadRequestException('User is already a participant in this event'),
+      );
+    });
+  });
 });
 
 export const mockEventService = {
   findById: jest.fn().mockResolvedValue(mockCreateEventDTO[1]),
   createEvent: jest.fn().mockResolvedValue(new EventDB()),
+  getEventById: jest.fn().mockResolvedValue(new EventDB()),
   getAllEvents: jest.fn().mockResolvedValue(mockEventList),
   getHostingEvents: jest.fn().mockResolvedValue(mockEventList),
   getParticipatingEvents: jest.fn().mockResolvedValue(mockEventList),
+  addUserToEvent: jest.fn().mockResolvedValue(new EventDB()),
 };

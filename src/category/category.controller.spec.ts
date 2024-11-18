@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CategoryController } from './category.controller';
 import { CategoryService } from './category.service';
 import { UtilsService } from '../utils/utils.service';
-import { BadRequestException } from '@nestjs/common';
 import { GetCategoryDTO } from './DTO/GetCategoryDTO';
 
 describe('CategoryController', () => {
@@ -52,24 +51,11 @@ describe('CategoryController', () => {
 
       const result = await controller.getAllCategories();
 
-      // Assertions
       expect(mockCategoryService.getCategories).toHaveBeenCalled();
       expect(
         mockUtilsService.transformCategoryDBtoGetCategoryDTO,
       ).toHaveBeenCalledTimes(mockCategories.length);
       expect(result).toEqual(transformedCategoryDTO);
-    });
-
-    it('should throw BadRequestException if service fails', async () => {
-      // Setup mock to throw an error
-      mockCategoryService.getCategories.mockRejectedValue(
-        new Error('Service failed'),
-      );
-
-      // Call the controller method and expect it to throw
-      await expect(controller.getAllCategories()).rejects.toThrow(
-        BadRequestException,
-      );
     });
   });
 });

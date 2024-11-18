@@ -6,6 +6,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Param,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -19,6 +20,8 @@ import { AuthGuard } from '../auth/auth.guard';
 import { User } from '../utils/user.decorator';
 import { UserDB } from '../database/UserDB';
 import { GetEventCardDTO } from './DTO/GetEventCardDTO';
+import { EventDB } from '../database/EventDB';
+import { EventtypeEnum } from '../database/enums/EventtypeEnum';
 
 @ApiTags('event')
 @Controller('event')
@@ -110,5 +113,27 @@ export class EventController {
         return this.utilsService.transformEventDBtoGetEventCardDTO(event);
       }),
     );
+  }
+
+  @ApiResponse({
+    type: OkDTO,
+    description: 'Adds the user to the event participants list',
+    status: HttpStatus.CREATED,
+  })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard)
+  @Post('/join/:eventId')
+  async addUserToEvent(
+    @User() user: UserDB,
+    @Param('eventId') eventId: string,
+  ): Promise<OkDTO> {
+    const event: EventDB = await this.eventService.getEventById(eventId);
+    if (event.type != EventtypeEnum.public) {
+      throw new BadRequestException('Event has to be public');
+    }
+    await this.utilsService.isUserAllowedToJoinEvent(user, event);
+
+    await this.eventService.addUserToEvent(user, eventId);
+    return new OkDTO(true, 'user was added to participant list');
   }
 }
