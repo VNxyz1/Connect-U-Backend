@@ -22,6 +22,7 @@ import { UserDB } from '../database/UserDB';
 import { GetEventCardDTO } from './DTO/GetEventCardDTO';
 import { EventDB } from '../database/EventDB';
 import { EventtypeEnum } from '../database/enums/EventtypeEnum';
+import { CreateEventResDTO } from './DTO/CreateEventResDTO';
 
 @ApiTags('event')
 @Controller('event')
@@ -34,7 +35,7 @@ export class EventController {
   ) {}
 
   @ApiResponse({
-    type: OkDTO,
+    type: CreateEventResDTO,
     description: 'Creates a new event',
     status: HttpStatus.CREATED,
   })
@@ -61,8 +62,13 @@ export class EventController {
       throw new BadRequestException('Event Date must be in the future');
     }
 
-    await this.eventService.createEvent(user, categories, genders, body);
-    return new OkDTO(true, 'Event was created');
+    const newEvent = await this.eventService.createEvent(
+      user,
+      categories,
+      genders,
+      body,
+    );
+    return new CreateEventResDTO(true, 'Event was created', newEvent.id);
   }
 
   @ApiResponse({
