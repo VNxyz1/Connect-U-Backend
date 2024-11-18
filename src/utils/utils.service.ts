@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CategoryDB } from '../database/CategoryDB';
 import { GetCategoryDTO } from '../category/DTO/GetCategoryDTO';
 import { GenderDB } from '../database/GenderDB';
@@ -6,6 +6,7 @@ import { GetGenderDTO } from '../gender/DTO/GetGenderDTO';
 import { EventDB } from '../database/EventDB';
 import { GetEventCardDTO } from '../event/DTO/GetEventCardDTO';
 import { GetEventDetailsDTO } from '../event/DTO/GetEventDetailsDTO';
+import { UserDB } from '../database/UserDB';
 
 @Injectable()
 export class UtilsService {
@@ -22,10 +23,58 @@ export class UtilsService {
     return age >= minAge;
   }
 
+  validateUserAgeMax(birthday: Date, maxAge: number): boolean {
+    const today = new Date();
+    let age = today.getFullYear() - birthday.getFullYear();
+    const monthDifference = today.getMonth() - birthday.getMonth();
+    if (
+      monthDifference < 0 ||
+      (monthDifference === 0 && today.getDate() < birthday.getDate())
+    ) {
+      age--;
+    }
+    return age <= maxAge;
+  }
+
   isFutureDate(dateISOString: string): boolean {
     const eventDate = new Date(dateISOString);
     const now = new Date();
     return eventDate > now;
+  }
+
+  /**
+   * Checks if a user is allowed to join an event.
+   * @param user - The user attempting to join the event.
+   * @param event - The event the user wants to join.
+   * @returns {boolean} - True if the user meets the age and gender requirements, otherwise false.
+   */
+  async isUserAllowedToJoinEvent(
+    user: UserDB,
+    event: EventDB,
+  ): Promise<boolean> {
+    if (event.startAge || event.endAge) {
+      const birthday = new Date(user.birthday);
+      const isAgeValid =
+        this.validateUserAge(birthday, event.startAge) &&
+        this.validateUserAgeMax(birthday, event.endAge);
+      if (!isAgeValid) {
+        throw new BadRequestException(
+          'You do not meet the age requirements for this event.',
+        );
+      }
+    }
+    if (event.preferredGenders && event.preferredGenders.length > 0) {
+      const isGenderValid = event.preferredGenders.some(
+        (gender: GenderDB) => gender.gender === user.gender,
+      );
+      if (!isGenderValid) {
+        throw new BadRequestException(
+          'Your gender does not match the preferred genders for this event.',
+        );
+      }
+    }
+
+    return true;
   }
 
   transformCategoryDBtoGetCategoryDTO(category: CategoryDB): GetCategoryDTO {

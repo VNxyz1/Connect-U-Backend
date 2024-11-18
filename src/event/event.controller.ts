@@ -47,9 +47,10 @@ export class EventController {
     const categories = await this.categoryService.getCategoriesByIds(
       body.categories,
     );
-    const genders = await this.genderService.getGendersByIds(
-      body.preferredGenders,
-    );
+    const genders =
+      body.preferredGenders && body.preferredGenders.length > 0
+        ? await this.genderService.getGendersByIds(body.preferredGenders)
+        : [];
 
     if (body.startAge > body.endAge) {
       throw new BadRequestException(
@@ -143,6 +144,8 @@ export class EventController {
     if (event.type != EventtypeEnum.public) {
       throw new BadRequestException('Event has to be public');
     }
+    await this.utilsService.isUserAllowedToJoinEvent(user, event);
+
     await this.eventService.addUserToEvent(user, eventId);
     return new OkDTO(true, 'user was added to participant list');
   }

@@ -12,11 +12,17 @@ import { AuthGuard } from '../auth/auth.guard';
 import { User } from '../utils/user.decorator';
 import { UserDB } from '../database/UserDB';
 import { OkDTO } from '../serverDTO/OkDTO';
+import { EventService } from '../event/event.service';
+import { UtilsService } from '../utils/utils.service';
 
 @ApiTags('request')
 @Controller('request')
 export class RequestController {
-  constructor(private readonly requestService: RequestService) {}
+  constructor(
+    private readonly requestService: RequestService,
+    private readonly utilsService: UtilsService,
+    private readonly eventService: EventService,
+  ) {}
 
   @ApiResponse({
     type: OkDTO,
@@ -31,6 +37,10 @@ export class RequestController {
     @Param('eventId') eventId: string,
     @User() user: UserDB,
   ) {
+    const event = await this.eventService.getEventById(eventId);
+
+    await this.utilsService.isUserAllowedToJoinEvent(user, event);
+
     await this.requestService.postJoinRequest(eventId, user.id);
     return new OkDTO(true, 'Request was sent');
   }
