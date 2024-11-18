@@ -55,7 +55,6 @@ export class CreateEventDTO {
   })
   @IsString()
   @IsOptional()
-  @Matches(/\S/, { message: 'Description cannot contain only whitespace' })
   description: string;
 
   @ApiProperty({
@@ -140,7 +139,7 @@ export class CreateEventDTO {
   @IsArray()
   @IsOptional()
   @IsNumber({}, { each: true })
-  preferredGenders: number[];
+  preferredGenders: number[] = [];
 
   @ApiProperty({
     description: 'Mindestalter für die Teilnehmer',

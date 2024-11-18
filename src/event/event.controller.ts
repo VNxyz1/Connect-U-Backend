@@ -46,9 +46,10 @@ export class EventController {
     const categories = await this.categoryService.getCategoriesByIds(
       body.categories,
     );
-    const genders = await this.genderService.getGendersByIds(
-      body.preferredGenders,
-    );
+    const genders =
+      body.preferredGenders && body.preferredGenders.length > 0
+        ? await this.genderService.getGendersByIds(body.preferredGenders)
+        : [];
 
     if (body.startAge > body.endAge) {
       throw new BadRequestException(
