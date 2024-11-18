@@ -5,6 +5,7 @@ import { GenderDB } from '../database/GenderDB';
 import { GetGenderDTO } from '../gender/DTO/GetGenderDTO';
 import { EventDB } from '../database/EventDB';
 import { GetEventCardDTO } from '../event/DTO/GetEventCardDTO';
+import { GetEventDetailsDTO } from '../event/DTO/GetEventDetailsDTO';
 import { UserDB } from '../database/UserDB';
 
 @Injectable()
@@ -83,9 +84,7 @@ export class UtilsService {
     return dto;
   }
 
-  async transformGenderDBtoGetGenderDTO(
-    gender: GenderDB,
-  ): Promise<GetGenderDTO> {
+  transformGenderDBtoGetGenderDTO(gender: GenderDB): GetGenderDTO {
     const dto = new GetGenderDTO();
     dto.id = gender.id;
     dto.gender = gender.gender;
@@ -97,7 +96,7 @@ export class UtilsService {
   ): Promise<GetEventCardDTO> {
     const dto = new GetEventCardDTO();
     dto.id = event.id;
-    const categories = await event.categories;
+    const categories = event.categories;
     dto.categories = categories.map(this.transformCategoryDBtoGetCategoryDTO);
     dto.dateAndTime = event.dateAndTime;
     dto.title = event.title;
@@ -106,9 +105,42 @@ export class UtilsService {
     dto.type = event.type;
     dto.isOnline = event.isOnline;
     dto.city = event.city;
-    const participants = await event.participants;
+    const participants = event.participants;
     dto.participantsNumber = participants.length;
     dto.maxParticipantsNumber = event.participantsNumber;
+
+    return dto;
+  }
+
+  async transformEventDBtoGetEventDetailsDTO(
+    event: EventDB,
+  ): Promise<GetEventDetailsDTO> {
+    const dto = new GetEventDetailsDTO();
+    dto.id = event.id;
+    dto.dateAndTime = event.dateAndTime;
+    dto.title = event.title;
+    dto.description = event.description;
+    dto.picture = event.picture;
+    dto.status = event.status;
+    dto.type = event.type;
+    dto.isOnline = event.isOnline;
+    if (event.showAddress) {
+      dto.streetNumber = event.streetNumber || null;
+      dto.street = event.street || null;
+    }
+    dto.zipCode = event.zipCode || null;
+    dto.city = event.city || null;
+    const categories = event.categories;
+    dto.categories = categories.map(this.transformCategoryDBtoGetCategoryDTO);
+    const participants = event.participants;
+    dto.participantsNumber = participants.length;
+    dto.maxParticipantsNumber = event.participantsNumber;
+    dto.startAge = event.startAge || null;
+    dto.endAge = event.endAge || null;
+    const preferredGenders = event.preferredGenders;
+    dto.preferredGenders = preferredGenders.map(
+      this.transformGenderDBtoGetGenderDTO,
+    );
 
     return dto;
   }
