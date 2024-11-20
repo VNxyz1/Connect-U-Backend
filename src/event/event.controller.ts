@@ -53,7 +53,7 @@ export class EventController {
         ? await this.genderService.getGendersByIds(body.preferredGenders)
         : [];
 
-    if (body.startAge > body.endAge) {
+    if (body.startAge > body.endAge && body.endAge !== null) {
       throw new BadRequestException(
         'The start age must be lesser then the end age.',
       );
