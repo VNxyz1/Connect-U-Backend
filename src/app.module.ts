@@ -19,6 +19,7 @@ import { GenderService } from './gender/gender.service';
 import { CategoryService } from './category/category.service';
 import { RequestController } from './request/request.controller';
 import { RequestService } from './request/request.service';
+import { staticDeploymentModule } from './static-delivery.config';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { RequestService } from './request/request.service';
     }),
     databaseConfig(),
     databaseConfigForFeature(),
+    staticDeploymentModule(),
     JwtModule.registerAsync({
       global: true,
       imports: [ConfigModule],
