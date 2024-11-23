@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -8,7 +9,6 @@ import {
   Post,
   Req,
   Res,
-  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { PostLoginBodyDTO } from './DTO/PostLoginBodyDTO';
@@ -16,8 +16,10 @@ import { AuthService } from './auth.service';
 import { Request, Response } from 'express';
 import * as process from 'node:process';
 import { OkDTO } from '../serverDTO/OkDTO';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBadRequestResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from './auth.guard';
+import { AccessTokenResDTO } from './DTO/AccessTokenResDTO';
+import { CheckLoginRes } from './DTO/CheckLoginRes';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -27,6 +29,7 @@ export class AuthController {
   @ApiResponse({
     description: 'Logs in a user',
     status: HttpStatus.OK,
+    type: AccessTokenResDTO,
   })
   @HttpCode(HttpStatus.OK)
   @Post('login')
@@ -39,12 +42,17 @@ export class AuthController {
         !process.env.API_CORS || process.env.API_CORS != '1' ? 'strict' : 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-    res.json({ access_token: tokens.access_token });
+    res.json(new AccessTokenResDTO(tokens.access_token));
   }
 
   @ApiResponse({
     description: 'gets the access token',
     status: HttpStatus.OK,
+    type: AccessTokenResDTO,
+  })
+  @ApiBadRequestResponse({
+    description: 'Returns, when the `refresh_token` cookie does not exist',
+    status: HttpStatus.BAD_REQUEST,
   })
   @HttpCode(HttpStatus.OK)
   @Get('refresh')
@@ -52,10 +60,27 @@ export class AuthController {
     const refreshToken = req.cookies['refresh_token'];
 
     if (!refreshToken) {
-      throw new UnauthorizedException('Refresh token missing');
+      throw new BadRequestException('Refresh token missing');
     }
 
     return await this.authService.refreshAccessToken(refreshToken);
+  }
+
+  @ApiResponse({
+    description: 'Checks the login status',
+    status: HttpStatus.OK,
+    type: CheckLoginRes,
+  })
+  @HttpCode(HttpStatus.OK)
+  @Get('check-login')
+  async checkLogin(@Req() req: Request) {
+    const refreshToken = req.cookies['refresh_token'];
+
+    if (!refreshToken) {
+      return new CheckLoginRes(false);
+    }
+
+    return new CheckLoginRes(true);
   }
 
   @ApiResponse({
