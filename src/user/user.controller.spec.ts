@@ -7,6 +7,10 @@ import { CreateUserDTO } from './DTO/CreateUserDTO';
 import { GenderEnum } from '../database/enums/GenderEnum';
 import { UserController } from './user.controller';
 import { UtilsService } from '../utils/utils.service';
+import { AuthService } from '../auth/auth.service';
+import { JwtService } from '@nestjs/jwt';
+import { JWTConstants } from '../auth/constants';
+import { mockAuthService } from '../auth/auth.service.spec';
 
 describe('UserController', () => {
   let app: INestApplication;
@@ -15,7 +19,30 @@ describe('UserController', () => {
     const moduleRef = await Test.createTestingModule({
       controllers: [UserController],
       imports: [],
-      providers: [UserService, UtilsService],
+      providers: [
+        UserService,
+        UtilsService,
+        {
+          provide: JwtService,
+          useValue: {
+            verifyAsync: jest.fn().mockReturnValue({
+              sub: 'uuIdMock',
+              username: 'testUser',
+              email: 'test@email.com',
+            }),
+          },
+        },
+        {
+          provide: JWTConstants,
+          useValue: {
+            getConstants: jest.fn().mockReturnValue({ secret: 'seret_token' }),
+          },
+        },
+        {
+          provide: AuthService,
+          useValue: mockAuthService,
+        },
+      ],
     })
       .overrideProvider(UserService)
       .useValue(mockUserService)
@@ -31,13 +58,27 @@ describe('UserController', () => {
     await app.init();
   });
 
-  it('/POST user', () => {
-    return request(app.getHttpServer())
+  it('/POST user - should register successfully and set cookies', async () => {
+    const tokens = {
+      access_token: 'valid_access_token',
+      refresh_token: 'valid_refresh_token',
+    };
+
+    jest.spyOn(mockUserService, 'createUser').mockResolvedValueOnce(undefined); // User wird erstellt
+    jest.spyOn(mockAuthService, 'signIn').mockResolvedValueOnce(tokens); // Tokens werden generiert
+
+    const response = await request(app.getHttpServer())
       .post('/user')
       .send(createMockUser)
       .expect('Content-Type', /json/)
-      .expect(HttpStatus.CREATED)
-      .expect({ ok: true, message: 'User was created' });
+      .expect(HttpStatus.CREATED);
+
+    expect(response.body).toEqual({ access_token: tokens.access_token });
+
+    // Prüfen, ob das Cookie korrekt gesetzt wurde
+    const cookies = response.headers['set-cookie'];
+    expect(cookies).toBeDefined();
+    expect(cookies[0]).toContain('refresh_token=valid_refresh_token');
   });
 
   it('should return BadRequest, because a value is missing', () => {
