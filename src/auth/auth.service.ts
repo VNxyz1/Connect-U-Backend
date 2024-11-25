@@ -1,6 +1,6 @@
 import {
-  BadRequestException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { UserService } from '../user/user.service';
@@ -29,7 +29,7 @@ export class AuthService {
     const valid = await bcrypt.compare(password, user.password);
 
     if (!valid) {
-      throw new BadRequestException(
+      throw new NotFoundException(
         'A user with these login credentials is not known.',
       );
     }
