@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
@@ -25,7 +29,9 @@ export class AuthService {
     const valid = await bcrypt.compare(password, user.password);
 
     if (!valid) {
-      throw new UnauthorizedException();
+      throw new BadRequestException(
+        'A user with these login credentials is not known.',
+      );
     }
 
     const payloadAuth: AuthTokenPayload = {
