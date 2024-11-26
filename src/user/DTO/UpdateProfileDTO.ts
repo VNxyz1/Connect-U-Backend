@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsOptional,
-  IsString,
+  IsString, MaxLength,
 } from 'class-validator';
 
 export class UpdateProfileDTO {
@@ -12,6 +12,7 @@ export class UpdateProfileDTO {
   })
   @IsString()
   @IsOptional()
+  @MaxLength(20, { message: 'Pronouns must not exceed 30 characters' })
   pronouns?: string;
 
   @ApiProperty({
@@ -23,5 +24,6 @@ export class UpdateProfileDTO {
   })
   @IsString()
   @IsOptional()
+  @MaxLength(2000, { message: 'Profile description must not exceed 2000 characters' })
   profileText?: string;
 }

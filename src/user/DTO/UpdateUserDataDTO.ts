@@ -4,7 +4,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
-  Matches,
+  Matches, MaxLength,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -16,6 +16,7 @@ export class UpdateUserDataDTO {
   @IsString()
   @IsNotEmpty()
   @Matches(/\S/, { message: 'First name cannot contain only whitespace' })
+  @MaxLength(50, { message: 'First name must not exceed 50 characters' })
   firstName: string;
 
   @ApiProperty({
@@ -25,6 +26,7 @@ export class UpdateUserDataDTO {
   @IsString()
   @IsNotEmpty()
   @Matches(/\S/, { message: 'Last name cannot contain only whitespace' })
+  @MaxLength(50, { message: 'Last name must not exceed 50 characters' })
   lastName: string;
 
   @ApiProperty({
@@ -34,6 +36,7 @@ export class UpdateUserDataDTO {
   @IsString()
   @IsNotEmpty()
   @Matches(/\S/, { message: 'Username cannot contain only whitespace' })
+  @MaxLength(20, { message: 'Username must not exceed 20 characters' })
   username: string;
 
   @ApiProperty({
@@ -52,6 +55,7 @@ export class UpdateUserDataDTO {
   })
   @IsString()
   @IsOptional()
+  @MaxLength(100, { message: 'City name must not exceed 100 characters' })
   city: string;
 
   @ApiProperty({
@@ -61,6 +65,7 @@ export class UpdateUserDataDTO {
   })
   @IsString()
   @IsOptional()
+  @MaxLength(6, { message: 'Street number must not exceed 6 characters' })
   streetNumber?: string;
 
   @ApiProperty({
@@ -78,6 +83,7 @@ export class UpdateUserDataDTO {
   })
   @IsString()
   @IsOptional()
+  @MaxLength(100, { message: 'Street name must not exceed 100 characters' })
   street?: string;
 
   @ApiProperty({
