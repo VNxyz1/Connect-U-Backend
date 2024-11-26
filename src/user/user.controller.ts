@@ -6,7 +6,7 @@ import {
   Controller,
   Get,
   HttpCode,
-  HttpStatus,
+  HttpStatus, NotFoundException,
   Param, Patch,
   Post,
   Res,
@@ -154,8 +154,12 @@ export class UserController {
     if (body.newPassword !== body.newPasswordConfirm) {
       throw new BadRequestException('New password and password confirmation must match');
     }
-    if (body.oldPassword !== user.password) {
-      throw new BadRequestException('Old password is incorrect');
+    const valid = await this.authService.validatePassword(body.oldPassword, user.password);
+
+    if (!valid) {
+      throw new NotFoundException(
+        'Passwords do not match',
+      );
     }
 
     await this.userService.updatePassword(user.id, body.newPassword);
