@@ -157,4 +157,20 @@ export class UserService {
     return await this.userRepository.save(user);
   }
 
+  /**
+   * Updates a user's password.
+   *
+   * @param {string} id - The unique ID of the user to update.
+   * @param {string} newPassword - DTO with password to update.
+   * @returns {Promise<UserDB>} - The updated user.
+   */
+  async updatePassword(
+    id: string,
+    password: string,
+  ): Promise<UserDB> {
+    const user = await this.findById(id);
+
+    user.password = password;
+    return await this.userRepository.save(user);
+  }
 }

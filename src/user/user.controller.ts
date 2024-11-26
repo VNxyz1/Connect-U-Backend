@@ -24,6 +24,7 @@ import { User } from '../utils/user.decorator';
 import { UserDB } from '../database/UserDB';
 import { UpdateUserDataDTO } from './DTO/UpdateUserDataDTO';
 import { UpdateProfileDTO } from './DTO/UpdateProfileDTO';
+import { UpdatePasswordDTO } from './DTO/UpdatePasswordDTO';
 
 @ApiTags('user')
 @Controller('user')
@@ -127,5 +128,37 @@ export class UserController {
   ): Promise<OkDTO> {
     await this.userService.updateUserProfile(user.id, body);
     return new OkDTO(true, 'user profile was updated successfully');
+  }
+
+  @ApiResponse({
+    type: OkDTO,
+    description: 'Updates a users password',
+    status: HttpStatus.OK,
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'New password and password confirmation do not match',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Old password is incorrect',
+  })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @Patch('/password')
+  async updatePassword(
+    @Body() body: UpdatePasswordDTO,
+    @User() user: UserDB,
+  ): Promise<OkDTO> {
+    if (body.newPassword !== body.newPasswordConfirm) {
+      throw new BadRequestException('New password and password confirmation must match');
+    }
+    if (body.oldPassword !== user.password) {
+      throw new BadRequestException('Old password is incorrect');
+    }
+
+    await this.userService.updatePassword(user.id, body.newPassword);
+    return new OkDTO(true, 'password was updated successfully');
   }
 }
