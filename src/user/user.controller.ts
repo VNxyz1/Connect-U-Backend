@@ -158,7 +158,7 @@ export class UserController {
 
     if (!valid) {
       throw new NotFoundException(
-        'Passwords do not match',
+        'Old password does not match',
       );
     }
 

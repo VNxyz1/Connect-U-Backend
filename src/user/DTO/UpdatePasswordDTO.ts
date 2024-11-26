@@ -6,7 +6,7 @@ import {
 export class UpdatePasswordDTO {
   @ApiProperty({
     description: 'The old password',
-    example: 'Password1234',
+    example: 'Passwort1234',
   })
   @IsString()
   oldPassword: string;
