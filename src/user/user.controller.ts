@@ -7,7 +7,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  Param,
+  Param, Patch,
   Post,
   Res,
   UseGuards,
@@ -22,6 +22,8 @@ import { GetUserDataDTO } from './DTO/GetUserDataDTO';
 import { AuthGuard } from '../auth/auth.guard';
 import { User } from '../utils/user.decorator';
 import { UserDB } from '../database/UserDB';
+import { UpdateUserDataDTO } from './DTO/UpdateUserDataDTO';
+import { UpdateProfileDTO } from './DTO/UpdateProfileDTO';
 
 @ApiTags('user')
 @Controller('user')
@@ -31,7 +33,8 @@ export class UserController {
     public readonly utils: UtilsService,
     public readonly authService: AuthService,
     public readonly utilsService: UtilsService,
-  ) {}
+  ) {
+  }
 
   @ApiResponse({
     type: OkDTO,
@@ -71,7 +74,7 @@ export class UserController {
 
   @ApiResponse({
     type: GetUserProfileDTO,
-    description: 'gets user Data for the profile',
+    description: 'gets data for the profile',
   })
   @Get('/userProfile/:userId')
   async getUserProfile(
@@ -90,5 +93,39 @@ export class UserController {
   @Get('/userData')
   async getUserData(@User() user: UserDB): Promise<GetUserDataDTO> {
     return this.utilsService.transformUserDBtoGetUserDataDTO(user);
+  }
+
+  @ApiResponse({
+    type: OkDTO,
+    description: 'Updates a users data',
+    status: HttpStatus.OK,
+  })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @Patch('/userData')
+  async updateUser(
+    @Body() body: UpdateUserDataDTO,
+    @User() user: UserDB,
+  ): Promise<OkDTO> {
+    await this.userService.updateUser(user.id, body);
+    return new OkDTO(true, 'user data was updated successfully');
+  }
+
+  @ApiResponse({
+    type: OkDTO,
+    description: 'Updates a users profile',
+    status: HttpStatus.OK,
+  })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @Patch('/userProfile')
+  async updateProfile(
+    @Body() body: UpdateProfileDTO,
+    @User() user: UserDB,
+  ): Promise<OkDTO> {
+    await this.userService.updateUserProfile(user.id, body);
+    return new OkDTO(true, 'user profile was updated successfully');
   }
 }
