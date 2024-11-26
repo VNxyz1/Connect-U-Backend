@@ -3,9 +3,9 @@ import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   BadRequestException,
   Body,
-  Controller,
+  Controller, Get,
   HttpCode,
-  HttpStatus,
+  HttpStatus, Param,
   Post,
   Res,
 } from '@nestjs/common';
@@ -14,6 +14,7 @@ import { OkDTO } from '../serverDTO/OkDTO';
 import { UtilsService } from '../utils/utils.service';
 import { AuthService } from '../auth/auth.service';
 import { Response } from 'express';
+import { GetUserProfileDTO } from './DTO/GetUserProfileDTO';
 
 @ApiTags('user')
 @Controller('user')
@@ -22,6 +23,7 @@ export class UserController {
     public readonly userService: UserService,
     public readonly utils: UtilsService,
     public readonly authService: AuthService,
+    public readonly utilsService: UtilsService,
   ) {}
 
   @ApiResponse({
@@ -58,5 +60,17 @@ export class UserController {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
     res.json({ access_token: tokens.access_token });
+  }
+
+  @ApiResponse({
+    type: GetUserProfileDTO,
+    description: 'gets user Data for the profile',
+  })
+  @Get('/userProfile/:userId')
+  async getUserProfile(
+    @Param('userId') userId: string,
+  ): Promise<GetUserProfileDTO> {
+    const user = await this.userService.findById(userId);
+    return this.utilsService.transformUserDBtoGetUserProfileDTO(user);
   }
 }

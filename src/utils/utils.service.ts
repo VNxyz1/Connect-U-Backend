@@ -7,10 +7,17 @@ import { EventDB } from '../database/EventDB';
 import { GetEventCardDTO } from '../event/DTO/GetEventCardDTO';
 import { GetEventDetailsDTO } from '../event/DTO/GetEventDetailsDTO';
 import { UserDB } from '../database/UserDB';
+import { GetUserProfileDTO } from '../user/DTO/GetUserProfileDTO';
 
 @Injectable()
 export class UtilsService {
-  validateUserAge(birthday: Date, minAge: number): boolean {
+
+  /**
+   * Calculates the age of a user based on their date of birth.
+   * @param birthday - The user's date of birth.
+   * @returns {number} - The calculated age.
+   */
+  calculateAge(birthday: Date): number {
     const today = new Date();
     let age = today.getFullYear() - birthday.getFullYear();
     const monthDifference = today.getMonth() - birthday.getMonth();
@@ -20,22 +27,36 @@ export class UtilsService {
     ) {
       age--;
     }
+    return age;
+  }
+
+  /**
+   * Validates if a user meets the minimum age requirement.
+   * @param birthday - The user's date of birth.
+   * @param minAge - The minimum required age.
+   * @returns {boolean} - True if the user's age is greater than or equal to the minimum age, otherwise false.
+   */
+  validateUserAge(birthday: Date, minAge: number): boolean {
+    const age = this.calculateAge(birthday);
     return age >= minAge;
   }
 
+  /**
+   * Validates if a user meets the maximum age requirement.
+   * @param birthday - The user's date of birth.
+   * @param maxAge - The maximum allowed age.
+   * @returns {boolean} - True if the user's age is less than or equal to the maximum age, otherwise false.
+   */
   validateUserAgeMax(birthday: Date, maxAge: number): boolean {
-    const today = new Date();
-    let age = today.getFullYear() - birthday.getFullYear();
-    const monthDifference = today.getMonth() - birthday.getMonth();
-    if (
-      monthDifference < 0 ||
-      (monthDifference === 0 && today.getDate() < birthday.getDate())
-    ) {
-      age--;
-    }
+    const age = this.calculateAge(birthday);
     return age <= maxAge;
   }
 
+  /**
+   * Determines if a given date is in the future.
+   * @param dateISOString - The date to check, in ISO string format.
+   * @returns {boolean} - True if the date is in the future, otherwise false.
+   */
   isFutureDate(dateISOString: string): boolean {
     const eventDate = new Date(dateISOString);
     const now = new Date();
@@ -77,6 +98,30 @@ export class UtilsService {
     return true;
   }
 
+  /**
+   * Transforms a UserDB object into a GetUserProfileDTO.
+   * @param user - The user entity from the database.
+   * @returns {GetUserProfileDTO} - The transformed user profile data transfer object.
+   */
+  transformUserDBtoGetUserProfileDTO(user: UserDB): GetUserProfileDTO {
+    const dto = new GetUserProfileDTO();
+    dto.id = user.id;
+    dto.pronouns = user.pronouns;
+    dto.profilePicture = user.profilePicture;
+    dto.profileText = user.profileText;
+    dto.firstName = user.firstName;
+    dto.username = user.username;
+    dto.city = user.city;
+    const birthday = new Date(user.birthday);
+    dto.age = this.calculateAge(birthday);
+    return dto;
+  }
+
+  /**
+   * Transforms a CategoryDB object into a GetCategoryDTO.
+   * @param category - The category entity from the database.
+   * @returns {GetCategoryDTO} - The transformed category data transfer object.
+   */
   transformCategoryDBtoGetCategoryDTO(category: CategoryDB): GetCategoryDTO {
     const dto = new GetCategoryDTO();
     dto.id = category.id;
@@ -84,6 +129,11 @@ export class UtilsService {
     return dto;
   }
 
+  /**
+   * Transforms a GenderDB object into a GetGenderDTO.
+   * @param gender - The gender entity from the database.
+   * @returns {GetGenderDTO} - The transformed gender data transfer object.
+   */
   transformGenderDBtoGetGenderDTO(gender: GenderDB): GetGenderDTO {
     const dto = new GetGenderDTO();
     dto.id = gender.id;
@@ -91,6 +141,11 @@ export class UtilsService {
     return dto;
   }
 
+  /**
+   * Transforms an EventDB object into a GetEventCardDTO.
+   * @param event - The event entity from the database.
+   * @returns {Promise<GetEventCardDTO>} - A promise resolving to the transformed event card data transfer object.
+   */
   async transformEventDBtoGetEventCardDTO(
     event: EventDB,
   ): Promise<GetEventCardDTO> {
@@ -112,6 +167,11 @@ export class UtilsService {
     return dto;
   }
 
+  /**
+   * Transforms an EventDB object into a GetEventDetailsDTO.
+   * @param event - The event entity from the database.
+   * @returns {Promise<GetEventDetailsDTO>} - A promise resolving to the transformed event details data transfer object.
+   */
   async transformEventDBtoGetEventDetailsDTO(
     event: EventDB,
   ): Promise<GetEventDetailsDTO> {
@@ -124,19 +184,25 @@ export class UtilsService {
     dto.status = event.status;
     dto.type = event.type;
     dto.isOnline = event.isOnline;
+
     if (event.showAddress) {
       dto.streetNumber = event.streetNumber || null;
       dto.street = event.street || null;
     }
+
     dto.zipCode = event.zipCode || null;
     dto.city = event.city || null;
+
     const categories = event.categories;
     dto.categories = categories.map(this.transformCategoryDBtoGetCategoryDTO);
+
     const participants = event.participants;
     dto.participantsNumber = participants.length;
     dto.maxParticipantsNumber = event.participantsNumber;
+
     dto.startAge = event.startAge || null;
     dto.endAge = event.endAge || null;
+
     const preferredGenders = event.preferredGenders;
     dto.preferredGenders = preferredGenders.map(
       this.transformGenderDBtoGetGenderDTO,
@@ -144,4 +210,5 @@ export class UtilsService {
 
     return dto;
   }
+
 }
