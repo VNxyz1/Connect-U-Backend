@@ -10,7 +10,10 @@ export class GetUserProfileDTO {
   @ApiProperty({ description: 'the username of the user', example: 'linaek' })
   username: string;
 
-  @ApiProperty({ description: 'the city, where the user lives', example: 'Gießen' })
+  @ApiProperty({
+    description: 'the city, where the user lives',
+    example: 'Gießen',
+  })
   city: string;
 
   @ApiProperty({ description: 'the pronouns of the user', example: 'she/her' })
@@ -22,7 +25,11 @@ export class GetUserProfileDTO {
   @ApiProperty({ description: 'the age of the user', example: 23 })
   age: number;
 
-  @ApiProperty({ description: 'the profile description', example: 'Live, Love, Laugh ❤️ ' +
-      'Ich liebe es, mit Freunden spazieren zu gehen und die Natur zu genießen 🍃' })
+  @ApiProperty({
+    description: 'the profile description',
+    example:
+      'Live, Love, Laugh ❤️ ' +
+      'Ich liebe es, mit Freunden spazieren zu gehen und die Natur zu genießen 🍃',
+  })
   profileText: string;
 }

@@ -8,10 +8,10 @@ import { GetEventCardDTO } from '../event/DTO/GetEventCardDTO';
 import { GetEventDetailsDTO } from '../event/DTO/GetEventDetailsDTO';
 import { UserDB } from '../database/UserDB';
 import { GetUserProfileDTO } from '../user/DTO/GetUserProfileDTO';
+import { GetUserDataDTO } from '../user/DTO/GetUserDataDTO';
 
 @Injectable()
 export class UtilsService {
-
   /**
    * Calculates the age of a user based on their date of birth.
    * @param birthday - The user's date of birth.
@@ -118,6 +118,27 @@ export class UtilsService {
   }
 
   /**
+   * Transforms a UserDB object into a GetUserDataDTO.
+   * @param user - The user entity from the database.
+   * @returns {GetUserDataDTO} - The transformed user data transfer object.
+   */
+  transformUserDBtoGetUserDataDTO(user: UserDB): GetUserDataDTO {
+    const dto = new GetUserDataDTO();
+    dto.id = user.id;
+    dto.firstName = user.firstName;
+    dto.lastName = user.lastName;
+    dto.username = user.username;
+    dto.email = user.email;
+    dto.city = user.city;
+    dto.streetNumber = user.streetNumber || null;
+    dto.birthday = user.birthday;
+    dto.gender = user.gender;
+    dto.street = user.street || null;
+    dto.zipCode = user.zipCode || null;
+    return dto;
+  }
+
+  /**
    * Transforms a CategoryDB object into a GetCategoryDTO.
    * @param category - The category entity from the database.
    * @returns {GetCategoryDTO} - The transformed category data transfer object.
@@ -210,5 +231,4 @@ export class UtilsService {
 
     return dto;
   }
-
 }

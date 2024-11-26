@@ -1,13 +1,16 @@
 import { UserService } from './user.service';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   BadRequestException,
   Body,
-  Controller, Get,
+  Controller,
+  Get,
   HttpCode,
-  HttpStatus, Param,
+  HttpStatus,
+  Param,
   Post,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { CreateUserDTO } from './DTO/CreateUserDTO';
 import { OkDTO } from '../serverDTO/OkDTO';
@@ -15,6 +18,10 @@ import { UtilsService } from '../utils/utils.service';
 import { AuthService } from '../auth/auth.service';
 import { Response } from 'express';
 import { GetUserProfileDTO } from './DTO/GetUserProfileDTO';
+import { GetUserDataDTO } from './DTO/GetUserDataDTO';
+import { AuthGuard } from '../auth/auth.guard';
+import { User } from '../utils/user.decorator';
+import { UserDB } from '../database/UserDB';
 
 @ApiTags('user')
 @Controller('user')
@@ -72,5 +79,16 @@ export class UserController {
   ): Promise<GetUserProfileDTO> {
     const user = await this.userService.findById(userId);
     return this.utilsService.transformUserDBtoGetUserProfileDTO(user);
+  }
+
+  @ApiResponse({
+    type: GetUserDataDTO,
+    description: 'gets user Data for editing the user',
+  })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard)
+  @Get('/userData')
+  async getUserData(@User() user: UserDB): Promise<GetUserDataDTO> {
+    return this.utilsService.transformUserDBtoGetUserDataDTO(user);
   }
 }
