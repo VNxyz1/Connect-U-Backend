@@ -139,7 +139,7 @@ describe('UserController', () => {
       .expect(HttpStatus.OK);
 
     expect(response.body).toEqual({
-      success: true,
+      ok: true,
       message: 'user data was updated successfully',
     });
   });

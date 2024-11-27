@@ -1,10 +1,10 @@
 import {
   IsEmail,
   IsISO8601,
-  IsNotEmpty,
   IsOptional,
   IsString,
-  Matches, MaxLength,
+  Matches,
+  MaxLength,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -14,40 +14,40 @@ export class UpdateUserDataDTO {
     example: 'Lina',
   })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @Matches(/\S/, { message: 'First name cannot contain only whitespace' })
   @MaxLength(50, { message: 'First name must not exceed 50 characters' })
-  firstName: string;
+  firstName?: string;
 
   @ApiProperty({
     description: 'The last name of the user',
     example: 'Erik',
   })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @Matches(/\S/, { message: 'Last name cannot contain only whitespace' })
   @MaxLength(50, { message: 'Last name must not exceed 50 characters' })
-  lastName: string;
+  lastName?: string;
 
   @ApiProperty({
     description: 'The username of the user',
     example: 'linaek',
   })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @Matches(/\S/, { message: 'Username cannot contain only whitespace' })
   @MaxLength(20, { message: 'Username must not exceed 20 characters' })
-  username: string;
+  username?: string;
 
   @ApiProperty({
     description: 'The email of the user',
     example: 'linaek@linaek.com',
   })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @IsEmail()
   @Matches(/\S/, { message: 'Email cannot contain only whitespace' })
-  email: string;
+  email?: string;
 
   @ApiProperty({
     description: 'The city where the user lives',
@@ -56,7 +56,7 @@ export class UpdateUserDataDTO {
   @IsString()
   @IsOptional()
   @MaxLength(100, { message: 'City name must not exceed 100 characters' })
-  city: string;
+  city?: string;
 
   @ApiProperty({
     description: 'The street number of the users address',
@@ -73,8 +73,8 @@ export class UpdateUserDataDTO {
     example: '1995-06-15',
   })
   @IsISO8601()
-  @IsNotEmpty()
-  birthday: string;
+  @IsOptional()
+  birthday?: string;
 
   @ApiProperty({
     description: 'The street name of the users address',
