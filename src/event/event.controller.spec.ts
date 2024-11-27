@@ -567,6 +567,7 @@ const MockEventDetailsDTO: GetEventDetailsDTO = {
   city: 'Tech City',
   participantsNumber: 0,
   maxParticipantsNumber: 100,
+  participants: [],
   startAge: null,
   endAge: null,
 };
@@ -585,6 +586,7 @@ const MockEventDetailsWOAddress: GetEventDetailsDTO = {
   zipCode: '67890',
   city: 'Tech City',
   participantsNumber: 0,
+  participants: [],
   maxParticipantsNumber: 100,
   startAge: null,
   endAge: null,
