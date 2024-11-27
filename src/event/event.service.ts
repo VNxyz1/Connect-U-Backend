@@ -162,4 +162,32 @@ export class EventService {
 
     return await this.eventRepository.save(event);
   }
+
+  /**
+   * Removes a user from the participants list of a specific event.
+   * @param user - The user to be removed from the event.
+   * @param eventId - The ID of the event from which the user is being removed.
+   *
+   * @returns The updated event after the user has been removed from the participants list.
+   *
+   * @throws BadRequestException If the user is not a participant in the event.
+   */
+  async removeUserFromEvent(user: UserDB, eventId: string): Promise<EventDB> {
+    const event = await this.getEventById(eventId);
+
+    const isParticipant = event.participants.some(
+      (participant) => participant.id === user.id,
+    );
+
+    if (!isParticipant) {
+      throw new BadRequestException('User is not a participant in this event');
+    }
+
+    event.participants = event.participants.filter(
+      (participant) => participant.id !== user.id,
+    );
+
+    return await this.eventRepository.save(event);
+  }
+
 }
