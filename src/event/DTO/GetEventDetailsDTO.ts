@@ -33,6 +33,10 @@ export class GetEventDetailsDTO {
   @Type(() => GetUserProfileDTO)
   participants: GetUserProfileDTO[];
 
+  @ApiProperty({ type: GetUserProfileDTO })
+  @Type(() => GetUserProfileDTO)
+  host: GetUserProfileDTO;
+
   @ApiProperty({
     description: 'Date and time of the event',
     example: '2024-12-15T18:00:00Z',

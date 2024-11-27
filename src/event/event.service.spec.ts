@@ -267,7 +267,7 @@ describe('EventService', () => {
 
       expect(mockEventRepository.findOne).toHaveBeenCalledWith({
         where: { id: eventId },
-        relations: ['categories', 'participants', 'preferredGenders'],
+        relations: ['categories', 'participants', 'preferredGenders', 'host'],
       });
       expect(result).toEqual(mockEvent);
     });
@@ -282,7 +282,7 @@ describe('EventService', () => {
 
       expect(mockEventRepository.findOne).toHaveBeenCalledWith({
         where: { id: eventId },
-        relations: ['categories', 'participants', 'preferredGenders'],
+        relations: ['categories', 'participants', 'preferredGenders', 'host'],
       });
     });
   });

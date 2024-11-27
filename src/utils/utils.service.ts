@@ -225,6 +225,8 @@ export class UtilsService {
       this.transformUserDBtoGetUserProfileDTO,
     );
 
+    dto.host = this.transformUserDBtoGetUserProfileDTO(event.host);
+
     dto.startAge = event.startAge || null;
     dto.endAge = event.endAge || null;
 
