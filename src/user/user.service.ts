@@ -8,6 +8,8 @@ import { Repository } from 'typeorm';
 import { UserDB } from '../database/UserDB';
 import * as bcrypt from 'bcryptjs';
 import { CreateUserDTO } from './DTO/CreateUserDTO';
+import { UpdateUserDataDTO } from './DTO/UpdateUserDataDTO';
+import { UpdateProfileDTO } from './DTO/UpdateProfileDTO';
 
 @Injectable()
 export class UserService {
@@ -105,5 +107,69 @@ export class UserService {
     }
 
     return user;
+  }
+
+  /**
+   * Updates a user's information.
+   *
+   * @param {string} id - The unique ID of the user to update.
+   * @param {Partial<UpdateUserDataDTO>} updateData - Partial DTO with fields to update.
+   * @returns {Promise<UserDB>} - The updated user.
+   * @throws {BadRequestException} - If the email or username is already taken (if being updated).
+   */
+  async updateUser(
+    id: string,
+    updateData: Partial<UpdateUserDataDTO>,
+  ): Promise<UserDB> {
+    const user = await this.findById(id);
+
+    if (updateData.email && updateData.email !== user.email) {
+      const [existingEmail, existingUsername] = await Promise.all([
+        this.userRepository.findOne({ where: { email: updateData.email } }),
+        this.userRepository.findOne({
+          where: { username: updateData.username },
+        }),
+      ]);
+
+      if (existingEmail) {
+        throw new BadRequestException('e-mail address is already taken');
+      }
+      if (existingUsername) {
+        throw new BadRequestException('username is already taken');
+      }
+    }
+    Object.assign(user, updateData);
+    return await this.userRepository.save(user);
+  }
+
+  /**
+   * Updates a user's profile.
+   *
+   * @param {string} id - The unique ID of the user to update.
+   * @param {Partial<UpdateProfileDTO>} updateData - Partial DTO with fields to update.
+   * @returns {Promise<UserDB>} - The updated user.
+   */
+  async updateUserProfile(
+    id: string,
+    updateData: Partial<UpdateProfileDTO>,
+  ): Promise<UserDB> {
+    const user = await this.findById(id);
+
+    Object.assign(user, updateData);
+    return await this.userRepository.save(user);
+  }
+
+  /**
+   * Updates a user's password.
+   *
+   * @param {string} id - The unique ID of the user to update.
+   * @param {string} password - password to update.
+   * @returns {Promise<UserDB>} - The updated user.
+   */
+  async updatePassword(id: string, password: string): Promise<UserDB> {
+    const user = await this.findById(id);
+
+    user.password = password;
+    return await this.userRepository.save(user);
   }
 }

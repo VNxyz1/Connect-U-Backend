@@ -6,6 +6,7 @@ import {
   IsString,
   MinLength,
   Matches,
+  MaxLength,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { GenderEnum } from '../../database/enums/GenderEnum';
@@ -34,6 +35,7 @@ export class CreateUserDTO {
   @IsNotEmpty()
   @IsString()
   @Matches(/\S/, { message: 'Username cannot contain only whitespace' })
+  @MaxLength(20, { message: 'Username must not exceed 20 characters' })
   username: string;
 
   @ApiProperty({
@@ -61,6 +63,7 @@ export class CreateUserDTO {
   @IsString()
   @IsNotEmpty()
   @Matches(/\S/, { message: 'First name cannot contain only whitespace' })
+  @MaxLength(50, { message: 'First name must not exceed 50 characters' })
   firstName: string;
 
   @ApiProperty({
@@ -70,6 +73,7 @@ export class CreateUserDTO {
   @IsString()
   @IsNotEmpty()
   @Matches(/\S/, { message: 'Last name cannot contain only whitespace' })
+  @MaxLength(50, { message: 'Last name must not exceed 50 characters' })
   lastName: string;
 
   @ApiProperty({

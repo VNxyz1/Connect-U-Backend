@@ -26,6 +26,13 @@ export const mockAuthService = {
     access_token: 'valid.jwt.access.token',
     refresh_token: 'valid.jwt.refresh.token',
   }),
+  validatePassword: jest.fn().mockResolvedValue(true),
+  decodeToken: jest.fn().mockReturnValue({
+    sub: 'user-id-mock',
+    email: 'mocked.user@example.com',
+  }),
+  validateToken: jest.fn().mockResolvedValue(true),
+  logout: jest.fn().mockResolvedValue(undefined),
   refreshAccessToken: jest
     .fn()
     .mockResolvedValue({ access_token: 'valid.jwt.access.token' }),

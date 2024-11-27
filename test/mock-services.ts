@@ -12,6 +12,8 @@ import { GenderService } from '../src/gender/gender.service';
 import { mockGenderService } from '../src/gender/gender.service.spec';
 import { RequestService } from '../src/request/request.service';
 import { mockRequestService } from '../src/request/request.service.spec';
+import { UtilsService } from '../src/utils/utils.service';
+import { mockUtilsService } from '../src/utils/utils.service.spec';
 
 export const mockProviders = [
   {
@@ -53,5 +55,9 @@ export const mockProviders = [
   {
     provide: RequestService,
     useValue: mockRequestService,
+  },
+  {
+    provide: UtilsService,
+    useValue: mockUtilsService,
   },
 ];
