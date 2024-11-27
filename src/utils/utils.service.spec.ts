@@ -176,3 +176,20 @@ describe('UtilsService', () => {
     participantsNumber: 10,
   };
 });
+
+export const mockUtilsService = {
+  transformUserDBtoGetUserProfileDTO: jest.fn((user) => ({
+    firstName: user.firstName,
+    lastName: user.lastName,
+    profileText: user.profileText,
+  })),
+
+  transformUserDBtoGetUserDataDTO: jest.fn((user) => ({
+    email: user.email,
+    username: user.username,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    birthday: user.birthday,
+    gender: user.gender,
+  })),
+};

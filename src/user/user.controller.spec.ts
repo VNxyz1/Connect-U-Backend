@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { Test } from '@nestjs/testing';
-import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
 import { UserService } from './user.service';
 import { mockUserService } from './user.service.spec';
 import { CreateUserDTO } from './DTO/CreateUserDTO';
@@ -11,6 +11,7 @@ import { AuthService } from '../auth/auth.service';
 import { JwtService } from '@nestjs/jwt';
 import { JWTConstants } from '../auth/constants';
 import { mockAuthService } from '../auth/auth.service.spec';
+import { mockUtilsService } from '../utils/utils.service.spec';
 
 describe('UserController', () => {
   let app: INestApplication;
@@ -99,6 +100,139 @@ describe('UserController', () => {
         statusCode: 400,
       });
   });
+
+  it('/GET userProfile/:userId - should return user profile', async () => {
+    const mockUserProfile = {
+      firstName: 'John',
+      lastName: 'Doe',
+      profileText: 'I love programming.',
+    };
+
+    const user = await mockUserService.findById('1');
+    expect(user).toEqual(
+      expect.objectContaining({
+        id: '3',
+        email: 'alex.jones@example.com',
+      }),
+    );
+
+    jest
+      .spyOn(mockUtilsService, 'transformUserDBtoGetUserProfileDTO')
+      .mockReturnValueOnce(mockUserProfile);
+
+    const response = await request(app.getHttpServer())
+      .get('/user/userProfile/1')
+      .expect('Content-Type', /json/)
+      .expect(HttpStatus.OK);
+
+    expect(response.body).toEqual(mockUserProfile);
+  });
+
+  it('/PATCH userData - should update user data successfully', async () => {
+    jest.spyOn(mockUserService, 'updateUser').mockResolvedValueOnce(undefined);
+
+    const response = await request(app.getHttpServer())
+      .patch('/user/userData')
+      .set('Authorization', 'Bearer valid-token')
+      .send({ email: 'new.email@example.com' })
+      .expect('Content-Type', /json/)
+      .expect(HttpStatus.OK);
+
+    expect(response.body).toEqual({
+      success: true,
+      message: 'user data was updated successfully',
+    });
+  });
+
+  it('/PATCH userData - should return BadRequest for invalid user data', async () => {
+    jest.spyOn(mockUserService, 'updateUser').mockRejectedValueOnce(
+      new BadRequestException('Invalid data'),
+    );
+
+    const response = await request(app.getHttpServer())
+      .patch('/user/userData')
+      .set('Authorization', 'Bearer valid-token')
+      .send({
+        firstName: '    ',
+        email: 'invalid-email',
+        birthday: '15-06-1995',
+      })
+      .expect('Content-Type', /json/)
+      .expect(HttpStatus.BAD_REQUEST);
+
+    expect(response.body).toEqual({
+      statusCode: 400,
+      message: [
+        'First name cannot contain only whitespace',
+        'email must be an email',
+        'birthday must be a valid ISO 8601 date string',
+      ],
+      error: 'Bad Request',
+    });
+  });
+
+
+  it('/PATCH password - should update password successfully', async () => {
+    jest.spyOn(mockAuthService, 'validatePassword').mockResolvedValueOnce(true);
+    jest.spyOn(mockUserService, 'updatePassword').mockResolvedValueOnce(undefined);
+
+    const response = await request(app.getHttpServer())
+      .patch('/user/password')
+      .set('Authorization', 'Bearer valid-token')
+      .send({
+        oldPassword: 'OldPassword123',
+        newPassword: 'NewPassword123',
+        newPasswordConfirm: 'NewPassword123',
+      })
+      .expect('Content-Type', /json/)
+      .expect(HttpStatus.OK);
+
+    expect(response.body).toEqual({
+      ok: true,
+      message: 'password was updated successfully',
+    });
+  });
+
+  it('/PATCH password - should return BadRequest for mismatched passwords', async () => {
+    const response = await request(app.getHttpServer())
+      .patch('/user/password')
+      .set('Authorization', 'Bearer valid-token')
+      .send({
+        oldPassword: 'OldPassword123',
+        newPassword: 'NewPassword123',
+        newPasswordConfirm: 'DifferentPassword123',
+      })
+      .expect('Content-Type', /json/)
+      .expect(HttpStatus.BAD_REQUEST);
+
+    expect(response.body).toEqual({
+      statusCode: 400,
+      message: 'New password and password confirmation must match',
+      error: 'Bad Request',
+    });
+  });
+
+  it('/PATCH password - should return NotFound for invalid old password', async () => {
+    jest.spyOn(mockAuthService, 'validatePassword').mockResolvedValueOnce(false);
+
+    const response = await request(app.getHttpServer())
+      .patch('/user/password')
+      .set('Authorization', 'Bearer valid-token')
+      .send({
+        oldPassword: 'WrongOldPassword123',
+        newPassword: 'NewPassword123',
+        newPasswordConfirm: 'NewPassword123',
+      })
+      .expect('Content-Type', /json/)
+      .expect(HttpStatus.NOT_FOUND);
+
+    expect(response.body).toEqual({
+      statusCode: 404,
+      message: 'Old password does not match',
+      error: 'Not Found',
+    });
+  });
+
 
   afterAll(async () => {
     await app.close();
