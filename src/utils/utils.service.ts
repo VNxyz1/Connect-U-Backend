@@ -221,6 +221,10 @@ export class UtilsService {
     dto.participantsNumber = participants.length;
     dto.maxParticipantsNumber = event.participantsNumber;
 
+    dto.participants = participants.map(
+      this.transformUserDBtoGetUserProfileDTO,
+    );
+
     dto.startAge = event.startAge || null;
     dto.endAge = event.endAge || null;
 
