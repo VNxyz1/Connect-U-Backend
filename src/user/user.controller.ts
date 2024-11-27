@@ -6,8 +6,10 @@ import {
   Controller,
   Get,
   HttpCode,
-  HttpStatus, NotFoundException,
-  Param, Patch,
+  HttpStatus,
+  NotFoundException,
+  Param,
+  Patch,
   Post,
   Res,
   UseGuards,
@@ -34,8 +36,7 @@ export class UserController {
     public readonly utils: UtilsService,
     public readonly authService: AuthService,
     public readonly utilsService: UtilsService,
-  ) {
-  }
+  ) {}
 
   @ApiResponse({
     type: OkDTO,
@@ -152,14 +153,17 @@ export class UserController {
     @User() user: UserDB,
   ): Promise<OkDTO> {
     if (body.newPassword !== body.newPasswordConfirm) {
-      throw new BadRequestException('New password and password confirmation must match');
+      throw new BadRequestException(
+        'New password and password confirmation must match',
+      );
     }
-    const valid = await this.authService.validatePassword(body.oldPassword, user.password);
+    const valid = await this.authService.validatePassword(
+      body.oldPassword,
+      user.password,
+    );
 
     if (!valid) {
-      throw new NotFoundException(
-        'Old password does not match',
-      );
+      throw new NotFoundException('Old password does not match');
     }
 
     await this.userService.updatePassword(user.id, body.newPassword);

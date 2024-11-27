@@ -126,7 +126,9 @@ export class UserService {
     if (updateData.email && updateData.email !== user.email) {
       const [existingEmail, existingUsername] = await Promise.all([
         this.userRepository.findOne({ where: { email: updateData.email } }),
-        this.userRepository.findOne({ where: { username: updateData.username } }),
+        this.userRepository.findOne({
+          where: { username: updateData.username },
+        }),
       ]);
 
       if (existingEmail) {
@@ -164,10 +166,7 @@ export class UserService {
    * @param {string} password - password to update.
    * @returns {Promise<UserDB>} - The updated user.
    */
-  async updatePassword(
-    id: string,
-    password: string,
-  ): Promise<UserDB> {
+  async updatePassword(id: string, password: string): Promise<UserDB> {
     const user = await this.findById(id);
 
     user.password = password;

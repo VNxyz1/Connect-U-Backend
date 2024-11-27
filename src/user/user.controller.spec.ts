@@ -1,6 +1,11 @@
 import * as request from 'supertest';
 import { Test } from '@nestjs/testing';
-import { BadRequestException, HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpStatus,
+  INestApplication,
+  ValidationPipe,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { mockUserService } from './user.service.spec';
 import { CreateUserDTO } from './DTO/CreateUserDTO';
@@ -114,7 +119,9 @@ describe('UserController', () => {
       profileText: expectedUserDB.profileText,
     };
 
-    jest.spyOn(mockUserService, 'findById').mockResolvedValueOnce(expectedUserDB);
+    jest
+      .spyOn(mockUserService, 'findById')
+      .mockResolvedValueOnce(expectedUserDB);
 
     jest
       .spyOn(mockUtilsService, 'transformUserDBtoGetUserProfileDTO')
@@ -129,7 +136,6 @@ describe('UserController', () => {
 
     expect(mockUserService.findById).toHaveBeenCalledWith(expectedUserDB.id);
   });
-
 
   it('/PATCH userData - should update user data successfully', async () => {
     jest.spyOn(mockUserService, 'updateUser').mockResolvedValueOnce(undefined);
@@ -148,9 +154,9 @@ describe('UserController', () => {
   });
 
   it('/PATCH userData - should return BadRequest for invalid user data', async () => {
-    jest.spyOn(mockUserService, 'updateUser').mockRejectedValueOnce(
-      new BadRequestException('Invalid data'),
-    );
+    jest
+      .spyOn(mockUserService, 'updateUser')
+      .mockRejectedValueOnce(new BadRequestException('Invalid data'));
 
     const response = await request(app.getHttpServer())
       .patch('/user/userData')
@@ -174,10 +180,11 @@ describe('UserController', () => {
     });
   });
 
-
   it('/PATCH password - should update password successfully', async () => {
     jest.spyOn(mockAuthService, 'validatePassword').mockResolvedValueOnce(true);
-    jest.spyOn(mockUserService, 'updatePassword').mockResolvedValueOnce(undefined);
+    jest
+      .spyOn(mockUserService, 'updatePassword')
+      .mockResolvedValueOnce(undefined);
 
     const response = await request(app.getHttpServer())
       .patch('/user/password')
@@ -216,7 +223,9 @@ describe('UserController', () => {
   });
 
   it('/PATCH password - should return NotFound for invalid old password', async () => {
-    jest.spyOn(mockAuthService, 'validatePassword').mockResolvedValueOnce(false);
+    jest
+      .spyOn(mockAuthService, 'validatePassword')
+      .mockResolvedValueOnce(false);
 
     const response = await request(app.getHttpServer())
       .patch('/user/password')
@@ -235,7 +244,6 @@ describe('UserController', () => {
       error: 'Not Found',
     });
   });
-
 
   afterAll(async () => {
     await app.close();

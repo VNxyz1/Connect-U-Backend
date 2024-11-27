@@ -16,7 +16,10 @@ export class GetUserProfileDTO {
   })
   city: string;
 
-  @ApiProperty({ description: 'the pronouns of the user', example: 'empty.png' })
+  @ApiProperty({
+    description: 'the pronouns of the user',
+    example: 'empty.png',
+  })
   profilePicture: string;
 
   @ApiProperty({ description: 'the pronouns of the user', example: 'she/her' })

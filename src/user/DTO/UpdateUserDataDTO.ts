@@ -69,7 +69,7 @@ export class UpdateUserDataDTO {
   streetNumber?: string;
 
   @ApiProperty({
-    description: 'The user\'s date of birth',
+    description: 'The users date of birth',
     example: '1995-06-15',
   })
   @IsISO8601()

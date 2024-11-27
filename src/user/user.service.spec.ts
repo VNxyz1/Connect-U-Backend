@@ -6,7 +6,6 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { GenderEnum } from '../database/enums/GenderEnum';
 
-
 describe('UserService', () => {
   let service: UserService;
   let userRepository: jest.Mocked<Repository<UserDB>>;
@@ -41,7 +40,7 @@ describe('UserService', () => {
       birthday: '1990-01-01',
       gender: 1,
       agb: true,
-      passwordConfirm: 'password123'
+      passwordConfirm: 'password123',
     };
 
     await expect(service.createUser(mockData)).rejects.toThrow(
@@ -61,7 +60,7 @@ describe('UserService', () => {
       birthday: '1990-01-01',
       gender: 1,
       agb: true,
-      passwordConfirm: 'password123'
+      passwordConfirm: 'password123',
     };
 
     await expect(service.createUser(mockData)).rejects.toThrow(
@@ -84,7 +83,7 @@ describe('UserService', () => {
       birthday: '1990-01-01',
       gender: 1,
       agb: true,
-      passwordConfirm: 'password123'
+      passwordConfirm: 'password123',
     };
 
     const result = await service.createUser(mockData);
@@ -99,13 +98,16 @@ describe('UserService', () => {
         birthday: mockData.birthday,
         gender: mockData.gender,
       }),
-    );    expect(result.id).toBe('newUserId');
+    );
+    expect(result.id).toBe('newUserId');
   });
 
   it('should throw NotFoundException if user is not found by email', async () => {
     userRepository.findOne.mockResolvedValueOnce(null);
 
-    await expect(service.findByEmail('missing.email@example.com')).rejects.toThrow(
+    await expect(
+      service.findByEmail('missing.email@example.com'),
+    ).rejects.toThrow(
       new NotFoundException(
         'The user with the email "missing.email@example.com" does not exist',
       ),
@@ -146,7 +148,10 @@ describe('UserService', () => {
 
     userRepository.findOne.mockResolvedValueOnce(mockUser); // Existing user
     userRepository.findOne.mockResolvedValueOnce(null); // No email conflict
-    userRepository.save.mockResolvedValueOnce({ ...mockUser, ...mockUpdateData });
+    userRepository.save.mockResolvedValueOnce({
+      ...mockUser,
+      ...mockUpdateData,
+    });
 
     const result = await service.updateUser('1', mockUpdateData);
 
@@ -170,7 +175,10 @@ describe('UserService', () => {
     const newPassword = 'newPasswordHash';
 
     userRepository.findOne.mockResolvedValueOnce(mockUser);
-    userRepository.save.mockResolvedValueOnce({ ...mockUser, password: newPassword });
+    userRepository.save.mockResolvedValueOnce({
+      ...mockUser,
+      password: newPassword,
+    });
 
     const result = await service.updatePassword('1', newPassword);
 
@@ -182,14 +190,16 @@ describe('UserService', () => {
     const mockUpdateData = { profileText: 'Updated text' };
 
     userRepository.findOne.mockResolvedValueOnce(mockUser);
-    userRepository.save.mockResolvedValueOnce({ ...mockUser, ...mockUpdateData });
+    userRepository.save.mockResolvedValueOnce({
+      ...mockUser,
+      ...mockUpdateData,
+    });
 
     const result = await service.updateUserProfile('1', mockUpdateData);
 
     expect(result.profileText).toBe(mockUpdateData.profileText);
   });
 });
-
 
 const mockUserList: UserDB[] = [
   {
@@ -300,5 +310,5 @@ export const mockUserService = {
   createUser: jest.fn().mockResolvedValue(mockUserList[0]),
   updateUser: jest.fn().mockResolvedValue(undefined),
   updateUserProfile: jest.fn().mockResolvedValue(undefined),
-  updatePassword: jest.fn().mockResolvedValue(undefined)
-}
+  updatePassword: jest.fn().mockResolvedValue(undefined),
+};

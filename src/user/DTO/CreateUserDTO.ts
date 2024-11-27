@@ -5,7 +5,8 @@ import {
   IsNotEmpty,
   IsString,
   MinLength,
-  Matches, MaxLength,
+  Matches,
+  MaxLength,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { GenderEnum } from '../../database/enums/GenderEnum';
