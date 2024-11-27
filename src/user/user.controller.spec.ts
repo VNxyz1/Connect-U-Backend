@@ -12,6 +12,7 @@ import { JwtService } from '@nestjs/jwt';
 import { JWTConstants } from '../auth/constants';
 import { mockAuthService } from '../auth/auth.service.spec';
 import { mockUtilsService } from '../utils/utils.service.spec';
+import { UserDB } from '../database/UserDB';
 
 describe('UserController', () => {
   let app: INestApplication;
@@ -65,8 +66,8 @@ describe('UserController', () => {
       refresh_token: 'valid_refresh_token',
     };
 
-    jest.spyOn(mockUserService, 'createUser').mockResolvedValueOnce(undefined); // User wird erstellt
-    jest.spyOn(mockAuthService, 'signIn').mockResolvedValueOnce(tokens); // Tokens werden generiert
+    jest.spyOn(mockUserService, 'createUser').mockResolvedValueOnce(undefined);
+    jest.spyOn(mockAuthService, 'signIn').mockResolvedValueOnce(tokens);
 
     const response = await request(app.getHttpServer())
       .post('/user')
@@ -76,7 +77,6 @@ describe('UserController', () => {
 
     expect(response.body).toEqual({ access_token: tokens.access_token });
 
-    // Prüfen, ob das Cookie korrekt gesetzt wurde
     const cookies = response.headers['set-cookie'];
     expect(cookies).toBeDefined();
     expect(cookies[0]).toContain('refresh_token=valid_refresh_token');
@@ -102,31 +102,34 @@ describe('UserController', () => {
   });
 
   it('/GET userProfile/:userId - should return user profile', async () => {
+    const expectedUserDB: UserDB = await mockUserService.findById('3');
     const mockUserProfile = {
-      firstName: 'John',
-      lastName: 'Doe',
-      profileText: 'I love programming.',
+      id: expectedUserDB.id,
+      firstName: expectedUserDB.firstName,
+      username: expectedUserDB.username,
+      city: expectedUserDB.city,
+      profilePicture: expectedUserDB.profilePicture,
+      pronouns: expectedUserDB.pronouns,
+      age: 24,
+      profileText: expectedUserDB.profileText,
     };
 
-    const user = await mockUserService.findById('1');
-    expect(user).toEqual(
-      expect.objectContaining({
-        id: '3',
-        email: 'alex.jones@example.com',
-      }),
-    );
+    jest.spyOn(mockUserService, 'findById').mockResolvedValueOnce(expectedUserDB);
 
     jest
       .spyOn(mockUtilsService, 'transformUserDBtoGetUserProfileDTO')
       .mockReturnValueOnce(mockUserProfile);
 
     const response = await request(app.getHttpServer())
-      .get('/user/userProfile/1')
+      .get(`/user/userProfile/${expectedUserDB.id}`)
       .expect('Content-Type', /json/)
       .expect(HttpStatus.OK);
 
     expect(response.body).toEqual(mockUserProfile);
+
+    expect(mockUserService.findById).toHaveBeenCalledWith(expectedUserDB.id);
   });
+
 
   it('/PATCH userData - should update user data successfully', async () => {
     jest.spyOn(mockUserService, 'updateUser').mockResolvedValueOnce(undefined);

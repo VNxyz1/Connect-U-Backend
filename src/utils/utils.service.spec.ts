@@ -178,18 +178,30 @@ describe('UtilsService', () => {
 });
 
 export const mockUtilsService = {
+
   transformUserDBtoGetUserProfileDTO: jest.fn((user) => ({
+    id: user.id,
     firstName: user.firstName,
-    lastName: user.lastName,
+    username: user.username,
+    city: user.city,
+    profilePicture: user.profilePicture,
+    pronouns: user.pronouns,
+    age: 23,
     profileText: user.profileText,
   })),
 
+
   transformUserDBtoGetUserDataDTO: jest.fn((user) => ({
-    email: user.email,
-    username: user.username,
+    id: user.id,
     firstName: user.firstName,
     lastName: user.lastName,
+    username: user.username,
+    email: user.email,
+    city: user.city,
+    streetNumber: user.streetNumber,
     birthday: user.birthday,
     gender: user.gender,
+    street: user.street,
+    zipCode: user.zipCode,
   })),
 };

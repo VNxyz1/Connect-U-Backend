@@ -161,7 +161,7 @@ export class UserService {
    * Updates a user's password.
    *
    * @param {string} id - The unique ID of the user to update.
-   * @param {string} newPassword - DTO with password to update.
+   * @param {string} password - password to update.
    * @returns {Promise<UserDB>} - The updated user.
    */
   async updatePassword(
