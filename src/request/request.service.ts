@@ -73,7 +73,7 @@ export class RequestService {
    * @throws NotFoundException If the user does not exist.
    */
   async getRequestsByUser(userId: string) {
-    const user = await this.userRepository.findOne({ where: { id: userId }, relations: ['requests'] });
+    const user = await this.userRepository.findOne({ where: { id: userId }, relations: ['requests', 'requests.event'] });
     if (!user) throw new NotFoundException('User not found');
 
     return user.requests.filter((request) => request.type === 1);

@@ -12,6 +12,7 @@ import { GetUserDataDTO } from '../user/DTO/GetUserDataDTO';
 import { GetEventJoinDTO } from '../event/DTO/GetEventJoinDTO';
 import { RequestDB } from '../database/RequestDB';
 import { GetEventJoinRequestDTO } from '../request/DTO/GetEventJoinRequestDTO';
+import { GetUserJoinRequestDTO } from '../request/DTO/GetUserJoinRequestDTO';
 
 @Injectable()
 export class UtilsService {
@@ -271,6 +272,22 @@ export class UtilsService {
     dto.id = request.id;
     dto.denied = request.denied;
     dto.event = await this.transformEventDBtoGetEventJoinDTO(request.event)
+
+    return dto;
+  }
+
+  /**
+   * Transforms a RequestDB object into a GetUserJoinRequestDTO.
+   * @param request - The request entity from the database.
+   * @returns {Promise<GetUserJoinRequestDTO>} - A promise resolving to the transformed request DTO.
+   */
+  async transformRequestDBtoGetUserJoinRequestDTO(
+    request: RequestDB,
+  ): Promise<GetUserJoinRequestDTO> {
+    const dto = new GetUserJoinRequestDTO();
+    dto.id = request.id;
+    dto.denied = request.denied;
+    dto.user =  this.transformUserDBtoGetUserProfileDTO(request.user)
 
     return dto;
   }

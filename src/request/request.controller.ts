@@ -15,6 +15,7 @@ import { OkDTO } from '../serverDTO/OkDTO';
 import { EventService } from '../event/event.service';
 import { UtilsService } from '../utils/utils.service';
 import { GetEventJoinRequestDTO } from './DTO/GetEventJoinRequestDTO';
+import { GetUserJoinRequestDTO } from './DTO/GetUserJoinRequestDTO';
 
 @ApiTags('request')
 @Controller('request')
@@ -63,6 +64,27 @@ export class RequestController {
     return Promise.all(
       requests.map((request) =>
         this.utilsService.transformRequestDBtoGetEventJoinRequestDTO(request),
+      ),
+    );
+  }
+
+  @ApiResponse({
+    type: [GetUserJoinRequestDTO],
+    description: 'Fetches all join requests for a specific event',
+    status: HttpStatus.OK,
+  })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard)
+  @Get('join/event/:eventId')
+  @HttpCode(HttpStatus.OK)
+  async getRequestsForEvent(
+    @Param('eventId') eventId: string,
+  ): Promise<GetUserJoinRequestDTO[]> {
+    const requests = await this.requestService.getRequestsForEvent(eventId);
+
+    return Promise.all(
+      requests.map((request) =>
+        this.utilsService.transformRequestDBtoGetUserJoinRequestDTO(request),
       ),
     );
   }
