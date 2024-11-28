@@ -9,6 +9,9 @@ import { GetEventDetailsDTO } from '../event/DTO/GetEventDetailsDTO';
 import { UserDB } from '../database/UserDB';
 import { GetUserProfileDTO } from '../user/DTO/GetUserProfileDTO';
 import { GetUserDataDTO } from '../user/DTO/GetUserDataDTO';
+import { GetEventJoinDTO } from '../event/DTO/GetEventJoinDTO';
+import { RequestDB } from '../database/RequestDB';
+import { GetEventJoinRequestDTO } from '../request/DTO/GetEventJoinRequestDTO';
 
 @Injectable()
 export class UtilsService {
@@ -234,6 +237,40 @@ export class UtilsService {
     dto.preferredGenders = preferredGenders.map(
       this.transformGenderDBtoGetGenderDTO,
     );
+
+    return dto;
+  }
+
+  /**
+   * Transforms an EventDB object into a GetEventJoinDTO.
+   * @param event - The event entity from the database.
+   * @returns {Promise<GetEventJoinDTO>} - A promise resolving to the transformed event data transfer object.
+   */
+  async transformEventDBtoGetEventJoinDTO(
+    event: EventDB,
+  ): Promise<GetEventJoinDTO> {
+    const dto = new GetEventJoinDTO();
+    dto.id = event.id;
+    dto.dateAndTime = event.dateAndTime;
+    dto.title = event.title;
+    dto.picture = event.picture;
+    dto.status = event.status;
+
+    return dto;
+  }
+
+  /**
+   * Transforms a RequestDB object into a GetEventJoinRequestDTO.
+   * @param request - The request entity from the database.
+   * @returns {Promise<GetEventJoinRequestDTO>} - A promise resolving to the transformed request DTO.
+   */
+  async transformRequestDBtoGetEventJoinRequestDTO(
+    request: RequestDB,
+  ): Promise<GetEventJoinRequestDTO> {
+    const dto = new GetEventJoinRequestDTO();
+    dto.id = request.id;
+    dto.denied = request.denied;
+    dto.event = await this.transformEventDBtoGetEventJoinDTO(request.event)
 
     return dto;
   }

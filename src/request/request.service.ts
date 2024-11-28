@@ -20,7 +20,8 @@ export class RequestService {
     private readonly eventRepository: Repository<EventDB>,
     @InjectRepository(UserDB)
     private readonly userRepository: Repository<UserDB>,
-  ) {}
+  ) {
+  }
 
   /**
    * Creates a new request in the database.
@@ -62,5 +63,36 @@ export class RequestService {
     request.type = 1;
 
     await this.requestRepository.save(request);
+  }
+
+  /**
+   * Retrieves all requests sent by a specific user.
+   *
+   * @param userId - the ID of the user
+   * @returns An array of requests sent by the user
+   * @throws NotFoundException If the user does not exist.
+   */
+  async getRequestsByUser(userId: string) {
+    const user = await this.userRepository.findOne({ where: { id: userId }, relations: ['requests'] });
+    if (!user) throw new NotFoundException('User not found');
+
+    return user.requests.filter((request) => request.type === 1);
+  }
+
+  /**
+   * Retrieves all requests for a specific event.
+   *
+   * @param eventId - the ID of the event
+   * @returns An array of requests for the event
+   * @throws NotFoundException If the event does not exist.
+   */
+  async getRequestsForEvent(eventId: string) {
+    const event = await this.eventRepository.findOne({
+      where: { id: eventId },
+      relations: ['requests', 'requests.user'],
+    });
+    if (!event) throw new NotFoundException('Event not found');
+
+    return event.requests.filter((request) => request.type === 1);
   }
 }

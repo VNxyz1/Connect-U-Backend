@@ -4,7 +4,7 @@ import {
   Param,
   UseGuards,
   HttpCode,
-  HttpStatus,
+  HttpStatus, Get,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RequestService } from './request.service';
@@ -14,6 +14,7 @@ import { UserDB } from '../database/UserDB';
 import { OkDTO } from '../serverDTO/OkDTO';
 import { EventService } from '../event/event.service';
 import { UtilsService } from '../utils/utils.service';
+import { GetEventJoinRequestDTO } from './DTO/GetEventJoinRequestDTO';
 
 @ApiTags('request')
 @Controller('request')
@@ -43,5 +44,26 @@ export class RequestController {
 
     await this.requestService.postJoinRequest(eventId, user.id);
     return new OkDTO(true, 'Request was sent');
+  }
+
+  @ApiResponse({
+    type: [GetEventJoinRequestDTO],
+    description: 'Fetches all requests sent by a specific user',
+    status: HttpStatus.OK,
+  })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard)
+  @Get('join/user')
+  @HttpCode(HttpStatus.OK)
+  async getRequestsByUser(
+    @User() user: UserDB,
+  ): Promise<GetEventJoinRequestDTO[]> {
+    const requests = await this.requestService.getRequestsByUser(user.id);
+
+    return Promise.all(
+      requests.map((request) =>
+        this.utilsService.transformRequestDBtoGetEventJoinRequestDTO(request),
+      ),
+    );
   }
 }
