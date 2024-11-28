@@ -5,7 +5,7 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
-  Get,
+  Get, Patch, Delete,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RequestService } from './request.service';
@@ -92,5 +92,40 @@ export class RequestController {
         this.utilsService.transformRequestDBtoGetUserJoinRequestDTO(request),
       ),
     );
+  }
+
+  @ApiResponse({
+    type: OkDTO,
+    description: 'denies a join request for an event',
+    status: HttpStatus.CREATED,
+  })
+  @Patch('/deny/:requestId')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth('access-token')
+  async denyRequest(
+    @Param('requestId') requestId: number,
+    @User() currentUser: UserDB,
+  ): Promise<OkDTO> {
+    await this.requestService.denyRequest(requestId, currentUser.id);
+    return new OkDTO(true, 'Request successfully denied');
+  }
+
+
+  @Delete('/delete/:requestId')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth('access-token')
+  @ApiResponse({
+    type: OkDTO,
+    description: 'Deletes a join request sent by the user',
+    status: HttpStatus.OK,
+  })
+  async deleteRequest(
+    @Param('requestId') requestId: number,
+    @User() currentUser: UserDB,
+  ): Promise<OkDTO> {
+    await this.requestService.deleteJoinRequest(requestId, currentUser.id);
+    return new OkDTO(true, 'Request successfully deleted');
   }
 }

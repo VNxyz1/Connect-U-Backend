@@ -81,6 +81,7 @@ export class RequestService {
     return user.requests.filter((request) => request.type === 1);
   }
 
+
   /**
    * Retrieves all requests for a specific event.
    *
@@ -103,5 +104,60 @@ export class RequestService {
     }
 
     return event.requests.filter((request) => request.type === 1);
+  }
+
+  /**
+   * Denies a request by setting its `denied` property to true.
+   *
+   * @param requestId - the ID of the request to be denied
+   * @param userId - the ID of the currently logged-in user (event host)
+   * @throws NotFoundException If the request or event does not exist.
+   * @throws ForbiddenException If the logged-in user is not the host of the event.
+   */
+  async denyRequest(requestId: number, userId: string) {
+    const request = await this.requestRepository.findOne({
+      where: { id: requestId },
+      relations: ['event', 'event.host'],
+    });
+
+    if (!request) {
+      throw new NotFoundException('Request not found');
+    }
+
+    const event = request.event;
+
+    if (!event) {
+      throw new NotFoundException('Event associated with the request not found');
+    }
+
+    if (event.host.id !== userId) {
+      throw new ForbiddenException('You are not authorized to deny this request');
+    }
+
+    request.denied = true;
+
+    await this.requestRepository.save(request);
+  }
+
+  /**
+   * Deletes a join request sent by a user.
+   *
+   * @param requestId - the ID of the request to be deleted
+   * @param userId - the ID of the currently logged-in user
+   * @throws NotFoundException If the request does not exist.
+   * @throws ForbiddenException If the request was not sent by the currently logged-in user.
+   */
+  async deleteJoinRequest(requestId: number, userId: string) {
+    const request = await this.requestRepository.findOne({
+      where: { id: requestId },
+      relations: ['user'],
+    });
+    if (!request) {
+      throw new NotFoundException('Request not found');
+    }
+    if (request.user.id !== userId) {
+      throw new ForbiddenException('You are not authorized to delete this request');
+    }
+    await this.requestRepository.remove(request);
   }
 }
