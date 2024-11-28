@@ -5,7 +5,9 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
-  Get, Patch, Delete,
+  Get,
+  Patch,
+  Delete,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RequestService } from './request.service';
@@ -94,6 +96,24 @@ export class RequestController {
     );
   }
 
+  @Patch('/accept/:requestId')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth('access-token')
+  @ApiResponse({
+    type: OkDTO,
+    description:
+      'Accepts a join request, adds the user to the event, and deletes the request',
+    status: HttpStatus.OK,
+  })
+  async acceptRequest(
+    @Param('requestId') requestId: number,
+    @User() currentUser: UserDB,
+  ): Promise<OkDTO> {
+    await this.requestService.acceptJoinRequest(requestId, currentUser.id);
+    return new OkDTO(true, 'Request successfully accepted');
+  }
+
   @ApiResponse({
     type: OkDTO,
     description: 'denies a join request for an event',
@@ -110,7 +130,6 @@ export class RequestController {
     await this.requestService.denyRequest(requestId, currentUser.id);
     return new OkDTO(true, 'Request successfully denied');
   }
-
 
   @Delete('/delete/:requestId')
   @HttpCode(HttpStatus.OK)

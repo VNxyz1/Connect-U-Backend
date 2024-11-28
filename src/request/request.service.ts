@@ -53,8 +53,16 @@ export class RequestService {
     const existingRequest = await this.requestRepository.findOne({
       where: { user: { id: userId }, event: { id: eventId } },
     });
-    if (existingRequest)
-      throw new BadRequestException('Request already exists');
+
+    if (existingRequest) {
+      if (existingRequest.denied) {
+        existingRequest.denied = false;
+        await this.requestRepository.save(existingRequest);
+        return;
+      } else {
+        throw new BadRequestException('Request already exists');
+      }
+    }
 
     const request = this.requestRepository.create();
     request.user = user;
@@ -81,9 +89,8 @@ export class RequestService {
     return user.requests.filter((request) => request.type === 1);
   }
 
-
   /**
-   * Retrieves all requests for a specific event.
+   * Retrieves all requests for a specific event that have not been denied.
    *
    * @param eventId - the ID of the event
    * @param userId - currently logged-in user
@@ -103,7 +110,55 @@ export class RequestService {
       );
     }
 
-    return event.requests.filter((request) => request.type === 1);
+    return event.requests.filter(
+      (request) => request.type === 1 && !request.denied,
+    );
+  }
+
+  /**
+   * Accepts a join request, adds the user to the event's participant list, and deletes the request.
+   *
+   * @param requestId - the ID of the join request
+   * @param userId - the ID of the host (currently logged-in user)
+   * @throws NotFoundException If the request or event does not exist.
+   * @throws ForbiddenException If the user is not the host of the event.
+   * @throws BadRequestException If the event is already full or the request is already denied.
+   */
+  async acceptJoinRequest(requestId: number, userId: string) {
+    const request = await this.requestRepository.findOne({
+      where: { id: requestId },
+      relations: ['event', 'user'],
+    });
+    if (!request) {
+      throw new NotFoundException('Request not found');
+    }
+
+    const event = request.event;
+
+    if (!event) {
+      throw new NotFoundException('Event not found');
+    }
+    if (event.host.id !== userId) {
+      throw new ForbiddenException(
+        'You are not authorized to accept this request',
+      );
+    }
+
+    if (request.denied) {
+      throw new BadRequestException('This request has already been denied');
+    }
+
+    if (event.participants.length >= event.participantsNumber) {
+      throw new BadRequestException(
+        'The event has reached the maximum number of participants',
+      );
+    }
+
+    event.participants.push(request.user);
+
+    await this.eventRepository.save(event);
+
+    await this.requestRepository.remove(request);
   }
 
   /**
@@ -127,11 +182,15 @@ export class RequestService {
     const event = request.event;
 
     if (!event) {
-      throw new NotFoundException('Event associated with the request not found');
+      throw new NotFoundException(
+        'Event associated with the request not found',
+      );
     }
 
     if (event.host.id !== userId) {
-      throw new ForbiddenException('You are not authorized to deny this request');
+      throw new ForbiddenException(
+        'You are not authorized to deny this request',
+      );
     }
 
     request.denied = true;
@@ -156,7 +215,9 @@ export class RequestService {
       throw new NotFoundException('Request not found');
     }
     if (request.user.id !== userId) {
-      throw new ForbiddenException('You are not authorized to delete this request');
+      throw new ForbiddenException(
+        'You are not authorized to delete this request',
+      );
     }
     await this.requestRepository.remove(request);
   }
