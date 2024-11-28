@@ -271,7 +271,7 @@ export class UtilsService {
     const dto = new GetEventJoinRequestDTO();
     dto.id = request.id;
     dto.denied = request.denied;
-    dto.event = await this.transformEventDBtoGetEventJoinDTO(request.event)
+    dto.event = await this.transformEventDBtoGetEventJoinDTO(request.event);
 
     return dto;
   }
@@ -287,7 +287,7 @@ export class UtilsService {
     const dto = new GetUserJoinRequestDTO();
     dto.id = request.id;
     dto.denied = request.denied;
-    dto.user =  this.transformUserDBtoGetUserProfileDTO(request.user)
+    dto.user = this.transformUserDBtoGetUserProfileDTO(request.user);
 
     return dto;
   }

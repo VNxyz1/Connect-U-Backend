@@ -20,8 +20,7 @@ export class RequestService {
     private readonly eventRepository: Repository<EventDB>,
     @InjectRepository(UserDB)
     private readonly userRepository: Repository<UserDB>,
-  ) {
-  }
+  ) {}
 
   /**
    * Creates a new request in the database.
@@ -73,7 +72,10 @@ export class RequestService {
    * @throws NotFoundException If the user does not exist.
    */
   async getRequestsByUser(userId: string) {
-    const user = await this.userRepository.findOne({ where: { id: userId }, relations: ['requests', 'requests.event'] });
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['requests', 'requests.event'],
+    });
     if (!user) throw new NotFoundException('User not found');
 
     return user.requests.filter((request) => request.type === 1);
@@ -83,15 +85,22 @@ export class RequestService {
    * Retrieves all requests for a specific event.
    *
    * @param eventId - the ID of the event
+   * @param userId - currently logged-in user
    * @returns An array of requests for the event
    * @throws NotFoundException If the event does not exist.
    */
-  async getRequestsForEvent(eventId: string) {
+  async getRequestsForEvent(eventId: string, userId: string) {
     const event = await this.eventRepository.findOne({
       where: { id: eventId },
-      relations: ['requests', 'requests.user'],
+      relations: ['requests', 'requests.user', 'host'],
     });
     if (!event) throw new NotFoundException('Event not found');
+
+    if (event.host.id !== userId) {
+      throw new ForbiddenException(
+        'You are not the host and cant view the events join requests',
+      );
+    }
 
     return event.requests.filter((request) => request.type === 1);
   }

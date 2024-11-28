@@ -1,11 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsISO8601,
-  IsNotEmpty,
-  IsString,
-} from 'class-validator';
+import { IsISO8601, IsNotEmpty, IsString } from 'class-validator';
 import { StatusEnum } from '../../database/enums/StatusEnum';
-
 
 export class GetEventJoinDTO {
   @ApiProperty({ description: 'the ID of the event', example: 1 })

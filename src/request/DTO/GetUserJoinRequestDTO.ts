@@ -1,10 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsNotEmpty,
-} from 'class-validator';
+import { IsNotEmpty } from 'class-validator';
 import { Type } from 'class-transformer';
 import { GetUserProfileDTO } from '../../user/DTO/GetUserProfileDTO';
-
 
 export class GetUserJoinRequestDTO {
   @ApiProperty({ description: 'the ID of the request', example: 1 })

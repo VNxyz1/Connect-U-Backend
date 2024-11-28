@@ -4,7 +4,8 @@ import {
   Param,
   UseGuards,
   HttpCode,
-  HttpStatus, Get,
+  HttpStatus,
+  Get,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RequestService } from './request.service';
@@ -79,8 +80,12 @@ export class RequestController {
   @HttpCode(HttpStatus.OK)
   async getRequestsForEvent(
     @Param('eventId') eventId: string,
+    @User() user: UserDB,
   ): Promise<GetUserJoinRequestDTO[]> {
-    const requests = await this.requestService.getRequestsForEvent(eventId);
+    const requests = await this.requestService.getRequestsForEvent(
+      eventId,
+      user.id,
+    );
 
     return Promise.all(
       requests.map((request) =>

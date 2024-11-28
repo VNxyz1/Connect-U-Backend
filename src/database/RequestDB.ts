@@ -17,6 +17,6 @@ export class RequestDB {
   @Column()
   type: RequestEnum;
 
-  @Column({default: false})
+  @Column({ default: false })
   denied: boolean;
 }
