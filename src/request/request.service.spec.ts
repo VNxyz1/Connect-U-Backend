@@ -6,7 +6,11 @@ import { EventDB } from '../database/EventDB';
 import { UserDB } from '../database/UserDB';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { GenderEnum } from '../database/enums/GenderEnum';
 import { StatusEnum } from '../database/enums/StatusEnum';
 
@@ -131,7 +135,6 @@ describe('RequestService', () => {
 
   describe('RequestService - getRequestsByUser', () => {
     it('should retrieve all requests made by a specific user', async () => {
-
       const mockRequest = {
         id: 1,
         type: 1,
@@ -160,7 +163,6 @@ describe('RequestService', () => {
 
   describe('RequestService - getRequestsForEvent', () => {
     it('should retrieve all non-denied requests for an event', async () => {
-
       eventRepository.findOne.mockResolvedValue(mockEventList[0]);
 
       const result = await service.getRequestsForEvent('1', '2');
@@ -170,7 +172,9 @@ describe('RequestService', () => {
     it('should throw NotFoundException if the event does not exist', async () => {
       eventRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.getRequestsForEvent('event123', 'host123')).rejects.toThrowError(NotFoundException);
+      await expect(
+        service.getRequestsForEvent('event123', 'host123'),
+      ).rejects.toThrowError(NotFoundException);
     });
 
     it('should throw ForbiddenException if the logged-in user is not the host of the event', async () => {
@@ -186,7 +190,9 @@ describe('RequestService', () => {
       eventRepository.findOne.mockResolvedValue(mockEvent);
       requestRepository.findOne.mockResolvedValue(mockRequest);
 
-      await expect(service.getRequestsForEvent(mockEvent.id, 'differentUser')).rejects.toThrowError(ForbiddenException);
+      await expect(
+        service.getRequestsForEvent(mockEvent.id, 'differentUser'),
+      ).rejects.toThrowError(ForbiddenException);
     });
   });
 
@@ -218,7 +224,9 @@ describe('RequestService', () => {
     it('should throw NotFoundException if the request does not exist', async () => {
       requestRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.acceptJoinRequest(999, 'host123')).rejects.toThrowError(NotFoundException);
+      await expect(
+        service.acceptJoinRequest(999, 'host123'),
+      ).rejects.toThrowError(NotFoundException);
     });
 
     it('should throw NotFoundException if the event associated with the request does not exist', async () => {
@@ -227,7 +235,9 @@ describe('RequestService', () => {
       requestRepository.findOne.mockResolvedValue(mockRequest);
       eventRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.acceptJoinRequest(mockRequest.id, 'host123')).rejects.toThrowError(NotFoundException);
+      await expect(
+        service.acceptJoinRequest(mockRequest.id, 'host123'),
+      ).rejects.toThrowError(NotFoundException);
     });
 
     it('should throw BadRequestException if the request has already been denied', async () => {
@@ -243,7 +253,9 @@ describe('RequestService', () => {
       requestRepository.findOne.mockResolvedValue(mockRequest);
       eventRepository.findOne.mockResolvedValue(mockEvent);
 
-      await expect(service.acceptJoinRequest(mockRequest.id, mockHost.id)).rejects.toThrowError(BadRequestException);
+      await expect(
+        service.acceptJoinRequest(mockRequest.id, mockHost.id),
+      ).rejects.toThrowError(BadRequestException);
     });
 
     it('should throw BadRequestException if the event has reached the maximum number of participants', async () => {
@@ -265,28 +277,42 @@ describe('RequestService', () => {
       eventRepository.findOne.mockResolvedValue(mockEvent); // The event exists
 
       // Act & Assert: Expect BadRequestException to be thrown if the event is full
-      await expect(service.acceptJoinRequest(mockRequest.id, mockHost.id)).rejects.toThrowError(BadRequestException);
+      await expect(
+        service.acceptJoinRequest(mockRequest.id, mockHost.id),
+      ).rejects.toThrowError(BadRequestException);
     });
   });
 
   describe('RequestService - denyRequest', () => {
     it('should deny a join request', async () => {
       const mockEvent = { host: { id: 'host123' } } as EventDB;
-      const mockRequest = { id: 1, event: mockEvent, denied: false } as RequestDB;
+      const mockRequest = {
+        id: 1,
+        event: mockEvent,
+        denied: false,
+      } as RequestDB;
 
       eventRepository.findOne.mockResolvedValue(mockEvent);
       requestRepository.findOne.mockResolvedValue(mockRequest);
-      requestRepository.save.mockResolvedValue({ ...mockRequest, denied: true });
+      requestRepository.save.mockResolvedValue({
+        ...mockRequest,
+        denied: true,
+      });
 
       await service.denyRequest(1, 'host123');
 
-      expect(requestRepository.save).toHaveBeenCalledWith({ ...mockRequest, denied: true });
+      expect(requestRepository.save).toHaveBeenCalledWith({
+        ...mockRequest,
+        denied: true,
+      });
     });
 
     it('should throw NotFoundException if the request does not exist', async () => {
       requestRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.denyRequest(999, 'host123')).rejects.toThrowError(NotFoundException);
+      await expect(service.denyRequest(999, 'host123')).rejects.toThrowError(
+        NotFoundException,
+      );
     });
 
     it('should throw NotFoundException if the event associated with the request does not exist', async () => {
@@ -295,7 +321,9 @@ describe('RequestService', () => {
       requestRepository.findOne.mockResolvedValue(mockRequest);
       eventRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.denyRequest(mockRequest.id, 'host123')).rejects.toThrowError(NotFoundException);
+      await expect(
+        service.denyRequest(mockRequest.id, 'host123'),
+      ).rejects.toThrowError(NotFoundException);
     });
   });
 
@@ -313,7 +341,9 @@ describe('RequestService', () => {
     it('should throw NotFoundException if the request does not exist', async () => {
       requestRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.deleteJoinRequest(999, '3')).rejects.toThrowError(NotFoundException);
+      await expect(service.deleteJoinRequest(999, '3')).rejects.toThrowError(
+        NotFoundException,
+      );
     });
   });
 });
@@ -342,7 +372,6 @@ export const mockRequestService = {
   denyRequest: jest.fn().mockResolvedValue(undefined),
   deleteJoinRequest: jest.fn().mockResolvedValue(undefined),
 };
-
 
 const mockUserList: UserDB[] = [
   {
@@ -446,7 +475,6 @@ const mockUserList: UserDB[] = [
   },
 ];
 
-
 const mockEventList: EventDB[] = [
   {
     id: '1',
@@ -507,4 +535,3 @@ const mockEventList: EventDB[] = [
     messages: [],
   },
 ];
-

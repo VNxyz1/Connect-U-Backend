@@ -79,7 +79,11 @@ describe('RequestController', () => {
         {
           id: 1,
           denied: false,
-          event: { id: '123', name: 'Sample Event', host: { id: 'host123', username: 'hostUser' } },
+          event: {
+            id: '123',
+            name: 'Sample Event',
+            host: { id: 'host123', username: 'hostUser' },
+          },
         },
       ]);
 
