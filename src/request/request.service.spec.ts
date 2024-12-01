@@ -6,7 +6,7 @@ import { EventDB } from '../database/EventDB';
 import { UserDB } from '../database/UserDB';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { GenderEnum } from '../database/enums/GenderEnum';
 import { StatusEnum } from '../database/enums/StatusEnum';
 
@@ -40,163 +40,281 @@ describe('RequestService', () => {
     userRepository.findOne = jest.fn();
   });
 
-  it('should throw NotFoundException if event is not found', async () => {
-    eventRepository.findOne.mockResolvedValue(null);
+  describe('RequestService - postJoinRequest', () => {
+    it('should throw NotFoundException if event is not found', async () => {
+      eventRepository.findOne.mockResolvedValue(null);
 
-    await expect(
-      service.postJoinRequest('event123', 'user123'),
-    ).rejects.toThrow(new NotFoundException('Event not found'));
-  });
-
-  it('should throw NotFoundException if user is not found', async () => {
-    eventRepository.findOne.mockResolvedValue({
-      id: 'event123',
-      type: EventtypeEnum.halfPrivate,
-      host: { id: 'host123' },
-    } as EventDB);
-    userRepository.findOne.mockResolvedValue(null);
-
-    await expect(
-      service.postJoinRequest('event123', 'user123'),
-    ).rejects.toThrow(new NotFoundException('User not found'));
-  });
-
-  it('should throw an error if the host tries to send a join request to their own event', async () => {
-    eventRepository.findOne.mockResolvedValue({
-      id: 'event123',
-      type: EventtypeEnum.halfPrivate,
-      host: { id: 'user123' },
-    } as EventDB);
-    userRepository.findOne.mockResolvedValue({ id: 'user123' } as UserDB);
-
-    await expect(
-      service.postJoinRequest('event123', 'user123'),
-    ).rejects.toThrow(
-      new Error('Host cannot send a join request to their own event'),
-    );
-  });
-
-  it('should throw an error if the event is not half-private', async () => {
-    eventRepository.findOne.mockResolvedValue({
-      id: 'event123',
-      type: EventtypeEnum.public,
-      host: { id: 'host123' },
-    } as EventDB);
-    userRepository.findOne.mockResolvedValue({ id: 'user123' } as UserDB);
-
-    await expect(
-      service.postJoinRequest('event123', 'user123'),
-    ).rejects.toThrow(
-      new Error('Join requests are only allowed for half-private events'),
-    );
-  });
-
-  it('should throw an error if a request already exists', async () => {
-    eventRepository.findOne.mockResolvedValue({
-      id: 'event123',
-      type: EventtypeEnum.halfPrivate,
-      host: { id: 'host123' },
-    } as EventDB);
-    userRepository.findOne.mockResolvedValue({ id: 'user123' } as UserDB);
-    requestRepository.findOne.mockResolvedValue({
-      id: 1,
-    } as RequestDB);
-
-    await expect(
-      service.postJoinRequest('event123', 'user123'),
-    ).rejects.toThrow(new Error('Request already exists'));
-  });
-
-  it('should create and save a join request', async () => {
-    const mockEvent = {
-      id: 'event123',
-      type: EventtypeEnum.halfPrivate,
-      host: { id: 'host123' },
-    } as EventDB;
-    const mockUser = { id: 'user123' } as UserDB;
-    const mockRequest = { id: 1 } as RequestDB;
-
-    eventRepository.findOne.mockResolvedValue(mockEvent);
-    userRepository.findOne.mockResolvedValue(mockUser);
-    requestRepository.findOne.mockResolvedValue(null);
-    requestRepository.create.mockReturnValue(mockRequest);
-    requestRepository.save.mockResolvedValue(mockRequest);
-
-    await service.postJoinRequest('event123', 'user123');
-
-    expect(requestRepository.save).toHaveBeenCalledWith(mockRequest);
-  });
-
-  it('should retrieve all requests made by a specific user', async () => {
-
-    const mockRequest = {
-      id: 1,
-      type: 1,
-      denied: false,
-    } as RequestDB;
-
-    userRepository.findOne.mockResolvedValue({
-      ...mockUserList[2],
-      requests: [mockRequest],
+      await expect(
+        service.postJoinRequest('event123', 'user123'),
+      ).rejects.toThrow(new NotFoundException('Event not found'));
     });
-    const result = await service.getRequestsByUser('3');
 
-    expect(result).toContainEqual(mockRequest);
+    it('should throw NotFoundException if user is not found', async () => {
+      eventRepository.findOne.mockResolvedValue({
+        id: 'event123',
+        type: EventtypeEnum.halfPrivate,
+        host: { id: 'host123' },
+      } as EventDB);
+      userRepository.findOne.mockResolvedValue(null);
+
+      await expect(
+        service.postJoinRequest('event123', 'user123'),
+      ).rejects.toThrow(new NotFoundException('User not found'));
+    });
+
+    it('should throw an error if the host tries to send a join request to their own event', async () => {
+      eventRepository.findOne.mockResolvedValue({
+        id: 'event123',
+        type: EventtypeEnum.halfPrivate,
+        host: { id: 'user123' },
+      } as EventDB);
+      userRepository.findOne.mockResolvedValue({ id: 'user123' } as UserDB);
+
+      await expect(
+        service.postJoinRequest('event123', 'user123'),
+      ).rejects.toThrow(
+        new Error('Host cannot send a join request to their own event'),
+      );
+    });
+
+    it('should throw an error if the event is not half-private', async () => {
+      eventRepository.findOne.mockResolvedValue({
+        id: 'event123',
+        type: EventtypeEnum.public,
+        host: { id: 'host123' },
+      } as EventDB);
+      userRepository.findOne.mockResolvedValue({ id: 'user123' } as UserDB);
+
+      await expect(
+        service.postJoinRequest('event123', 'user123'),
+      ).rejects.toThrow(
+        new Error('Join requests are only allowed for half-private events'),
+      );
+    });
+
+    it('should throw an error if a request already exists', async () => {
+      eventRepository.findOne.mockResolvedValue({
+        id: 'event123',
+        type: EventtypeEnum.halfPrivate,
+        host: { id: 'host123' },
+      } as EventDB);
+      userRepository.findOne.mockResolvedValue({ id: 'user123' } as UserDB);
+      requestRepository.findOne.mockResolvedValue({
+        id: 1,
+      } as RequestDB);
+
+      await expect(
+        service.postJoinRequest('event123', 'user123'),
+      ).rejects.toThrow(new Error('Request already exists'));
+    });
+
+    it('should create and save a join request', async () => {
+      const mockEvent = {
+        id: 'event123',
+        type: EventtypeEnum.halfPrivate,
+        host: { id: 'host123' },
+      } as EventDB;
+      const mockUser = { id: 'user123' } as UserDB;
+      const mockRequest = { id: 1 } as RequestDB;
+
+      eventRepository.findOne.mockResolvedValue(mockEvent);
+      userRepository.findOne.mockResolvedValue(mockUser);
+      requestRepository.findOne.mockResolvedValue(null);
+      requestRepository.create.mockReturnValue(mockRequest);
+      requestRepository.save.mockResolvedValue(mockRequest);
+
+      await service.postJoinRequest('event123', 'user123');
+
+      expect(requestRepository.save).toHaveBeenCalledWith(mockRequest);
+    });
   });
 
-  it('should retrieve all non-denied requests for an event', async () => {
+  describe('RequestService - getRequestsByUser', () => {
+    it('should retrieve all requests made by a specific user', async () => {
 
-    eventRepository.findOne.mockResolvedValue(mockEventList[0]);
+      const mockRequest = {
+        id: 1,
+        type: 1,
+        denied: false,
+      } as RequestDB;
 
-    const result = await service.getRequestsForEvent('1', '2');
-    expect(result).toEqual(mockEventList[0].requests);
+      userRepository.findOne.mockResolvedValue({
+        ...mockUserList[2],
+        requests: [mockRequest],
+      });
+      const result = await service.getRequestsByUser('3');
+
+      expect(result).toContainEqual(mockRequest);
+    });
+
+    it('should return an empty array if the user has no join requests', async () => {
+      const mockUser = { ...mockUserList[0], requests: [] };
+
+      userRepository.findOne.mockResolvedValue(mockUser);
+
+      const result = await service.getRequestsByUser(mockUser.id);
+
+      expect(result).toEqual([]);
+    });
   });
 
-  it('should accept a join request and add the user to participants', async () => {
-    const mockEvent = {
-      id: 'event123',
-      host: { id: 'host123' },
-      participants: [],
-      participantsNumber: 5,
-    } as EventDB;
-    const mockRequest = {
-      id: 1,
-      user: { id: 'user123' },
-      event: mockEvent,
-      denied: false,
-    } as RequestDB;
+  describe('RequestService - getRequestsForEvent', () => {
+    it('should retrieve all non-denied requests for an event', async () => {
 
-    eventRepository.findOne.mockResolvedValue(mockEvent);
-    requestRepository.findOne.mockResolvedValue(mockRequest);
-    requestRepository.remove.mockResolvedValue(mockRequest);
+      eventRepository.findOne.mockResolvedValue(mockEventList[0]);
 
-    await service.acceptJoinRequest(1, 'host123');
+      const result = await service.getRequestsForEvent('1', '2');
+      expect(result).toEqual(mockEventList[0].requests);
+    });
 
-    expect(mockEvent.participants).toContain(mockRequest.user);
-    expect(requestRepository.remove).toHaveBeenCalledWith(mockRequest);
+    it('should throw NotFoundException if the event does not exist', async () => {
+      eventRepository.findOne.mockResolvedValue(null);
+
+      await expect(service.getRequestsForEvent('event123', 'host123')).rejects.toThrowError(NotFoundException);
+    });
+
+    it('should throw ForbiddenException if the logged-in user is not the host of the event', async () => {
+      const mockEvent = mockEventList[0];
+      mockEvent.host.id = 'host123';
+      const mockRequest = {
+        id: 1,
+        user: mockUserList[0],
+        type: 1,
+        denied: false,
+      } as RequestDB;
+
+      eventRepository.findOne.mockResolvedValue(mockEvent);
+      requestRepository.findOne.mockResolvedValue(mockRequest);
+
+      await expect(service.getRequestsForEvent(mockEvent.id, 'differentUser')).rejects.toThrowError(ForbiddenException);
+    });
   });
 
-  it('should deny a join request', async () => {
-    const mockEvent = { host: { id: 'host123' } } as EventDB;
-    const mockRequest = { id: 1, event: mockEvent, denied: false } as RequestDB;
+  describe('RequestService - acceptJoinRequest', () => {
+    it('should accept a join request and add the user to participants', async () => {
+      const mockEvent = {
+        id: 'event123',
+        host: { id: 'host123' },
+        participants: [],
+        participantsNumber: 5,
+      } as EventDB;
+      const mockRequest = {
+        id: 1,
+        user: { id: 'user123' },
+        event: mockEvent,
+        denied: false,
+      } as RequestDB;
 
-    eventRepository.findOne.mockResolvedValue(mockEvent);
-    requestRepository.findOne.mockResolvedValue(mockRequest);
-    requestRepository.save.mockResolvedValue({ ...mockRequest, denied: true });
+      eventRepository.findOne.mockResolvedValue(mockEvent);
+      requestRepository.findOne.mockResolvedValue(mockRequest);
+      requestRepository.remove.mockResolvedValue(mockRequest);
 
-    await service.denyRequest(1, 'host123');
+      await service.acceptJoinRequest(1, 'host123');
 
-    expect(requestRepository.save).toHaveBeenCalledWith({ ...mockRequest, denied: true });
+      expect(mockEvent.participants).toContain(mockRequest.user);
+      expect(requestRepository.remove).toHaveBeenCalledWith(mockRequest);
+    });
+
+    it('should throw NotFoundException if the request does not exist', async () => {
+      requestRepository.findOne.mockResolvedValue(null);
+
+      await expect(service.acceptJoinRequest(999, 'host123')).rejects.toThrowError(NotFoundException);
+    });
+
+    it('should throw NotFoundException if the event associated with the request does not exist', async () => {
+      const mockRequest = { id: 1, event: null, denied: false } as RequestDB;
+
+      requestRepository.findOne.mockResolvedValue(mockRequest);
+      eventRepository.findOne.mockResolvedValue(null);
+
+      await expect(service.acceptJoinRequest(mockRequest.id, 'host123')).rejects.toThrowError(NotFoundException);
+    });
+
+    it('should throw BadRequestException if the request has already been denied', async () => {
+      const mockHost = mockUserList[1];
+      const mockEvent = mockEventList[0];
+      const mockRequest = {
+        id: 1,
+        user: mockUserList[0],
+        event: mockEvent,
+        denied: true,
+      } as RequestDB;
+
+      requestRepository.findOne.mockResolvedValue(mockRequest);
+      eventRepository.findOne.mockResolvedValue(mockEvent);
+
+      await expect(service.acceptJoinRequest(mockRequest.id, mockHost.id)).rejects.toThrowError(BadRequestException);
+    });
+
+    it('should throw BadRequestException if the event has reached the maximum number of participants', async () => {
+      const mockHost = mockUserList[1];
+      const mockEvent = {
+        id: 'event123',
+        host: { id: 'host123' },
+        participants: [{ id: 'user123' }, { id: 'user456' }],
+        participantsNumber: 2,
+      } as EventDB;
+      const mockRequest = {
+        id: 1,
+        user: mockUserList[2],
+        event: mockEvent,
+        denied: false,
+      } as RequestDB;
+
+      requestRepository.findOne.mockResolvedValue(mockRequest);
+      eventRepository.findOne.mockResolvedValue(mockEvent); // The event exists
+
+      // Act & Assert: Expect BadRequestException to be thrown if the event is full
+      await expect(service.acceptJoinRequest(mockRequest.id, mockHost.id)).rejects.toThrowError(BadRequestException);
+    });
   });
 
-  it('should delete a join request', async () => {
-    const mockRequest = { id: 1, user: { id: 'user123' } } as RequestDB;
+  describe('RequestService - denyRequest', () => {
+    it('should deny a join request', async () => {
+      const mockEvent = { host: { id: 'host123' } } as EventDB;
+      const mockRequest = { id: 1, event: mockEvent, denied: false } as RequestDB;
 
-    requestRepository.findOne.mockResolvedValue(mockRequest);
-    requestRepository.remove.mockResolvedValue(mockRequest);
+      eventRepository.findOne.mockResolvedValue(mockEvent);
+      requestRepository.findOne.mockResolvedValue(mockRequest);
+      requestRepository.save.mockResolvedValue({ ...mockRequest, denied: true });
 
-    await service.deleteJoinRequest(1, 'user123');
-    expect(requestRepository.remove).toHaveBeenCalledWith(mockRequest);
+      await service.denyRequest(1, 'host123');
+
+      expect(requestRepository.save).toHaveBeenCalledWith({ ...mockRequest, denied: true });
+    });
+
+    it('should throw NotFoundException if the request does not exist', async () => {
+      requestRepository.findOne.mockResolvedValue(null);
+
+      await expect(service.denyRequest(999, 'host123')).rejects.toThrowError(NotFoundException);
+    });
+
+    it('should throw NotFoundException if the event associated with the request does not exist', async () => {
+      const mockRequest = { id: 1, event: null, denied: false } as RequestDB;
+
+      requestRepository.findOne.mockResolvedValue(mockRequest);
+      eventRepository.findOne.mockResolvedValue(null);
+
+      await expect(service.denyRequest(mockRequest.id, 'host123')).rejects.toThrowError(NotFoundException);
+    });
+  });
+
+  describe('RequestService - deleteJoinRequest', () => {
+    it('should delete a join request', async () => {
+      const mockRequest = { id: 1, user: { id: 'user123' } } as RequestDB;
+
+      requestRepository.findOne.mockResolvedValue(mockRequest);
+      requestRepository.remove.mockResolvedValue(mockRequest);
+
+      await service.deleteJoinRequest(1, 'user123');
+      expect(requestRepository.remove).toHaveBeenCalledWith(mockRequest);
+    });
+
+    it('should throw NotFoundException if the request does not exist', async () => {
+      requestRepository.findOne.mockResolvedValue(null);
+
+      await expect(service.deleteJoinRequest(999, '3')).rejects.toThrowError(NotFoundException);
+    });
   });
 });
 
