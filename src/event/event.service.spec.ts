@@ -21,6 +21,7 @@ const mockEventRepository = {
     leftJoinAndSelect: jest.fn().mockReturnThis(),
     where: jest.fn().mockReturnThis(),
     getMany: jest.fn(),
+    orderBy: jest.fn().mockReturnThis(),
   })),
 };
 
@@ -185,6 +186,7 @@ const queryBuilderMock = {
   leftJoinAndSelect: jest.fn().mockReturnThis(),
   where: jest.fn().mockReturnThis(),
   getMany: jest.fn().mockResolvedValue(mockEventList),
+  orderBy: jest.fn().mockReturnThis(),
 };
 
 mockEventRepository.createQueryBuilder.mockReturnValue(queryBuilderMock);
@@ -294,6 +296,9 @@ describe('EventService', () => {
 
     expect(mockEventRepository.find).toHaveBeenCalledWith({
       relations: ['categories', 'participants'],
+      order: {
+        dateAndTime: 'ASC',
+      },
     });
     expect(result).toEqual(mockEventList);
   });
@@ -313,6 +318,9 @@ describe('EventService', () => {
       expect(mockEventRepository.find).toHaveBeenCalledWith({
         where: { host: { id: mockUser.id } },
         relations: ['host', 'categories', 'participants'],
+        order: {
+          dateAndTime: 'ASC',
+        },
       });
       expect(result).toEqual(mockEventList);
     });

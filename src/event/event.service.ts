@@ -76,6 +76,9 @@ export class EventService {
   async getAllEvents(): Promise<EventDB[]> {
     const events = await this.eventRepository.find({
       relations: ['categories', 'participants'],
+      order: {
+        dateAndTime: 'ASC',
+      },
     });
 
     if (!events || events.length === 0) {
@@ -99,6 +102,7 @@ export class EventService {
       .leftJoinAndSelect('event.categories', 'category')
       .leftJoinAndSelect('event.host', 'host')
       .where('participant.id = :userId', { userId: userId })
+      .orderBy('event.dateAndTime', 'ASC')
       .getMany();
 
     if (!events || events.length === 0) {
@@ -119,6 +123,9 @@ export class EventService {
     const events = await this.eventRepository.find({
       where: { host: { id: userId } },
       relations: ['host', 'categories', 'participants'],
+      order: {
+        dateAndTime: 'ASC',
+      },
     });
 
     if (!events || events.length === 0) {
