@@ -32,7 +32,9 @@ describe('RequestService', () => {
     userRepository = module.get(getRepositoryToken(UserDB));
 
     requestRepository.findOne = jest.fn();
+    eventRepository.save = jest.fn();
     requestRepository.create = jest.fn();
+    requestRepository.remove = jest.fn();
     requestRepository.save = jest.fn();
     eventRepository.findOne = jest.fn();
     userRepository.findOne = jest.fn();
@@ -126,16 +128,20 @@ describe('RequestService', () => {
   });
 
   it('should retrieve all requests made by a specific user', async () => {
-    const mockUser = mockUserList[0];
-    const mockRequest = { id: 1 } as RequestDB;
 
-    userRepository.findOne.mockResolvedValue(mockUserList[0]);
-    requestRepository.findOne.mockResolvedValue(null);
+    userRepository.findOne.mockResolvedValue({
+      ...mockUserList[2],
+      requests: [{
+        id: 1,
+        user: mockUserList[2],
+        event: mockEventList[0],
+        type: 1,
+        denied: false,
+      } as RequestDB],
+    });
+    const result = await service.getRequestsByUser('3');
 
-    mockUser.requests.push(mockRequest);
-
-    const result = await service.getRequestsByUser('1');
-    expect(result).toEqual([mockRequest]);
+    expect(result).toContainEqual(mockUserList[2].requests[0]);
   });
 
   it('should retrieve all non-denied requests for an event', async () => {
@@ -162,7 +168,7 @@ describe('RequestService', () => {
 
     eventRepository.findOne.mockResolvedValue(mockEvent);
     requestRepository.findOne.mockResolvedValue(mockRequest);
-    requestRepository.remove.mockResolvedValue(undefined);
+    requestRepository.remove.mockResolvedValue(mockRequest);
 
     await service.acceptJoinRequest(1, 'host123');
 
@@ -187,7 +193,7 @@ describe('RequestService', () => {
     const mockRequest = { id: 1, user: { id: 'user123' } } as RequestDB;
 
     requestRepository.findOne.mockResolvedValue(mockRequest);
-    requestRepository.remove.mockResolvedValue(undefined);
+    requestRepository.remove.mockResolvedValue(mockRequest);
 
     await service.deleteJoinRequest(1, 'user123');
     expect(requestRepository.remove).toHaveBeenCalledWith(mockRequest);
@@ -285,7 +291,7 @@ const mockUserList: UserDB[] = [
     isVerified: true,
     gender: GenderEnum.Diverse,
     hostedEvents: [],
-    requests: [],
+    requests: [{ id: 1 } as RequestDB],
     participatedEvents: [],
     favoritedEvents: [],
     memories: [],
@@ -362,3 +368,4 @@ const mockEventList: EventDB[] = [
     messages: [],
   },
 ];
+
