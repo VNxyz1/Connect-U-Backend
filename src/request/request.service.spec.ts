@@ -129,19 +129,19 @@ describe('RequestService', () => {
 
   it('should retrieve all requests made by a specific user', async () => {
 
+    const mockRequest = {
+      id: 1,
+      type: 1,
+      denied: false,
+    } as RequestDB;
+
     userRepository.findOne.mockResolvedValue({
       ...mockUserList[2],
-      requests: [{
-        id: 1,
-        user: mockUserList[2],
-        event: mockEventList[0],
-        type: 1,
-        denied: false,
-      } as RequestDB],
+      requests: [mockRequest],
     });
     const result = await service.getRequestsByUser('3');
 
-    expect(result).toContainEqual(mockUserList[2].requests[0]);
+    expect(result).toContainEqual(mockRequest);
   });
 
   it('should retrieve all non-denied requests for an event', async () => {
