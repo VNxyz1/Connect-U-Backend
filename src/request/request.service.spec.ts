@@ -320,6 +320,27 @@ describe('RequestService', () => {
 
 export const mockRequestService = {
   postJoinRequest: jest.fn().mockResolvedValue(new RequestDB()),
+  getRequestsByUser: jest.fn().mockResolvedValue([
+    {
+      id: 1,
+      user: { id: 'user123' },
+      event: { id: 'event123', host: { id: 'host123' } },
+      denied: false,
+      type: 1,
+    },
+  ]),
+  getRequestsForEvent: jest.fn().mockResolvedValue([
+    {
+      id: 1,
+      user: { id: 'user123' },
+      event: { id: 'event123', host: { id: 'host123' } },
+      denied: false,
+      type: 1,
+    },
+  ]),
+  acceptJoinRequest: jest.fn().mockResolvedValue(undefined),
+  denyRequest: jest.fn().mockResolvedValue(undefined),
+  deleteJoinRequest: jest.fn().mockResolvedValue(undefined),
 };
 
 
