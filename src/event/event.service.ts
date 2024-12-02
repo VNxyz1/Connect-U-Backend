@@ -158,6 +158,13 @@ export class EventService {
         'User is already a participant in this event',
       );
     }
+
+    if (event.participants.length >= event.participantsNumber) {
+      throw new BadRequestException(
+        'The event has reached the maximum number of participants',
+      );
+    }
+
     event.participants.push(user);
 
     return await this.eventRepository.save(event);

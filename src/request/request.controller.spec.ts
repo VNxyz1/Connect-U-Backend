@@ -10,6 +10,7 @@ import { mockAuthService } from '../auth/auth.service.spec';
 import { mockProviders } from '../../test/mock-services';
 import { UtilsService } from '../utils/utils.service';
 import { RequestController } from './request.controller';
+import { mockRequestService } from './request.service.spec';
 
 describe('RequestController', () => {
   let app: INestApplication;
@@ -56,15 +57,122 @@ describe('RequestController', () => {
     await app.init();
   });
 
-  it('should create a join request for an event', async () => {
-    const tokens = await mockAuthService.signIn();
-    const eventId = '123';
+  describe('RequestController - create a join request for an event', () => {
+    it('should create a join request for an event', async () => {
+      const tokens = await mockAuthService.signIn();
+      const eventId = '123';
 
-    return agent
-      .post(`/request/join/${eventId}`)
-      .set('Authorization', `Bearer ${tokens.access_token}`)
-      .expect('Content-Type', /json/)
-      .expect(HttpStatus.CREATED)
-      .expect({ ok: true, message: 'Request was sent' });
+      return agent
+        .post(`/request/join/${eventId}`)
+        .set('Authorization', `Bearer ${tokens.access_token}`)
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.CREATED)
+        .expect({ ok: true, message: 'Request was sent' });
+    });
+  });
+
+  describe('RequestController - fetch all requests sent by a specific user', () => {
+    it('should fetch all requests sent by a specific user', async () => {
+      const tokens = await mockAuthService.signIn();
+
+      mockRequestService.getRequestsByUser.mockResolvedValue([
+        {
+          id: 1,
+          denied: false,
+          event: {
+            id: '123',
+            name: 'Sample Event',
+            host: { id: 'host123', username: 'hostUser' },
+          },
+        },
+      ]);
+
+      return agent
+        .get('/request/join/user')
+        .set('Authorization', `Bearer ${tokens.access_token}`)
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.OK)
+        .expect([
+          {
+            id: 1,
+            event: { id: '123' },
+            denied: false,
+          },
+        ]);
+    });
+  });
+
+  describe('RequestController - fetch all join requests for a specific event', () => {
+    it('should fetch all join requests for a specific event', async () => {
+      const tokens = await mockAuthService.signIn();
+      const eventId = '123';
+
+      mockRequestService.getRequestsForEvent.mockResolvedValue([
+        {
+          id: 1,
+          denied: false,
+          user: { id: 'user123', username: 'userTest' },
+        },
+      ]);
+
+      return agent
+        .get(`/request/join/event/${eventId}`)
+        .set('Authorization', `Bearer ${tokens.access_token}`)
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.OK)
+        .expect([
+          {
+            id: 1,
+            denied: false,
+            user: { id: 'user123', username: 'userTest', age: null },
+          },
+        ]);
+    });
+  });
+
+  describe('RequestController - accept a join request', () => {
+    it('should accept a join request and add the user to the event', async () => {
+      const tokens = await mockAuthService.signIn();
+      const requestId = 1;
+
+      return agent
+        .patch(`/request/accept/${requestId}`)
+        .set('Authorization', `Bearer ${tokens.access_token}`)
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.OK)
+        .expect({ ok: true, message: 'Request successfully accepted' });
+    });
+  });
+
+  describe('RequestController - deny a join request', () => {
+    it('should deny a join request', async () => {
+      const tokens = await mockAuthService.signIn();
+      const requestId = 1;
+
+      return agent
+        .patch(`/request/deny/${requestId}`)
+        .set('Authorization', `Bearer ${tokens.access_token}`)
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.OK)
+        .expect({ ok: true, message: 'Request successfully denied' });
+    });
+  });
+
+  describe('RequestController - delete a join request', () => {
+    it('should delete a join request', async () => {
+      const tokens = await mockAuthService.signIn();
+      const requestId = 1;
+
+      return agent
+        .delete(`/request/delete/${requestId}`)
+        .set('Authorization', `Bearer ${tokens.access_token}`)
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.OK)
+        .expect({ ok: true, message: 'Request successfully deleted' });
+    });
+  });
+
+  afterAll(async () => {
+    await app.close();
   });
 });
