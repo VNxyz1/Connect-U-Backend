@@ -299,7 +299,7 @@ describe('EventService', () => {
     expect(mockEventRepository.find).toHaveBeenCalledWith({
       relations: ['categories', 'participants'],
       order: {
-        dateAndTime: 'ASC',
+        timestamp: 'ASC',
       },
     });
     expect(result).toEqual(mockEventList);

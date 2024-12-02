@@ -77,7 +77,7 @@ export class EventService {
     const events = await this.eventRepository.find({
       relations: ['categories', 'participants'],
       order: {
-        dateAndTime: 'ASC',
+        timestamp: 'ASC',
       },
     });
 
