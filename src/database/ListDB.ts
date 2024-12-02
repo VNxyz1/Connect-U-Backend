@@ -13,6 +13,9 @@ export class ListDB {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({ default: new Date().toISOString() })
+  timestamp: string;
+
   @ManyToOne(() => EventDB)
   event: EventDB;
 

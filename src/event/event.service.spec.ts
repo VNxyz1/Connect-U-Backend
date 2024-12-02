@@ -124,6 +124,7 @@ const mockCreateEventDTO: CreateEventDTO = {
 const mockEventList: EventDB[] = [
   {
     id: '1',
+    timestamp: '2022-12-01T10:00:00',
     title: 'Tech Conference 2024',
     description: 'A conference for tech enthusiasts.',
     dateAndTime: '2024-12-01T10:00:00',
@@ -153,6 +154,7 @@ const mockEventList: EventDB[] = [
   },
   {
     id: '2',
+    timestamp: '2022-12-01T10:00:00',
     title: 'Game Jam 2024',
     description: 'Game Jam to create awesome new games!',
     dateAndTime: '2024-12-01T10:00:00',

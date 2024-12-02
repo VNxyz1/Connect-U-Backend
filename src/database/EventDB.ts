@@ -24,6 +24,9 @@ export class EventDB {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ default: new Date().toISOString() })
+  timestamp: string;
+
   @ManyToOne(() => UserDB)
   host: UserDB;
 
