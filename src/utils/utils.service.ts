@@ -103,7 +103,9 @@ export class UtilsService {
    * @param user - The user entity from the database.
    * @returns {GetUserProfileDTO} - The transformed user profile data transfer object.
    */
-  transformUserDBtoGetUserProfileDTO(user: UserDB): GetUserProfileDTO {
+  async transformUserDBtoGetUserProfileDTO(
+    user: UserDB,
+  ): Promise<GetUserProfileDTO> {
     const dto = new GetUserProfileDTO();
     dto.id = user.id;
     dto.pronouns = user.pronouns;
@@ -225,7 +227,7 @@ export class UtilsService {
       this.transformUserDBtoGetUserProfileDTO,
     );
 
-    dto.host = this.transformUserDBtoGetUserProfileDTO(event.host);
+    dto.host = await this.transformUserDBtoGetUserProfileDTO(event.host);
 
     dto.startAge = event.startAge || null;
     dto.endAge = event.endAge || null;

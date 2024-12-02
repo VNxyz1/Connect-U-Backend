@@ -31,7 +31,7 @@ export class GetEventDetailsDTO {
   @ApiProperty({ type: [GetUserProfileDTO] })
   @ValidateNested({ each: true })
   @Type(() => GetUserProfileDTO)
-  participants: GetUserProfileDTO[];
+  participants: Promise<GetUserProfileDTO>[];
 
   @ApiProperty({ type: GetUserProfileDTO })
   @Type(() => GetUserProfileDTO)
