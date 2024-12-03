@@ -6,12 +6,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ListDB } from '../database/ListDB';
 import { EventDB } from '../database/EventDB';
+import { UserDB } from '../database/UserDB';
 
 @Injectable()
 export class ListService {
   constructor(
     @InjectRepository(ListDB)
     private readonly listRepository: Repository<ListDB>,
+    @InjectRepository(EventDB)
     private readonly eventRepository: Repository<EventDB>,
   ) {}
 
@@ -19,7 +21,7 @@ export class ListService {
   /**
    * Creates a new list for an event.
    *
-   * @param userId - The userId of the user attempting to create the list.
+   * @param user - The user attempting to create the list.
    * @param eventId - The ID of the event for which the list is being created.
    * @param title - The title of the list.
    * @param description - The description of the list (optional).
@@ -30,7 +32,7 @@ export class ListService {
    */
 
   async createList(
-    userId: string,
+    user: UserDB,
     eventId: string,
     title: string,
     description?: string,
@@ -44,16 +46,16 @@ export class ListService {
       throw new NotFoundException('Event not found');
     }
 
-    const isHost = event.host.id === userId;
-    const isParticipant = event.participants.some((participant) => participant.id === userId);
+    const isHost = event.host.id === user.id;
+    const isParticipant = event.participants.some((participant) => participant.id === user.id);
 
     if (!isHost && !isParticipant) {
       throw new BadRequestException('You must be a participant or the host of the event to create a list');
     }
 
-    // Create and save the new list
     const newList = this.listRepository.create({
       event,
+      creator: user,
       title,
       description,
     });

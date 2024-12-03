@@ -20,6 +20,8 @@ import { CategoryService } from './category/category.service';
 import { RequestController } from './request/request.controller';
 import { RequestService } from './request/request.service';
 import { staticDeploymentModule } from './static-delivery.config';
+import { ListService } from './list/list.service';
+import { ListController } from './list/list.controller';
 
 @Module({
   imports: [
@@ -47,6 +49,7 @@ import { staticDeploymentModule } from './static-delivery.config';
     GenderController,
     CategoryController,
     RequestController,
+    ListController
   ],
   providers: [
     AppService,
@@ -59,6 +62,7 @@ import { staticDeploymentModule } from './static-delivery.config';
     GenderService,
     CategoryService,
     RequestService,
+    ListService,
   ],
 })
 export class AppModule {}
