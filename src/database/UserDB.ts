@@ -17,6 +17,8 @@ import { SurveyEntryDB } from './SurveyEntryDB';
 import { MessageDB } from './MessageDB';
 import { ReactionDB } from './ReactionDB';
 import { TagDB } from './TagDB';
+import { ListDB } from './ListDB';
+import { SurveyDB } from './SurveyDB';
 
 @Entity()
 export class UserDB {
@@ -96,6 +98,12 @@ export class UserDB {
 
   @ManyToMany(() => UserDB, (user) => user.friends)
   friendOf: Promise<UserDB[]>;
+
+  @OneToMany(() => ListDB, (list) => list.creator)
+  lists: ListDB[];
+
+  @OneToMany(() => SurveyDB, (survey) => survey.creator)
+  surveys: SurveyDB[];
 
   @OneToMany(() => ListEntryDB, (listEntry) => listEntry.user)
   listEntries: ListEntryDB[];

@@ -7,6 +7,7 @@ import {
 } from 'typeorm';
 import { EventDB } from './EventDB';
 import { ListEntryDB } from './ListEntryDB';
+import { UserDB } from './UserDB';
 
 @Entity()
 export class ListDB {
@@ -18,6 +19,9 @@ export class ListDB {
 
   @ManyToOne(() => EventDB)
   event: EventDB;
+
+  @ManyToOne(() => UserDB)
+  creator: UserDB;
 
   @Column()
   title: string;

@@ -475,6 +475,8 @@ const mockUser: UserDB = {
   city: 'Anytown',
   isVerified: true,
   gender: 2,
+  surveys: [],
+  lists: [],
   hostedEvents: [],
   requests: [],
   participatedEvents: [],
