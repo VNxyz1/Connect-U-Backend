@@ -1,4 +1,8 @@
-import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { CategoryDB } from '../database/CategoryDB';
 import { GetCategoryDTO } from '../category/DTO/GetCategoryDTO';
 import { GenderDB } from '../database/GenderDB';
@@ -120,17 +124,20 @@ export class UtilsService {
    * @throws {ForbiddenException} - If the user is neither the host nor a participant.
    */
   async isHostOrParticipant(user: UserDB, eventId: string): Promise<boolean> {
-
     const event = await this.eventRepository.findOne({
       where: { id: eventId },
       relations: ['participants', 'host'],
     });
 
-    const isParticipant = event.participants.some((participant) => participant.id === user.id);
+    const isParticipant = event.participants.some(
+      (participant) => participant.id === user.id,
+    );
     const isHost = event.host.id === user.id;
 
     if (!isParticipant && !isHost) {
-      throw new ForbiddenException('You are not allowed to perform this action');
+      throw new ForbiddenException(
+        'You are not allowed to perform this action',
+      );
     }
 
     return true;

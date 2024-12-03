@@ -29,6 +29,8 @@ export class ListDB {
   @Column({ nullable: true })
   description: string;
 
-  @OneToMany(() => ListEntryDB, (listEntry) => listEntry.list, { cascade: true })
+  @OneToMany(() => ListEntryDB, (listEntry) => listEntry.list, {
+    cascade: true,
+  })
   listEntries: ListEntryDB[];
 }

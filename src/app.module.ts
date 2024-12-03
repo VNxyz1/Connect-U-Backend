@@ -66,7 +66,7 @@ import { ListEntryService } from './listEntry/listEntry.service';
     CategoryService,
     RequestService,
     ListService,
-    ListEntryService
+    ListEntryService,
   ],
 })
 export class AppModule {}

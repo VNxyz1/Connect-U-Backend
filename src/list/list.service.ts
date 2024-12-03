@@ -1,7 +1,4 @@
-import {
-  BadRequestException,
-  Injectable, NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ListDB } from '../database/ListDB';
@@ -17,7 +14,6 @@ export class ListService {
     private readonly eventRepository: Repository<EventDB>,
   ) {}
 
-
   /**
    * Creates a new list for an event.
    *
@@ -28,7 +24,6 @@ export class ListService {
    * @returns {Promise<ListDB>} - The newly created list.
    *
    * @throws {NotFoundException} If the event does not exist.
-   * @throws {BadRequestException} If the user is not a participant or the host of the event.
    */
 
   async createList(
@@ -75,4 +70,3 @@ export class ListService {
     return list;
   }
 }
-

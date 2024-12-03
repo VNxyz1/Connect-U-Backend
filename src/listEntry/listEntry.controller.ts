@@ -1,4 +1,12 @@
-import { Body, Controller, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { CreateListEntryDTO } from './DTO/CreateListEntryDTO';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ListEntryService } from './listEntry.service';
@@ -12,9 +20,11 @@ import { OkDTO } from '../serverDTO/OkDTO';
 @ApiTags('list-entry')
 @Controller('list-entry')
 export class ListEntryController {
-  constructor(private readonly listEntryService: ListEntryService,
-              private readonly utilsService: UtilsService,
-              private readonly listService: ListService,) {}
+  constructor(
+    private readonly listEntryService: ListEntryService,
+    private readonly utilsService: UtilsService,
+    private readonly listService: ListService,
+  ) {}
 
   @ApiResponse({
     type: OkDTO,
@@ -34,10 +44,7 @@ export class ListEntryController {
 
     await this.utilsService.isHostOrParticipant(user, list.event.id);
 
-    await this.listEntryService.createListEntry(
-      listId,
-      body.content,
-    );
+    await this.listEntryService.createListEntry(listId, body.content);
 
     return new OkDTO(true, 'List Entry was created successfully');
   }

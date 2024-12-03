@@ -1,4 +1,12 @@
-import { Body, Controller, Post, HttpCode, HttpStatus, UseGuards, Param } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  HttpCode,
+  HttpStatus,
+  UseGuards,
+  Param,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '../auth/auth.guard';
 import { CreateListDTO } from './DTO/CreateListDTO';
@@ -31,7 +39,6 @@ export class ListController {
     @Param('eventId') eventId: string,
     @User() user: UserDB,
   ): Promise<OkDTO> {
-
     await this.utilsService.isHostOrParticipant(user, eventId);
 
     const newList = await this.listService.createList(
@@ -41,6 +48,10 @@ export class ListController {
       body.description,
     );
 
-    return new CreateListResDTO(true, 'List was created successfully', newList.id);
+    return new CreateListResDTO(
+      true,
+      'List was created successfully',
+      newList.id,
+    );
   }
 }

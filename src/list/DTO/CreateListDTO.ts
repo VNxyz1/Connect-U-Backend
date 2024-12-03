@@ -6,7 +6,6 @@ export class CreateListDTO {
     description: 'The title of the list',
     example: 'Grocery List',
   })
-
   @IsString()
   @IsNotEmpty({ message: 'Title is required' })
   @MaxLength(100, { message: 'Title must not exceed 100 characters' })
