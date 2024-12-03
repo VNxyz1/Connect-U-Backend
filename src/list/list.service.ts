@@ -53,12 +53,12 @@ export class ListService {
       throw new BadRequestException('You must be a participant or the host of the event to create a list');
     }
 
-    const newList = this.listRepository.create({
-      event,
-      creator: user,
-      title,
-      description,
-    });
+
+    const newList: ListDB = this.listRepository.create();
+    newList.creator = user;
+    newList.event = event;
+    newList.title = title;
+    newList.description = description;
 
     return await this.listRepository.save(newList);
   }
