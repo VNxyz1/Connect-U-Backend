@@ -7,12 +7,14 @@ import { UserDB } from '../database/UserDB';
 import { ListService } from './list.service';
 import { CreateListResDTO } from './DTO/CreateListResDTO';
 import { OkDTO } from '../serverDTO/OkDTO';
+import { UtilsService } from '../utils/utils.service';
 
 @ApiTags('list')
 @Controller('list')
 export class ListController {
   constructor(
     private readonly listService: ListService,
+    private readonly utilsService: UtilsService,
   ) {}
 
   @ApiResponse({
@@ -29,6 +31,8 @@ export class ListController {
     @Param('eventId') eventId: string,
     @User() user: UserDB,
   ): Promise<OkDTO> {
+
+    await this.utilsService.isHostOrParticipant(user, eventId);
 
     const newList = await this.listService.createList(
       user,

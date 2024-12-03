@@ -46,14 +46,6 @@ export class ListService {
       throw new NotFoundException('Event not found');
     }
 
-    const isHost = event.host.id === user.id;
-    const isParticipant = event.participants.some((participant) => participant.id === user.id);
-
-    if (!isHost && !isParticipant) {
-      throw new BadRequestException('You must be a participant or the host of the event to create a list');
-    }
-
-
     const newList: ListDB = this.listRepository.create();
     newList.creator = user;
     newList.event = event;
@@ -61,6 +53,26 @@ export class ListService {
     newList.description = description;
 
     return await this.listRepository.save(newList);
+  }
+
+  /**
+   * Retrieves a list by its ID.
+   *
+   * @param listId - The ID of the list to retrieve.
+   * @returns The list with the specified ID.
+   * @throws NotFoundException - If the list does not exist.
+   */
+  async getListById(listId: number): Promise<ListDB> {
+    const list = await this.listRepository.findOne({
+      where: { id: listId },
+      relations: ['event', 'creator', 'listEntries'],
+    });
+
+    if (!list) {
+      throw new NotFoundException(`List with ID ${listId} not found`);
+    }
+
+    return list;
   }
 }
 

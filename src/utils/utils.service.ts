@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { CategoryDB } from '../database/CategoryDB';
 import { GetCategoryDTO } from '../category/DTO/GetCategoryDTO';
 import { GenderDB } from '../database/GenderDB';
@@ -13,9 +13,16 @@ import { GetEventJoinDTO } from '../event/DTO/GetEventJoinDTO';
 import { RequestDB } from '../database/RequestDB';
 import { GetEventJoinRequestDTO } from '../request/DTO/GetEventJoinRequestDTO';
 import { GetUserJoinRequestDTO } from '../request/DTO/GetUserJoinRequestDTO';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class UtilsService {
+  constructor(
+    @InjectRepository(EventDB)
+    private readonly eventRepository: Repository<EventDB>,
+  ) {}
+
   /**
    * Calculates the age of a user based on their date of birth.
    * @param birthday - The user's date of birth.
@@ -97,6 +104,33 @@ export class UtilsService {
           'Your gender does not match the preferred genders for this event.',
         );
       }
+    }
+
+    return true;
+  }
+
+  /**
+   * Checks if a user is the host or a participant of an event.
+   *
+   * @param user - The user to check.
+   * @param eventId - The event to check against.
+   *
+   * @returns {boolean} - Returns true if the user is the host or a participant.
+   *
+   * @throws {ForbiddenException} - If the user is neither the host nor a participant.
+   */
+  async isHostOrParticipant(user: UserDB, eventId: string): Promise<boolean> {
+
+    const event = await this.eventRepository.findOne({
+      where: { id: eventId },
+      relations: ['participants', 'host'],
+    });
+
+    const isParticipant = event.participants.some((participant) => participant.id === user.id);
+    const isHost = event.host.id === user.id;
+
+    if (!isParticipant && !isHost) {
+      throw new ForbiddenException('You are not allowed to perform this action');
     }
 
     return true;
