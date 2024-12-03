@@ -7,6 +7,9 @@ export class ListEntryDB {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({ default: new Date().toISOString() })
+  timestamp: string;
+
   @ManyToOne(() => ListDB, (list) => list.listEntries, { onDelete: 'CASCADE' })
   list: ListDB;
 
@@ -15,7 +18,4 @@ export class ListEntryDB {
 
   @Column()
   content: string;
-
-  @Column({ default: false })
-  isChecked: boolean;
 }

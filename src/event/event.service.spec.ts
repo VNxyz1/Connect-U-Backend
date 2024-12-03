@@ -21,6 +21,7 @@ const mockEventRepository = {
     leftJoinAndSelect: jest.fn().mockReturnThis(),
     where: jest.fn().mockReturnThis(),
     getMany: jest.fn(),
+    orderBy: jest.fn().mockReturnThis(),
   })),
 };
 
@@ -123,6 +124,7 @@ const mockCreateEventDTO: CreateEventDTO = {
 const mockEventList: EventDB[] = [
   {
     id: '1',
+    timestamp: '2022-12-01T10:00:00',
     title: 'Tech Conference 2024',
     description: 'A conference for tech enthusiasts.',
     dateAndTime: '2024-12-01T10:00:00',
@@ -152,6 +154,7 @@ const mockEventList: EventDB[] = [
   },
   {
     id: '2',
+    timestamp: '2022-12-01T10:00:00',
     title: 'Game Jam 2024',
     description: 'Game Jam to create awesome new games!',
     dateAndTime: '2024-12-01T10:00:00',
@@ -185,6 +188,7 @@ const queryBuilderMock = {
   leftJoinAndSelect: jest.fn().mockReturnThis(),
   where: jest.fn().mockReturnThis(),
   getMany: jest.fn().mockResolvedValue(mockEventList),
+  orderBy: jest.fn().mockReturnThis(),
 };
 
 mockEventRepository.createQueryBuilder.mockReturnValue(queryBuilderMock);
@@ -294,6 +298,9 @@ describe('EventService', () => {
 
     expect(mockEventRepository.find).toHaveBeenCalledWith({
       relations: ['categories', 'participants'],
+      order: {
+        timestamp: 'ASC',
+      },
     });
     expect(result).toEqual(mockEventList);
   });
@@ -313,6 +320,9 @@ describe('EventService', () => {
       expect(mockEventRepository.find).toHaveBeenCalledWith({
         where: { host: { id: mockUser.id } },
         relations: ['host', 'categories', 'participants'],
+        order: {
+          dateAndTime: 'ASC',
+        },
       });
       expect(result).toEqual(mockEventList);
     });

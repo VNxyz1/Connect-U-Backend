@@ -492,6 +492,7 @@ const mockUser: UserDB = {
 };
 const MockPublicEvent: EventDB = {
   id: '1',
+  timestamp: '2022-12-01T10:00:00',
   title: 'Tech Conference 2024',
   description: 'A conference for tech enthusiasts.',
   dateAndTime: '2024-12-01T10:00:00',
@@ -522,6 +523,7 @@ const MockPublicEvent: EventDB = {
 
 const MockPrivateEvent: EventDB = {
   id: '1',
+  timestamp: '2022-12-01T10:00:00',
   title: 'Tech Conference 2024',
   description: 'A conference for tech enthusiasts.',
   dateAndTime: '2024-12-01T10:00:00',

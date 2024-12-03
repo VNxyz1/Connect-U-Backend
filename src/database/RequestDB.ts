@@ -8,6 +8,9 @@ export class RequestDB {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({ default: new Date().toISOString() })
+  timestamp: string;
+
   @ManyToOne(() => UserDB)
   user: UserDB;
 

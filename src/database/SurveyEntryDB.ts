@@ -13,6 +13,9 @@ export class SurveyEntryDB {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({ default: new Date().toISOString() })
+  timestamp: string;
+
   @ManyToOne(() => SurveyDB, (survey) => survey.surveyEntries, {
     onDelete: 'CASCADE',
   })
