@@ -90,9 +90,15 @@ export class EventController {
       if (event.host.id === user.id) {
         isHost = true;
       }
-      isParticipant = event.participants.some((participant) => participant.id === user.id);
+      isParticipant = event.participants.some(
+        (participant) => participant.id === user.id,
+      );
     }
-    return await this.utilsService.transformEventDBtoGetEventDetailsDTO(event, isHost, isParticipant);
+    return await this.utilsService.transformEventDBtoGetEventDetailsDTO(
+      event,
+      isHost,
+      isParticipant,
+    );
   }
 
   @ApiResponse({

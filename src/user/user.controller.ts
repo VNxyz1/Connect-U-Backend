@@ -85,7 +85,10 @@ export class UserController {
   ): Promise<GetUserProfileDTO> {
     const userProfile = await this.userService.findById(userId);
     const isUser = user?.id === userProfile.id;
-    return this.utilsService.transformUserDBtoGetUserProfileDTO(userProfile, isUser);
+    return this.utilsService.transformUserDBtoGetUserProfileDTO(
+      userProfile,
+      isUser,
+    );
   }
 
   @ApiResponse({

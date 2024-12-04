@@ -18,11 +18,17 @@ export class GetEventDetailsDTO {
   @ApiProperty({ description: 'The ID of the event', example: '1' })
   id: string;
 
-  @ApiProperty({ description: 'boolean if the current user is the host', example: true })
+  @ApiProperty({
+    description: 'boolean if the current user is the host',
+    example: true,
+  })
   @IsBoolean()
   isHost: boolean;
 
-  @ApiProperty({ description: 'boolean if the current user is a participant', example: false })
+  @ApiProperty({
+    description: 'boolean if the current user is a participant',
+    example: false,
+  })
   @IsBoolean()
   isParticipant: boolean;
 

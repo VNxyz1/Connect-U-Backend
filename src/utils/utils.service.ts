@@ -108,7 +108,10 @@ export class UtilsService {
    * @param isUser - boolean if logged in user is user whos visiting the profile
    * @returns {GetUserProfileDTO} - The transformed user profile data transfer object.
    */
-  transformUserDBtoGetUserProfileDTO(user: UserDB, isUser: boolean): GetUserProfileDTO {
+  transformUserDBtoGetUserProfileDTO(
+    user: UserDB,
+    isUser: boolean,
+  ): GetUserProfileDTO {
     const dto = new GetUserProfileDTO();
     dto.id = user.id;
     dto.isUser = isUser;
