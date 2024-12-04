@@ -490,11 +490,13 @@ const mockUser: UserDB = {
   tags: [],
   unreadMessages: [],
 };
-const MockPublicEvent: EventDB = {
+export const MockPublicEvent: EventDB = {
   id: '1',
   title: 'Tech Conference 2024',
   description: 'A conference for tech enthusiasts.',
-  dateAndTime: '2024-12-01T10:00:00',
+  dateAndTime: new Date(
+    new Date().setFullYear(new Date().getFullYear() + 1),
+  ).toISOString(),
   categories: [],
   host: mockUser,
   type: EventtypeEnum.public,

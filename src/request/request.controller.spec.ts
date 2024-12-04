@@ -11,6 +11,8 @@ import { mockProviders } from '../../test/mock-services';
 import { UtilsService } from '../utils/utils.service';
 import { RequestController } from './request.controller';
 import { mockRequestService } from './request.service.spec';
+import { MockPublicEvent } from '../event/event.controller.spec';
+import { EventService } from '../event/event.service';
 
 describe('RequestController', () => {
   let app: INestApplication;
@@ -61,6 +63,10 @@ describe('RequestController', () => {
     it('should create a join request for an event', async () => {
       const tokens = await mockAuthService.signIn();
       const eventId = '123';
+
+      jest
+        .spyOn(app.get(EventService), 'getEventById')
+        .mockResolvedValue(MockPublicEvent);
 
       return agent
         .post(`/request/join/${eventId}`)
