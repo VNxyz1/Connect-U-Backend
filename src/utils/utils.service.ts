@@ -99,6 +99,12 @@ export class UtilsService {
       }
     }
 
+    const dateValid = this.isFutureDate(event.dateAndTime);
+
+    if (!dateValid) {
+      throw new BadRequestException('The Event is outdated.');
+    }
+
     return true;
   }
 
