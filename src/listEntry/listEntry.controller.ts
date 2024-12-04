@@ -50,6 +50,7 @@ export class ListEntryController {
   }
 
   @ApiResponse({
+    type: OkDTO,
     status: HttpStatus.OK,
     description: 'Updates the list entry by adding the logged-in user',
   })
@@ -68,8 +69,19 @@ export class ListEntryController {
       throw new ForbiddenException('There already is a user assigned.');
     }
 
+    if (listEntry.user) {
+      if (listEntry.user.id === user.id) {
+        await this.listEntryService.removeUserFromListEntry(listEntry)
+        return new OkDTO(true, 'user was removed from list');
+      } else {
+        throw new ForbiddenException('Another user is already assigned to this list entry.');
+      }
+    }
+
     await this.utilsService.isHostOrParticipant(user, listEntry.list.event.id);
 
-    return await this.listEntryService.updateListEntry(listEntry, user);
+    await this.listEntryService.updateListEntry(listEntry, user);
+
+    return new OkDTO(true, 'List entry was updated successfully');
   }
 }

@@ -74,4 +74,19 @@ export class ListEntryService {
 
     return await this.listEntryRepository.save(listEntry);
   }
+
+  /**
+   * Removes the user from a list entry.
+   *
+   * @param listEntry - The list entry to update.
+   * @returns The updated list entry with the user removed.
+   * @throws NotFoundException If the list entry does not exist.
+   * @throws BadRequestException If there is no user assigned to the list entry.
+   */
+  async removeUserFromListEntry(listEntry: ListEntryDB): Promise<ListEntryDB> {
+
+    listEntry.user = null;
+
+    return await this.listEntryRepository.save(listEntry);
+  }
 }
