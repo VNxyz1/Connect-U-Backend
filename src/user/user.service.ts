@@ -169,7 +169,9 @@ export class UserService {
   async updatePassword(id: string, password: string): Promise<UserDB> {
     const user = await this.findById(id);
 
-    user.password = password;
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(password, salt);
+
     return await this.userRepository.save(user);
   }
 }
