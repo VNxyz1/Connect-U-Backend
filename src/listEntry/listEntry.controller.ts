@@ -1,9 +1,9 @@
 import {
   Body,
-  Controller,
+  Controller, ForbiddenException,
   HttpCode,
   HttpStatus,
-  Param,
+  Param, Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -47,5 +47,29 @@ export class ListEntryController {
     await this.listEntryService.createListEntry(listId, body.content);
 
     return new OkDTO(true, 'List Entry was created successfully');
+  }
+
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Updates the list entry by adding the logged-in user',
+  })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard)
+  @Patch('/:listEntryId')
+  @HttpCode(HttpStatus.OK)
+  async addUserToListEntry(
+    @Param('listEntryId') listEntryId: number,
+    @User() user: UserDB,
+  ) {
+
+    const listEntry = await this.listEntryService.getListEntryById(listEntryId);
+
+    if (listEntry.user) {
+      throw new ForbiddenException('There already is a user assigned.');
+    }
+
+    await this.utilsService.isHostOrParticipant(user, listEntry.list.event.id);
+
+    return await this.listEntryService.updateListEntry(listEntry, user);
   }
 }

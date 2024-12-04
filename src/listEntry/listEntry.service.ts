@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ListEntryDB } from '../database/ListEntryDB';
 import { ListDB } from '../database/ListDB';
+import { UserDB } from '../database/UserDB';
 
 @Injectable()
 export class ListEntryService {
@@ -34,5 +35,43 @@ export class ListEntryService {
     newListEntry.content = content;
 
     return await this.listEntryRepository.save(newListEntry);
+  }
+
+  /**
+   * Retrieves a list by its ID.
+   *
+   * @returns The list with the specified ID.
+   * @throws NotFoundException - If the list does not exist.
+   * @param listEntryId - the id of the list entry
+   */
+  async getListEntryById(listEntryId: number): Promise<ListEntryDB> {
+    const listEntry = await this.listEntryRepository.findOne({
+      where: { id: listEntryId },
+      relations: ['list','list.event','user'],
+    });
+
+    if (!listEntry) {
+      throw new NotFoundException('List Entry not found');
+    }
+
+    return listEntry;
+  }
+
+  /**
+   * Updates a list entry to add the logged-in user.
+   *
+   * @param listEntry - list entry to update.
+   * @param user - The logged-in user to be added.
+   * @returns The updated list entry.
+   * @throws NotFoundException If the list entry does not exist.
+   */
+  async updateListEntry(
+    listEntry: ListEntryDB,
+    user: UserDB,
+  ): Promise<ListEntryDB> {
+
+    listEntry.user = user;
+
+    return await this.listEntryRepository.save(listEntry);
   }
 }
