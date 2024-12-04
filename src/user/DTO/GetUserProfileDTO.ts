@@ -4,6 +4,9 @@ export class GetUserProfileDTO {
   @ApiProperty({ description: 'the ID of the user', example: '2' })
   id: string;
 
+  @ApiProperty({ description: 'checks if current user is the one visiting the profile', example: false })
+  isUser: boolean;
+
   @ApiProperty({ description: 'the first name of the user', example: 'Lina' })
   firstName: string;
 

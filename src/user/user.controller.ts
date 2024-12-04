@@ -81,9 +81,11 @@ export class UserController {
   @Get('/userProfile/:userId')
   async getUserProfile(
     @Param('userId') userId: string,
+    @User() user: UserDB | null,
   ): Promise<GetUserProfileDTO> {
-    const user = await this.userService.findById(userId);
-    return this.utilsService.transformUserDBtoGetUserProfileDTO(user);
+    const userProfile = await this.userService.findById(userId);
+    const isUser = user?.id === userProfile.id;
+    return this.utilsService.transformUserDBtoGetUserProfileDTO(userProfile, isUser);
   }
 
   @ApiResponse({
