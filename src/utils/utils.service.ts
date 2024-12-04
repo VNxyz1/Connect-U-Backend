@@ -110,6 +110,12 @@ export class UtilsService {
       }
     }
 
+    const dateValid = this.isFutureDate(event.dateAndTime);
+
+    if (!dateValid) {
+      throw new BadRequestException('The Event is outdated.');
+    }
+
     return true;
   }
 
@@ -266,11 +272,11 @@ export class UtilsService {
     dto.participantsNumber = participants.length;
     dto.maxParticipantsNumber = event.participantsNumber;
 
-    dto.participants = participants.map(
-      this.transformUserDBtoGetUserProfileDTO,
-    );
+    dto.host = await this.transformUserDBtoGetUserProfileDTO(event.host);
 
-    dto.host = this.transformUserDBtoGetUserProfileDTO(event.host);
+    dto.participants = participants.map((user) => {
+      return this.transformUserDBtoGetUserProfileDTO(user);
+    });
 
     dto.startAge = event.startAge || null;
     dto.endAge = event.endAge || null;
