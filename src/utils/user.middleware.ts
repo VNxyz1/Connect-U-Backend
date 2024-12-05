@@ -25,6 +25,7 @@ export class UserMiddleware implements NestMiddleware {
           },
         );
         req['user'] = await this.userService.findById(payload.userId);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (e) {
         res['user'] = null;
       }
