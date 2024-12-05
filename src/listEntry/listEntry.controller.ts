@@ -66,7 +66,8 @@ export class ListEntryController {
   @ApiResponse({
     type: OkDTO,
     status: HttpStatus.OK,
-    description: 'Updates the list entry by adding or removing the logged-in user',
+    description:
+      'Updates the list entry by adding or removing the logged-in user',
   })
   @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard)

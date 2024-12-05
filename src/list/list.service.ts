@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ListDB } from '../database/ListDB';
@@ -97,9 +97,6 @@ export class ListService {
    * @param list - The list to delete.
    */
   async deleteList(list: ListDB): Promise<void> {
-
-
     await this.listRepository.remove(list);
   }
-
 }

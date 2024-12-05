@@ -6,7 +6,9 @@ import {
   HttpStatus,
   UseGuards,
   Param,
-  Get, ForbiddenException, Delete,
+  Get,
+  ForbiddenException,
+  Delete,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '../auth/auth.guard';
@@ -106,7 +108,6 @@ export class ListController {
     @Param('listId') listId: number,
     @User() user: UserDB,
   ): Promise<OkDTO> {
-
     const list = await this.listService.getListById(listId);
 
     if (list.creator.id !== user.id && list.event.host.id !== user.id) {
@@ -116,5 +117,4 @@ export class ListController {
     await this.listService.deleteList(list);
     return new OkDTO(true, 'List was deleted successfully');
   }
-
 }
