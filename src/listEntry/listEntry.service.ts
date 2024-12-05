@@ -89,4 +89,16 @@ export class ListEntryService {
 
     return await this.listEntryRepository.save(listEntry);
   }
+
+  /**
+   * Deletes a list entry by its ID.
+   *
+   * @returns A confirmation message or void.
+   * @throws NotFoundException If the list entry does not exist.
+   * @param listEntry - list entry to be deleted
+   */
+  async deleteListEntry(listEntry: ListEntryDB): Promise<void> {
+
+    await this.listEntryRepository.remove(listEntry);
+  }
 }

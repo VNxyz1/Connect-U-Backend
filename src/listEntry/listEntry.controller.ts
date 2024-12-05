@@ -1,6 +1,7 @@
 import {
+  BadRequestException,
   Body,
-  Controller, ForbiddenException,
+  Controller, Delete, ForbiddenException,
   HttpCode,
   HttpStatus,
   Param, Patch,
@@ -41,6 +42,16 @@ export class ListEntryController {
     @Body() body: CreateListEntryDTO,
   ) {
     const list = await this.listService.getListById(listId);
+
+    const isDuplicate = list.listEntries.some(
+      (entry) => entry.content === body.content,
+    );
+
+    if (isDuplicate) {
+      throw new BadRequestException(
+        'A list entry with the same description already exists.',
+      );
+    }
 
     await this.utilsService.isHostOrParticipant(user, list.event.id);
 
@@ -84,4 +95,31 @@ export class ListEntryController {
 
     return new OkDTO(true, 'List entry was updated successfully');
   }
+
+  @ApiResponse({
+    type: OkDTO,
+    status: HttpStatus.OK,
+    description: 'Deletes a list entry',
+  })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @Delete('/:listEntryId')
+  async deleteListEntry(
+    @Param('listEntryId') listEntryId: number,
+    @User() user: UserDB,
+  ): Promise<OkDTO> {
+    const listEntry = await this.listEntryService.getListEntryById(listEntryId);
+
+    if (listEntry.user && listEntry.user.id !== user.id) {
+      throw new ForbiddenException('You are not authorized to delete this list entry');
+    }
+
+    await this.utilsService.isHostOrParticipant(user, listEntry.list.event.id);
+
+    await this.listEntryService.deleteListEntry(listEntry);
+
+    return new OkDTO(true, 'List entry was deleted successfully');
+  }
+
 }
