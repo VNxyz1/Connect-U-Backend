@@ -115,12 +115,6 @@ export class ListEntryController {
   ): Promise<OkDTO> {
     const listEntry = await this.listEntryService.getListEntryById(listEntryId);
 
-    if (listEntry.user && listEntry.user.id !== user.id) {
-      throw new ForbiddenException(
-        'You are not authorized to delete this list entry',
-      );
-    }
-
     await this.utilsService.isHostOrParticipant(user, listEntry.list.event.id);
 
     await this.listEntryService.deleteListEntry(listEntry);

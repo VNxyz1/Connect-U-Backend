@@ -6,7 +6,7 @@ import {
   HttpStatus,
   UseGuards,
   Param,
-  Get,
+  Get, ForbiddenException, Delete,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '../auth/auth.guard';
@@ -92,4 +92,29 @@ export class ListController {
       this.utilsService.transformListDBtoGetListDTO(list),
     );
   }
+
+  @ApiResponse({
+    type: OkDTO,
+    status: HttpStatus.OK,
+    description: 'Deletes a list by its ID',
+  })
+  @ApiBearerAuth('access-token')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard)
+  @Delete('/:listId')
+  async deleteList(
+    @Param('listId') listId: number,
+    @User() user: UserDB,
+  ): Promise<OkDTO> {
+
+    const list = await this.listService.getListById(listId);
+
+    if (list.creator.id !== user.id && list.event.host.id !== user.id) {
+      throw new ForbiddenException('You are not allowed to delete this list');
+    }
+
+    await this.listService.deleteList(list);
+    return new OkDTO(true, 'List was deleted successfully');
+  }
+
 }
