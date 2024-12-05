@@ -558,6 +558,7 @@ const MockEventDetailsDTO: GetEventDetailsDTO = {
   preferredGenders: [],
   host: {
     age: 44,
+    isUser: false,
     city: 'Anytown',
     firstName: 'Host',
     id: '1',
@@ -566,6 +567,8 @@ const MockEventDetailsDTO: GetEventDetailsDTO = {
     pronouns: 'he/him',
     username: 'hostuser',
   },
+  isHost: false,
+  isParticipant: false,
   dateAndTime: '2024-12-01T10:00:00',
   title: 'Tech Conference 2024',
   description: 'A conference for tech enthusiasts.',
@@ -590,6 +593,7 @@ const MockEventDetailsWOAddress: GetEventDetailsDTO = {
   preferredGenders: [],
   host: {
     age: 44,
+    isUser: false,
     city: 'Anytown',
     firstName: 'Host',
     id: '1',
@@ -598,6 +602,8 @@ const MockEventDetailsWOAddress: GetEventDetailsDTO = {
     pronouns: 'he/him',
     username: 'hostuser',
   },
+  isHost: false,
+  isParticipant: false,
   dateAndTime: '2024-12-01T10:00:00',
   title: 'Tech Conference 2024',
   description: 'A conference for tech enthusiasts.',

@@ -110,6 +110,7 @@ describe('UserController', () => {
     const expectedUserDB: UserDB = await mockUserService.findById('3');
     const mockUserProfile = {
       id: expectedUserDB.id,
+      isUser: false,
       firstName: expectedUserDB.firstName,
       username: expectedUserDB.username,
       city: expectedUserDB.city,
