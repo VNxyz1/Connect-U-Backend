@@ -60,7 +60,7 @@ export class ListService {
   async getListById(listId: number): Promise<ListDB> {
     const list = await this.listRepository.findOne({
       where: { id: listId },
-      relations: ['event', 'creator', 'listEntries'],
+      relations: ['event', 'creator', 'listEntries', 'listEntries.user'],
     });
 
     if (!list) {
@@ -68,5 +68,26 @@ export class ListService {
     }
 
     return list;
+  }
+
+  /**
+   * Retrieves all lists for a specific event.
+   *
+   * @param eventId - The ID of the event.
+   * @returns An array of GetListDTO containing the lists for the event.
+   * @throws NotFoundException If the event does not exist.
+   * @throws ForbiddenException If the user is not the host or a participant of the event.
+   */
+  async getListsForEvent(eventId: string): Promise<ListDB[]> {
+    const event = await this.eventRepository.findOne({
+      where: { id: eventId },
+      relations: ['lists', 'lists.creator', 'lists.listEntries'],
+    });
+
+    if (!event) {
+      throw new NotFoundException('Event not found');
+    }
+
+    return event.lists;
   }
 }

@@ -47,7 +47,7 @@ export class ListEntryService {
   async getListEntryById(listEntryId: number): Promise<ListEntryDB> {
     const listEntry = await this.listEntryRepository.findOne({
       where: { id: listEntryId },
-      relations: ['list','list.event','user'],
+      relations: ['list', 'list.event', 'user'],
     });
 
     if (!listEntry) {
@@ -69,7 +69,6 @@ export class ListEntryService {
     listEntry: ListEntryDB,
     user: UserDB,
   ): Promise<ListEntryDB> {
-
     listEntry.user = user;
 
     return await this.listEntryRepository.save(listEntry);
@@ -84,7 +83,6 @@ export class ListEntryService {
    * @throws BadRequestException If there is no user assigned to the list entry.
    */
   async removeUserFromListEntry(listEntry: ListEntryDB): Promise<ListEntryDB> {
-
     listEntry.user = null;
 
     return await this.listEntryRepository.save(listEntry);
@@ -98,7 +96,6 @@ export class ListEntryService {
    * @param listEntry - list entry to be deleted
    */
   async deleteListEntry(listEntry: ListEntryDB): Promise<void> {
-
     await this.listEntryRepository.remove(listEntry);
   }
 }

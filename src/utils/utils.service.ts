@@ -19,6 +19,11 @@ import { GetEventJoinRequestDTO } from '../request/DTO/GetEventJoinRequestDTO';
 import { GetUserJoinRequestDTO } from '../request/DTO/GetUserJoinRequestDTO';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { ListDB } from '../database/ListDB';
+import { ListEntryDB } from '../database/ListEntryDB';
+import { GetListEntryDTO } from '../listEntry/DTO/GetListEntryDTO';
+import { GetListDetailsDTO } from '../list/DTO/GetListDetailsDTO';
+import { GetListDTO } from '../list/DTO/GetListDTO';
 
 @Injectable()
 export class UtilsService {
@@ -272,7 +277,7 @@ export class UtilsService {
     dto.participantsNumber = participants.length;
     dto.maxParticipantsNumber = event.participantsNumber;
 
-    dto.host = await this.transformUserDBtoGetUserProfileDTO(event.host);
+    dto.host = this.transformUserDBtoGetUserProfileDTO(event.host);
 
     dto.participants = participants.map((user) => {
       return this.transformUserDBtoGetUserProfileDTO(user);
@@ -337,5 +342,55 @@ export class UtilsService {
     dto.user = this.transformUserDBtoGetUserProfileDTO(request.user);
 
     return dto;
+  }
+
+  /**
+   * Transforms a ListDB entity into a GetListDetailsDTO.
+   *
+   * @param list - The ListDB entity to transform.
+   * @returns The transformed GetListDTO.
+   */
+  transformListDBtoGetListDTO(list: ListDB): GetListDTO {
+    return {
+      id: list.id,
+      title: list.title,
+      description: list.description,
+      creator: this.transformUserDBtoGetUserProfileDTO(list.creator),
+    };
+  }
+
+  /**
+   * Transforms a ListDB entity into a GetListDetailsDTO.
+   *
+   * @param list - The ListDB entity to transform.
+   * @returns The transformed GetListDTO.
+   */
+  transformListDBtoGetListDetailsDTO(list: ListDB): GetListDetailsDTO {
+    return {
+      id: list.id,
+      title: list.title,
+      description: list.description,
+      creator: this.transformUserDBtoGetUserProfileDTO(list.creator),
+      listEntries: list.listEntries.map(
+        this.transformListEntryDBtoGetListEntryDTO,
+      ),
+    };
+  }
+
+  /**
+   * Transforms a ListEntryDB entity into a GetListEntryDTO.
+   *
+   * @param entry - The ListEntryDB entity to transform.
+   * @returns The transformed GetListEntryDTO.
+   */
+  transformListEntryDBtoGetListEntryDTO(entry: ListEntryDB): GetListEntryDTO {
+    return {
+      id: entry.id,
+      timestamp: entry.timestamp,
+      content: entry.content,
+      user: entry.user
+        ? this.transformUserDBtoGetUserProfileDTO(entry.user)
+        : null,
+    };
   }
 }

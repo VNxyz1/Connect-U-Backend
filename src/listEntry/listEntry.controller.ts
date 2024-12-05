@@ -1,10 +1,13 @@
 import {
   BadRequestException,
   Body,
-  Controller, Delete, ForbiddenException,
+  Controller,
+  Delete,
+  ForbiddenException,
   HttpCode,
   HttpStatus,
-  Param, Patch,
+  Param,
+  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -63,7 +66,7 @@ export class ListEntryController {
   @ApiResponse({
     type: OkDTO,
     status: HttpStatus.OK,
-    description: 'Updates the list entry by adding the logged-in user',
+    description: 'Updates the list entry by adding or removing the logged-in user',
   })
   @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard)
@@ -73,7 +76,6 @@ export class ListEntryController {
     @Param('listEntryId') listEntryId: number,
     @User() user: UserDB,
   ) {
-
     const listEntry = await this.listEntryService.getListEntryById(listEntryId);
 
     if (listEntry.user) {
@@ -82,10 +84,12 @@ export class ListEntryController {
 
     if (listEntry.user) {
       if (listEntry.user.id === user.id) {
-        await this.listEntryService.removeUserFromListEntry(listEntry)
+        await this.listEntryService.removeUserFromListEntry(listEntry);
         return new OkDTO(true, 'user was removed from list');
       } else {
-        throw new ForbiddenException('Another user is already assigned to this list entry.');
+        throw new ForbiddenException(
+          'Another user is already assigned to this list entry.',
+        );
       }
     }
 
@@ -112,7 +116,9 @@ export class ListEntryController {
     const listEntry = await this.listEntryService.getListEntryById(listEntryId);
 
     if (listEntry.user && listEntry.user.id !== user.id) {
-      throw new ForbiddenException('You are not authorized to delete this list entry');
+      throw new ForbiddenException(
+        'You are not authorized to delete this list entry',
+      );
     }
 
     await this.utilsService.isHostOrParticipant(user, listEntry.list.event.id);
@@ -121,5 +127,4 @@ export class ListEntryController {
 
     return new OkDTO(true, 'List entry was deleted successfully');
   }
-
 }
