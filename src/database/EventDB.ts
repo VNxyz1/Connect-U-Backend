@@ -30,7 +30,7 @@ export class EventDB {
   @ManyToOne(() => UserDB)
   host: UserDB;
 
-  @Column({ default: 0 })
+  @Column({ default: StatusEnum.upcoming })
   status: StatusEnum;
 
   @Column({ type: 'datetime' })
