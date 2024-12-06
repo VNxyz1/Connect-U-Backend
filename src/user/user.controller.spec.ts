@@ -18,6 +18,9 @@ import { JWTConstants } from '../auth/constants';
 import { mockAuthService } from '../auth/auth.service.spec';
 import { mockUtilsService } from '../utils/utils.service.spec';
 import { UserDB } from '../database/UserDB';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { EventDB } from '../database/EventDB';
+import { mockEventRepository } from '../event/event.service.spec';
 
 describe('UserController', () => {
   let app: INestApplication;
@@ -29,6 +32,10 @@ describe('UserController', () => {
       providers: [
         UserService,
         UtilsService,
+        {
+          provide: getRepositoryToken(EventDB),
+          useValue: mockEventRepository,
+        },
         {
           provide: JwtService,
           useValue: {

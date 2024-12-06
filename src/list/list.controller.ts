@@ -69,8 +69,11 @@ export class ListController {
   @Get('/listDetails/:listId')
   async getListById(
     @Param('listId') listId: number,
+    @User() user: UserDB,
   ): Promise<GetListDetailsDTO> {
     const list = await this.listService.getListById(listId);
+
+    await this.utilsService.isHostOrParticipant(user, list.event.id);
 
     return this.utilsService.transformListDBtoGetListDetailsDTO(list);
   }

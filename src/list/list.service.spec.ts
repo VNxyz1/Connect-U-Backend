@@ -85,8 +85,7 @@ describe('ListService', () => {
       );
 
       expect(result).toEqual(mockList);
-  });
-
+    });
 
     it('should throw NotFoundException if event does not exist', async () => {
       eventRepository.findOne.mockResolvedValue(null);
@@ -154,3 +153,30 @@ describe('ListService', () => {
     });
   });
 });
+
+const mockUser = {
+  id: '1',
+  username: 'testUser',
+  firstName: 'test',
+  city: 'giessen',
+  profilePicture: 'string',
+  pronouns: 'she/her',
+  age: 23,
+  profileText: 'eee',
+};
+
+const mockList = {
+  id: 1,
+  title: 'Test List',
+  description: 'Test Description',
+  creator: mockUser,
+  listEntries: [],
+  event: { id: '1', host: mockUser },
+};
+
+export const mockListService = {
+  createList: jest.fn().mockResolvedValue(mockList),
+  getListById: jest.fn().mockResolvedValue(mockList),
+  getListsForEvent: jest.fn().mockResolvedValue(mockList),
+  deleteList: jest.fn().mockResolvedValue(mockList),
+};

@@ -12,7 +12,7 @@ import { GenderEnum } from '../database/enums/GenderEnum';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { StatusEnum } from '../database/enums/StatusEnum';
 
-const mockEventRepository = {
+export const mockEventRepository = {
   create: jest.fn(),
   save: jest.fn(),
   find: jest.fn(),

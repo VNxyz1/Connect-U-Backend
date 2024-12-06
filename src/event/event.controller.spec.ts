@@ -22,6 +22,8 @@ import { UserDB } from '../database/UserDB';
 import { EventDB } from '../database/EventDB';
 import { StatusEnum } from '../database/enums/StatusEnum';
 import { GetEventDetailsDTO } from './DTO/GetEventDetailsDTO';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { mockEventRepository } from './event.service.spec';
 
 describe('EventController', () => {
   let app: INestApplication;
@@ -33,6 +35,10 @@ describe('EventController', () => {
       providers: [
         ...mockProviders,
         UtilsService,
+        {
+          provide: getRepositoryToken(EventDB),
+          useValue: mockEventRepository,
+        },
         {
           provide: JwtService,
           useValue: {

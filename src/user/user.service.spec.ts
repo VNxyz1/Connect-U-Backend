@@ -201,7 +201,7 @@ describe('UserService', () => {
   });
 });
 
-const mockUserList: UserDB[] = [
+export const mockUserList: UserDB[] = [
   {
     id: '1',
     email: 'john.doe@example.com',

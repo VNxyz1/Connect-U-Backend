@@ -3,13 +3,21 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { EventDB } from '../database/EventDB';
 import { GetEventCardDTO } from '../event/DTO/GetEventCardDTO';
 import { UserDB } from '../database/UserDB';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { mockEventRepository } from '../event/event.service.spec';
 
 describe('UtilsService', () => {
   let service: UtilsService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [UtilsService],
+      providers: [
+        UtilsService,
+        {
+          provide: getRepositoryToken(EventDB),
+          useValue: mockEventRepository,
+        },
+      ],
     }).compile();
 
     service = module.get<UtilsService>(UtilsService);
@@ -208,4 +216,21 @@ export const mockUtilsService = {
     street: user.street,
     zipCode: user.zipCode,
   })),
+
+  transformListEntryDBtoGetListEntryDTO: jest.fn((entry) => ({
+    id: entry.id,
+    content: entry.content,
+  })),
+
+  transformListDBtoGetListDetailsDTO: jest.fn((list) => ({
+    id: list.id,
+    title: list.title,
+    description: list.description,
+    creator: mockUtilsService.transformUserDBtoGetUserProfileDTO(list.creator),
+    listEntries: list.listEntries.map((entry) =>
+      mockUtilsService.transformListEntryDBtoGetListEntryDTO(entry),
+    ),
+  })),
+
+  isHostOrParticipant: jest.fn(() => true),
 };

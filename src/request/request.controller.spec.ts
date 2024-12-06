@@ -13,6 +13,9 @@ import { RequestController } from './request.controller';
 import { mockRequestService } from './request.service.spec';
 import { MockPublicEvent } from '../event/event.controller.spec';
 import { EventService } from '../event/event.service';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { EventDB } from '../database/EventDB';
+import { mockEventRepository } from '../event/event.service.spec';
 
 describe('RequestController', () => {
   let app: INestApplication;
@@ -24,6 +27,10 @@ describe('RequestController', () => {
       providers: [
         ...mockProviders,
         UtilsService,
+        {
+          provide: getRepositoryToken(EventDB),
+          useValue: mockEventRepository,
+        },
         {
           provide: JwtService,
           useValue: {

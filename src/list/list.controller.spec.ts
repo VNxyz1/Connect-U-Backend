@@ -14,17 +14,14 @@ import { ListController } from './list.controller';
 import { ListService } from './list.service';
 import { UtilsService } from '../utils/utils.service';
 import { AuthService } from '../auth/auth.service';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { ListDB } from '../database/ListDB';
-import { EventDB } from '../database/EventDB';
-import { UserDB } from '../database/UserDB';
 import { mockAuthService } from '../auth/auth.service.spec';
 import { CreateListDTO } from './DTO/CreateListDTO';
 import { GetListDetailsDTO } from './DTO/GetListDetailsDTO';
-import { GetListDTO } from './DTO/GetListDTO';
-import { AuthGuard } from '../auth/auth.guard';
 import { JWTConstants } from '../auth/constants';
-import { Repository } from 'typeorm';
+import { mockProviders } from '../../test/mock-services';
+import { mockListService } from './list.service.spec';
+import { mockUtilsService } from '../utils/utils.service.spec';
+import { mockUserList, mockUserService } from '../user/user.service.spec';
 
 describe('ListController', () => {
   let app: INestApplication;
@@ -33,6 +30,12 @@ describe('ListController', () => {
   const mockUser = {
     id: '1',
     username: 'testUser',
+    firstName: 'test',
+    city: 'giessen',
+    profilePicture: 'string',
+    pronouns: 'she/her',
+    age: 23,
+    profileText: 'eee',
   };
 
   const mockList = {
@@ -50,75 +53,25 @@ describe('ListController', () => {
     description: mockList.description,
     creator: {
       id: mockUser.id,
+      age: 23,
       username: mockUser.username,
-      firstName: '',
-      city: '',
-      profilePicture: '',
-      pronouns: '',
-      age: 0,
-      profileText: '',
+      firstName: mockUser.firstName,
+      city: mockUser.city,
+      profilePicture: mockUser.profilePicture,
+      pronouns: mockUser.pronouns,
+      profileText: mockUser.profileText,
     },
     listEntries: [],
   };
-
-  const mockListsDTO: GetListDTO[] = [
-    {
-      id: mockList.id,
-      title: mockList.title,
-      description: mockList.description,
-      creator: {
-        id: mockUser.id,
-        username: mockUser.username,
-        firstName: '',
-        city: '',
-        profilePicture: '',
-        pronouns: '',
-        age: 0,
-        profileText: '',
-      },
-    },
-  ];
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       controllers: [ListController],
       providers: [
-        {
-          provide: getRepositoryToken(ListDB),
-          useClass: Repository,
-        },
-        {
-          provide: getRepositoryToken(EventDB),
-          useClass: Repository,
-        },
-        {
-          provide: getRepositoryToken(UserDB),
-          useClass: Repository,
-        },
+        ...mockProviders,
         {
           provide: ListService,
-          useValue: {
-            createList: jest.fn().mockResolvedValue(mockList),
-            getListById: jest.fn().mockResolvedValue(mockList),
-            getListsForEvent: jest.fn().mockResolvedValue([mockList]),
-            deleteList: jest.fn().mockResolvedValue(undefined),
-          },
-        },
-        {
-          provide: UtilsService,
-          useValue: {
-            isHostOrParticipant: jest.fn().mockResolvedValue(true),
-            transformListDBtoGetListDetailsDTO: jest
-              .fn()
-              .mockResolvedValue(mockListDetailsDTO),
-            transformListDBtoGetListDTO: jest
-              .fn()
-              .mockResolvedValue(mockListsDTO[0]),
-          },
-        },
-        {
-          provide: AuthService,
-          useValue: mockAuthService,
+          useValue: mockListService,
         },
         {
           provide: JwtService,
@@ -133,10 +86,17 @@ describe('ListController', () => {
         {
           provide: JWTConstants,
           useValue: {
-            secret: 'test_secret',
+            getConstants: jest.fn().mockReturnValue({ secret: 'seret_token' }),
           },
         },
-        AuthGuard,
+        {
+          provide: AuthService,
+          useValue: mockAuthService,
+        },
+        {
+          provide: UtilsService,
+          useValue: mockUtilsService,
+        },
       ],
     }).compile();
 
@@ -170,7 +130,7 @@ describe('ListController', () => {
           expect(response.body).toEqual({
             ok: true,
             message: 'List was created successfully',
-            id: mockList.id,
+            listId: mockList.id,
           });
         });
     });
@@ -195,9 +155,16 @@ describe('ListController', () => {
 
   describe('GET /listDetails/:listId - getListById', () => {
     it('should return a list by its ID', async () => {
+      const tokens = await mockAuthService.signIn();
+
+      jest.spyOn(mockListService, 'getListById').mockResolvedValue(mockList);
+      jest
+        .spyOn(mockUtilsService, 'isHostOrParticipant')
+        .mockResolvedValue(true);
+
       return agent
         .get('/list/listDetails/1')
-        .expect('Content-Type', /json/)
+        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
         .expect(HttpStatus.OK)
         .expect((response) => {
           expect(response.body).toEqual(mockListDetailsDTO);
@@ -205,12 +172,15 @@ describe('ListController', () => {
     });
 
     it('should return 404 if the list is not found', async () => {
+      const tokens = await mockAuthService.signIn();
+
       jest
-        .spyOn(app.get(ListService), 'getListById')
+        .spyOn(mockListService, 'getListById')
         .mockRejectedValue(new NotFoundException('List not found'));
 
       return agent
         .get('/list/listDetails/999')
+        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
         .expect(HttpStatus.NOT_FOUND)
         .expect((response) => {
           expect(response.body.message).toBe('List not found');
@@ -219,19 +189,42 @@ describe('ListController', () => {
   });
 
   describe('DELETE /:listId - deleteList', () => {
-    it('should delete a list', async () => {
+    it('should delete a list successfully when the user is authorized', async () => {
       const tokens = await mockAuthService.signIn();
+
+      jest.spyOn(mockListService, 'getListById').mockResolvedValue(mockList);
+      jest.spyOn(mockUserService, 'findById').mockResolvedValue(mockUser);
+      jest.spyOn(mockListService, 'deleteList').mockResolvedValue(undefined);
 
       return agent
         .delete('/list/1')
         .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
-        .expect('Content-Type', /json/)
         .expect(HttpStatus.OK)
         .expect((response) => {
           expect(response.body).toEqual({
             ok: true,
             message: 'List was deleted successfully',
           });
+          expect(mockListService.deleteList).toHaveBeenCalledWith(mockList);
+        });
+    });
+
+    it('should return 403 if the user is not the creator or host', async () => {
+      const tokens = await mockAuthService.signIn();
+
+      jest.spyOn(mockListService, 'getListById').mockResolvedValue(mockList);
+      jest
+        .spyOn(mockUserService, 'findById')
+        .mockResolvedValue(mockUserList[2]);
+
+      return agent
+        .delete('/list/1')
+        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+        .expect(HttpStatus.FORBIDDEN)
+        .expect((response) => {
+          expect(response.body.message).toBe(
+            'You are not allowed to delete this list',
+          );
         });
     });
   });
