@@ -400,7 +400,7 @@ export class UtilsService {
       timestamp: entry.timestamp,
       content: entry.content,
       user: entry.user
-        ? this.transformUserDBtoGetUserProfileDTO(entry.user)
+        ? this.transformUserDBtoGetUserProfileDTO(entry.user, false)
         : null,
     };
   }
