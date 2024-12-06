@@ -30,6 +30,8 @@ import { ListService } from './list/list.service';
 import { ListController } from './list/list.controller';
 import { ListEntryController } from './listEntry/listEntry.controller';
 import { ListEntryService } from './listEntry/listEntry.service';
+import { SurveyService } from './survey/survey.service';
+import { SurveyController } from './survey/survey.controller';
 
 @Module({
   imports: [
@@ -59,6 +61,7 @@ import { ListEntryService } from './listEntry/listEntry.service';
     RequestController,
     ListController,
     ListEntryController,
+    SurveyController,
   ],
   providers: [
     AppService,
@@ -73,6 +76,7 @@ import { ListEntryService } from './listEntry/listEntry.service';
     RequestService,
     ListService,
     ListEntryService,
+    SurveyService
   ],
 })
 export class AppModule implements NestModule {
