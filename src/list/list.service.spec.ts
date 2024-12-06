@@ -156,6 +156,7 @@ describe('ListService', () => {
 
 const mockUser = {
   id: '1',
+  isUser: false,
   username: 'testUser',
   firstName: 'test',
   city: 'giessen',

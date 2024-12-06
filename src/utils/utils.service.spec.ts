@@ -5,6 +5,8 @@ import { GetEventCardDTO } from '../event/DTO/GetEventCardDTO';
 import { UserDB } from '../database/UserDB';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { mockEventRepository } from '../event/event.service.spec';
+import { GetUserProfileDTO } from '../user/DTO/GetUserProfileDTO';
+import { GetUserDataDTO } from '../user/DTO/GetUserDataDTO';
 
 describe('UtilsService', () => {
   let service: UtilsService;
@@ -192,30 +194,35 @@ describe('UtilsService', () => {
 });
 
 export const mockUtilsService = {
-  transformUserDBtoGetUserProfileDTO: jest.fn((user) => ({
-    id: user.id,
-    firstName: user.firstName,
-    username: user.username,
-    city: user.city,
-    profilePicture: user.profilePicture,
-    pronouns: user.pronouns,
-    age: 23,
-    profileText: user.profileText,
-  })),
+  transformUserDBtoGetUserProfileDTO: jest.fn(
+    (user): GetUserProfileDTO => ({
+      id: user.id,
+      isUser: false,
+      firstName: user.firstName,
+      username: user.username,
+      city: user.city,
+      profilePicture: user.profilePicture,
+      pronouns: user.pronouns,
+      age: 23,
+      profileText: user.profileText,
+    }),
+  ),
 
-  transformUserDBtoGetUserDataDTO: jest.fn((user) => ({
-    id: user.id,
-    firstName: user.firstName,
-    lastName: user.lastName,
-    username: user.username,
-    email: user.email,
-    city: user.city,
-    streetNumber: user.streetNumber,
-    birthday: user.birthday,
-    gender: user.gender,
-    street: user.street,
-    zipCode: user.zipCode,
-  })),
+  transformUserDBtoGetUserDataDTO: jest.fn(
+    (user): GetUserDataDTO => ({
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      username: user.username,
+      email: user.email,
+      city: user.city,
+      streetNumber: user.streetNumber,
+      birthday: user.birthday,
+      gender: user.gender,
+      street: user.street,
+      zipCode: user.zipCode,
+    }),
+  ),
 
   transformListEntryDBtoGetListEntryDTO: jest.fn((entry) => ({
     id: entry.id,

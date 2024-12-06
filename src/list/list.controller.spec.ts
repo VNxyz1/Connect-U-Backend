@@ -199,6 +199,7 @@ describe('ListController', () => {
 
 const mockUser = {
   id: '1',
+  isUser: false,
   username: 'testUser',
   firstName: 'test',
   city: 'giessen',
@@ -222,6 +223,7 @@ const mockListDetailsDTO: GetListDetailsDTO = {
   title: mockList.title,
   description: mockList.description,
   creator: {
+    isUser: mockUser.isUser,
     id: mockUser.id,
     age: 23,
     username: mockUser.username,

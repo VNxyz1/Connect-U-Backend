@@ -210,6 +210,7 @@ const mockUser = {
   username: 'testUser',
   firstName: 'test',
   city: 'giessen',
+  isUser: false,
   profilePicture: 'string',
   pronouns: 'she/her',
   age: 23,
