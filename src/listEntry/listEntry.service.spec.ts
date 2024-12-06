@@ -5,7 +5,8 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { ListEntryDB } from '../database/ListEntryDB';
 import { ListDB } from '../database/ListDB';
 import { UserDB } from '../database/UserDB';
-import { NotFoundException } from '@nestjs/common';
+import {NotFoundException } from '@nestjs/common';
+import { mockListEntry } from './listEntry.controller.spec';
 
 describe('ListEntryService', () => {
   let service: ListEntryService;
@@ -154,3 +155,11 @@ describe('ListEntryService', () => {
     });
   });
 });
+
+export const mockListEntryService = {
+  createListEntry: jest.fn().mockResolvedValue(mockListEntry),
+  getListEntryById: jest.fn().mockResolvedValue(mockListEntry),
+  updateListEntry: jest.fn().mockResolvedValue(mockListEntry),
+  removeUserFromListEntry: jest.fn().mockResolvedValue(mockListEntry),
+  deleteListEntry: jest.fn().mockResolvedValue(mockListEntry),
+};

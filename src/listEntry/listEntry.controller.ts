@@ -80,10 +80,6 @@ export class ListEntryController {
     const listEntry = await this.listEntryService.getListEntryById(listEntryId);
 
     if (listEntry.user) {
-      throw new ForbiddenException('There already is a user assigned.');
-    }
-
-    if (listEntry.user) {
       if (listEntry.user.id === user.id) {
         await this.listEntryService.removeUserFromListEntry(listEntry);
         return new OkDTO(true, 'user was removed from list');

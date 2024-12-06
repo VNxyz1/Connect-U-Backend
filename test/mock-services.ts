@@ -16,6 +16,8 @@ import { UtilsService } from '../src/utils/utils.service';
 import { mockUtilsService } from '../src/utils/utils.service.spec';
 import { ListService } from '../src/list/list.service';
 import { mockListService } from '../src/list/list.service.spec';
+import { ListEntryService } from '../src/listEntry/listEntry.service';
+import { mockListEntryService } from '../src/listEntry/listEntry.service.spec';
 
 export const mockProviders = [
   {
@@ -66,4 +68,8 @@ export const mockProviders = [
     provide: ListService,
     useValue: mockListService,
   },
+  {
+    provide: ListEntryService,
+    useValue: mockListEntryService
+  }
 ];

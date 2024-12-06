@@ -27,42 +27,6 @@ describe('ListController', () => {
   let app: INestApplication;
   let agent: Agent;
 
-  const mockUser = {
-    id: '1',
-    username: 'testUser',
-    firstName: 'test',
-    city: 'giessen',
-    profilePicture: 'string',
-    pronouns: 'she/her',
-    age: 23,
-    profileText: 'eee',
-  };
-
-  const mockList = {
-    id: 1,
-    title: 'Test List',
-    description: 'Test Description',
-    creator: mockUser,
-    listEntries: [],
-    event: { id: '1', host: mockUser },
-  };
-
-  const mockListDetailsDTO: GetListDetailsDTO = {
-    id: mockList.id,
-    title: mockList.title,
-    description: mockList.description,
-    creator: {
-      id: mockUser.id,
-      age: 23,
-      username: mockUser.username,
-      firstName: mockUser.firstName,
-      city: mockUser.city,
-      profilePicture: mockUser.profilePicture,
-      pronouns: mockUser.pronouns,
-      profileText: mockUser.profileText,
-    },
-    listEntries: [],
-  };
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -233,3 +197,40 @@ describe('ListController', () => {
     await app.close();
   });
 });
+
+const mockUser = {
+  id: '1',
+  username: 'testUser',
+  firstName: 'test',
+  city: 'giessen',
+  profilePicture: 'string',
+  pronouns: 'she/her',
+  age: 23,
+  profileText: 'eee',
+};
+
+export const mockList = {
+  id: 1,
+  title: 'Test List',
+  description: 'Test Description',
+  creator: mockUser,
+  listEntries: [],
+  event: { id: '1', host: mockUser },
+};
+
+const mockListDetailsDTO: GetListDetailsDTO = {
+  id: mockList.id,
+  title: mockList.title,
+  description: mockList.description,
+  creator: {
+    id: mockUser.id,
+    age: 23,
+    username: mockUser.username,
+    firstName: mockUser.firstName,
+    city: mockUser.city,
+    profilePicture: mockUser.profilePicture,
+    pronouns: mockUser.pronouns,
+    profileText: mockUser.profileText,
+  },
+  listEntries: [],
+};
