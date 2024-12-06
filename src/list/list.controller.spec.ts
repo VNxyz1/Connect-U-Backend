@@ -27,7 +27,6 @@ describe('ListController', () => {
   let app: INestApplication;
   let agent: Agent;
 
-
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       controllers: [ListController],

@@ -70,6 +70,6 @@ export const mockProviders = [
   },
   {
     provide: ListEntryService,
-    useValue: mockListEntryService
-  }
+    useValue: mockListEntryService,
+  },
 ];

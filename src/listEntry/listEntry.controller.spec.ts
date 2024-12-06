@@ -3,7 +3,8 @@ import { Agent } from 'supertest';
 import {
   HttpStatus,
   BadRequestException,
-  INestApplication, ForbiddenException,
+  INestApplication,
+  ForbiddenException,
 } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import * as cookieParser from 'cookie-parser';
@@ -19,7 +20,6 @@ import { mockUtilsService } from '../utils/utils.service.spec';
 import { CreateListEntryDTO } from './DTO/CreateListEntryDTO';
 import { mockProviders } from '../../test/mock-services';
 import { mockListEntryService } from './listEntry.service.spec';
-import { mockList } from '../list/list.controller.spec';
 
 describe('ListEntryController', () => {
   let app: INestApplication;
@@ -74,7 +74,9 @@ describe('ListEntryController', () => {
       };
 
       jest.spyOn(mockListService, 'getListById').mockResolvedValue(mockList);
-      jest.spyOn(mockListEntryService, 'createListEntry').mockResolvedValue(mockListEntry);
+      jest
+        .spyOn(mockListEntryService, 'createListEntry')
+        .mockResolvedValue(mockListEntry);
 
       return agent
         .post('/list-entry/1')
@@ -98,7 +100,13 @@ describe('ListEntryController', () => {
       };
 
       jest.spyOn(mockListService, 'getListById').mockResolvedValue(mockList);
-      jest.spyOn(mockListEntryService, 'createListEntry').mockRejectedValue(new BadRequestException('A list entry with the same description already exists.'));
+      jest
+        .spyOn(mockListEntryService, 'createListEntry')
+        .mockRejectedValue(
+          new BadRequestException(
+            'A list entry with the same description already exists.',
+          ),
+        );
 
       return agent
         .post('/list-entry/1')
@@ -106,7 +114,9 @@ describe('ListEntryController', () => {
         .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
         .expect(HttpStatus.BAD_REQUEST)
         .expect((response) => {
-          expect(response.body.message).toBe('A list entry with the same description already exists.');
+          expect(response.body.message).toBe(
+            'A list entry with the same description already exists.',
+          );
         });
     });
   });
@@ -115,8 +125,12 @@ describe('ListEntryController', () => {
     it('should add user to list entry', async () => {
       const tokens = await mockAuthService.signIn();
 
-      jest.spyOn(mockListEntryService, 'getListEntryById').mockResolvedValue(mockListEntry);
-      jest.spyOn(mockListEntryService, 'updateListEntry').mockResolvedValue(mockListEntry);
+      jest
+        .spyOn(mockListEntryService, 'getListEntryById')
+        .mockResolvedValue(mockListEntry);
+      jest
+        .spyOn(mockListEntryService, 'updateListEntry')
+        .mockResolvedValue(mockListEntry);
 
       return agent
         .patch('/list-entry/1')
@@ -138,10 +152,16 @@ describe('ListEntryController', () => {
         user: mockUser,
       };
 
-      jest.spyOn(mockListEntryService, 'getListEntryById').mockResolvedValue(listEntryWithUser);
-      jest.spyOn(mockListEntryService, 'updateListEntry').mockRejectedValue(
-        new ForbiddenException('Another user is already assigned to this list entry.')
-      );
+      jest
+        .spyOn(mockListEntryService, 'getListEntryById')
+        .mockResolvedValue(listEntryWithUser);
+      jest
+        .spyOn(mockListEntryService, 'updateListEntry')
+        .mockRejectedValue(
+          new ForbiddenException(
+            'Another user is already assigned to this list entry.',
+          ),
+        );
 
       const createListEntryDTO: CreateListEntryDTO = {
         content: 'Test List Entry',
@@ -153,7 +173,9 @@ describe('ListEntryController', () => {
         .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
         .expect(HttpStatus.FORBIDDEN)
         .expect((response) => {
-          expect(response.body.message).toBe('Another user is already assigned to this list entry.');
+          expect(response.body.message).toBe(
+            'Another user is already assigned to this list entry.',
+          );
         });
     });
   });
@@ -162,8 +184,12 @@ describe('ListEntryController', () => {
     it('should delete a list entry successfully', async () => {
       const tokens = await mockAuthService.signIn();
 
-      jest.spyOn(mockListEntryService, 'getListEntryById').mockResolvedValue(mockListEntry);
-      jest.spyOn(mockListEntryService, 'deleteListEntry').mockResolvedValue(undefined);
+      jest
+        .spyOn(mockListEntryService, 'getListEntryById')
+        .mockResolvedValue(mockListEntry);
+      jest
+        .spyOn(mockListEntryService, 'deleteListEntry')
+        .mockResolvedValue(undefined);
 
       return agent
         .delete('/list-entry/1')
@@ -179,7 +205,6 @@ describe('ListEntryController', () => {
   });
 });
 
-
 const mockUser = {
   id: '1',
   username: 'testUser',
@@ -189,6 +214,15 @@ const mockUser = {
   pronouns: 'she/her',
   age: 23,
   profileText: 'eee',
+};
+
+export const mockList = {
+  id: 1,
+  title: 'Test List',
+  description: 'Test Description',
+  creator: mockUser,
+  listEntries: [],
+  event: { id: '1', host: mockUser },
 };
 
 export const mockListEntry = {

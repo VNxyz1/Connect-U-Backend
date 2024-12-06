@@ -5,7 +5,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { ListEntryDB } from '../database/ListEntryDB';
 import { ListDB } from '../database/ListDB';
 import { UserDB } from '../database/UserDB';
-import {NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { mockListEntry } from './listEntry.controller.spec';
 
 describe('ListEntryService', () => {
