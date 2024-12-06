@@ -137,7 +137,12 @@ describe('RequestController', () => {
           {
             id: 1,
             denied: false,
-            user: { id: 'user123', username: 'userTest', age: null },
+            user: {
+              id: 'user123',
+              isUser: false,
+              username: 'userTest',
+              age: null,
+            },
           },
         ]);
     });

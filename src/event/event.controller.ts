@@ -79,9 +79,26 @@ export class EventController {
   @Get('/eventDetails/:eventId')
   async getEventById(
     @Param('eventId') eventId: string,
+    @User() user: UserDB | null,
   ): Promise<GetEventDetailsDTO> {
     const event = await this.eventService.getEventById(eventId);
-    return await this.utilsService.transformEventDBtoGetEventDetailsDTO(event);
+
+    let isHost: boolean = false;
+    let isParticipant: boolean = false;
+
+    if (user) {
+      if (event.host.id === user.id) {
+        isHost = true;
+      }
+      isParticipant = event.participants.some(
+        (participant) => participant.id === user.id,
+      );
+    }
+    return await this.utilsService.transformEventDBtoGetEventDetailsDTO(
+      event,
+      isHost,
+      isParticipant,
+    );
   }
 
   @ApiResponse({

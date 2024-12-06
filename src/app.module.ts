@@ -1,4 +1,9 @@
-import { Module } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -20,6 +25,7 @@ import { CategoryService } from './category/category.service';
 import { RequestController } from './request/request.controller';
 import { RequestService } from './request/request.service';
 import { staticDeploymentModule } from './static-delivery.config';
+import { UserMiddleware } from './utils/user.middleware';
 import { ListService } from './list/list.service';
 import { ListController } from './list/list.controller';
 import { ListEntryController } from './listEntry/listEntry.controller';
@@ -69,4 +75,11 @@ import { ListEntryService } from './listEntry/listEntry.service';
     ListEntryService,
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): any {
+    consumer.apply(UserMiddleware).forRoutes({
+      path: '**',
+      method: RequestMethod.ALL,
+    });
+  }
+}

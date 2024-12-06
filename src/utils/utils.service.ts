@@ -157,11 +157,16 @@ export class UtilsService {
   /**
    * Transforms a UserDB object into a GetUserProfileDTO.
    * @param user - The user entity from the database.
+   * @param isUser - boolean if logged in user is user whos visiting the profile
    * @returns {GetUserProfileDTO} - The transformed user profile data transfer object.
    */
-  transformUserDBtoGetUserProfileDTO(user: UserDB): GetUserProfileDTO {
+  transformUserDBtoGetUserProfileDTO(
+    user: UserDB,
+    isUser: boolean,
+  ): GetUserProfileDTO {
     const dto = new GetUserProfileDTO();
     dto.id = user.id;
+    dto.isUser = isUser;
     dto.pronouns = user.pronouns;
     dto.profilePicture = user.profilePicture;
     dto.profileText = user.profileText;
@@ -247,13 +252,19 @@ export class UtilsService {
   /**
    * Transforms an EventDB object into a GetEventDetailsDTO.
    * @param event - The event entity from the database.
+   * @param isHost - bool if user is host
+   * @param isParticipant - bool if user is a participant
    * @returns {Promise<GetEventDetailsDTO>} - A promise resolving to the transformed event details data transfer object.
    */
   async transformEventDBtoGetEventDetailsDTO(
     event: EventDB,
+    isHost: boolean,
+    isParticipant: boolean,
   ): Promise<GetEventDetailsDTO> {
     const dto = new GetEventDetailsDTO();
     dto.id = event.id;
+    dto.isHost = isHost;
+    dto.isParticipant = isParticipant;
     dto.dateAndTime = event.dateAndTime;
     dto.title = event.title;
     dto.description = event.description;
@@ -277,10 +288,10 @@ export class UtilsService {
     dto.participantsNumber = participants.length;
     dto.maxParticipantsNumber = event.participantsNumber;
 
-    dto.host = this.transformUserDBtoGetUserProfileDTO(event.host);
+    dto.host = this.transformUserDBtoGetUserProfileDTO(event.host, false);
 
     dto.participants = participants.map((user) => {
-      return this.transformUserDBtoGetUserProfileDTO(user);
+      return this.transformUserDBtoGetUserProfileDTO(user, false);
     });
 
     dto.startAge = event.startAge || null;
@@ -339,7 +350,7 @@ export class UtilsService {
     const dto = new GetUserJoinRequestDTO();
     dto.id = request.id;
     dto.denied = request.denied;
-    dto.user = this.transformUserDBtoGetUserProfileDTO(request.user);
+    dto.user = this.transformUserDBtoGetUserProfileDTO(request.user, false);
 
     return dto;
   }
@@ -355,7 +366,7 @@ export class UtilsService {
       id: list.id,
       title: list.title,
       description: list.description,
-      creator: this.transformUserDBtoGetUserProfileDTO(list.creator),
+      creator: this.transformUserDBtoGetUserProfileDTO(list.creator, false),
     };
   }
 
@@ -370,7 +381,7 @@ export class UtilsService {
       id: list.id,
       title: list.title,
       description: list.description,
-      creator: this.transformUserDBtoGetUserProfileDTO(list.creator),
+      creator: this.transformUserDBtoGetUserProfileDTO(list.creator, false),
       listEntries: list.listEntries.map(
         this.transformListEntryDBtoGetListEntryDTO,
       ),

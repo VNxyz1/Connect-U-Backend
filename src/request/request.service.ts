@@ -127,7 +127,7 @@ export class RequestService {
   async acceptJoinRequest(requestId: number, userId: string) {
     const request = await this.requestRepository.findOne({
       where: { id: requestId },
-      relations: ['event', 'user'],
+      relations: ['event', 'user', 'event.host', 'event.participants'],
     });
     if (!request) {
       throw new NotFoundException('Request not found');
