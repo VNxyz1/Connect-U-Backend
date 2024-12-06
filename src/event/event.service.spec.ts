@@ -425,7 +425,6 @@ describe('EventService', () => {
   });
 
   describe('EventService - getUpcoming events', () => {
-
     beforeEach(() => {
       jest.clearAllMocks();
     });

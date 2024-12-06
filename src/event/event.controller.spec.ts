@@ -439,6 +439,51 @@ describe('EventController', () => {
     });
   });
 
+  describe('EventController - getUpcomingEvents', () => {
+    it('/GET event/upcoming should return upcoming events of the user as host and participant', async () => {
+      const tokens = await mockAuthService.signIn();
+
+      jest
+        .spyOn(app.get(JwtService), 'verifyAsync')
+        .mockResolvedValue(mockAuthPayload);
+
+      return agent
+        .get('/event/upcoming')
+        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.OK)
+        .expect((response) => {
+          expect(Array.isArray(response.body)).toBe(true);
+          expect(response.body.length).toBeGreaterThan(0);
+          response.body.forEach((event: any) => {
+            expect(event).toHaveProperty('id');
+            expect(event).toHaveProperty('title');
+            expect(event).toHaveProperty('dateAndTime');
+            expect(event).toHaveProperty('city');
+          });
+        });
+    });
+
+    it('/GET event/upcoming should return 404 if user has no hosted events', async () => {
+      const tokens = await mockAuthService.signIn();
+
+      jest
+        .spyOn(app.get(EventController).eventService, 'getUpcomingEvents')
+        .mockRejectedValue(
+          new NotFoundException('No events found for this user'),
+        );
+
+      return agent
+        .get('/event/upcoming')
+        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.NOT_FOUND)
+        .expect((response) => {
+          expect(response.body.message).toBe('No events found for this user');
+        });
+    });
+  });
+
   afterAll(async () => {
     await app.close();
   });
