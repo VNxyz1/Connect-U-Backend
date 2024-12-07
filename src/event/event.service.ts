@@ -6,6 +6,7 @@ import { UserDB } from '../database/UserDB';
 import { CategoryDB } from '../database/CategoryDB';
 import { GenderDB } from '../database/GenderDB';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { StatusEnum } from '../database/enums/StatusEnum';
 
 export class EventService {
   constructor(
@@ -76,6 +77,9 @@ export class EventService {
   async getAllEvents(): Promise<EventDB[]> {
     const events = await this.eventRepository.find({
       relations: ['categories', 'participants'],
+      order: {
+        timestamp: 'ASC',
+      },
     });
 
     if (!events || events.length === 0) {
@@ -99,6 +103,7 @@ export class EventService {
       .leftJoinAndSelect('event.categories', 'category')
       .leftJoinAndSelect('event.host', 'host')
       .where('participant.id = :userId', { userId: userId })
+      .orderBy('event.dateAndTime', 'ASC')
       .getMany();
 
     if (!events || events.length === 0) {
@@ -119,6 +124,39 @@ export class EventService {
     const events = await this.eventRepository.find({
       where: { host: { id: userId } },
       relations: ['host', 'categories', 'participants'],
+      order: {
+        dateAndTime: 'ASC',
+      },
+    });
+
+    if (!events || events.length === 0) {
+      throw new NotFoundException('No events found for this user');
+    }
+
+    return events;
+  }
+
+  /**
+   * Gets upcoming events the user is hosting or participating from the database.
+   *
+   * @param userId - the user that is logged in
+   * @returns {Promise<EventDB[]>} - The events.
+   * @throws {NotFoundException} - If there are no events found.
+   */
+  async getUpcomingEvents(userId: string): Promise<EventDB[]> {
+    const events = await this.eventRepository.find({
+      where: [
+        { host: { id: userId }, status: StatusEnum.upcoming },
+        { participants: { id: userId }, status: StatusEnum.upcoming },
+      ],
+      relations: {
+        host: true,
+        categories: true,
+        participants: true,
+      },
+      order: {
+        dateAndTime: 'ASC',
+      },
     });
 
     if (!events || events.length === 0) {

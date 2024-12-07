@@ -201,7 +201,7 @@ describe('UserService', () => {
   });
 });
 
-const mockUserList: UserDB[] = [
+export const mockUserList: UserDB[] = [
   {
     id: '1',
     email: 'john.doe@example.com',
@@ -231,6 +231,8 @@ const mockUserList: UserDB[] = [
     achievements: Promise.resolve([]),
     surveyEntries: Promise.resolve([]),
     messages: [],
+    lists: [],
+    surveys: [],
     reactions: [],
     tags: [],
     unreadMessages: [],
@@ -261,6 +263,8 @@ const mockUserList: UserDB[] = [
     friends: Promise.resolve([]),
     friendOf: Promise.resolve([]),
     listEntries: [],
+    lists: [],
+    surveys: [],
     achievements: Promise.resolve([]),
     surveyEntries: Promise.resolve([]),
     messages: [],
@@ -288,6 +292,8 @@ const mockUserList: UserDB[] = [
     gender: GenderEnum.Diverse,
     hostedEvents: [],
     requests: [],
+    lists: [],
+    surveys: [],
     participatedEvents: [],
     favoritedEvents: [],
     memories: [],

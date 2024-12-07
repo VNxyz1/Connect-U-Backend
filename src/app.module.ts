@@ -26,6 +26,10 @@ import { RequestController } from './request/request.controller';
 import { RequestService } from './request/request.service';
 import { staticDeploymentModule } from './static-delivery.config';
 import { UserMiddleware } from './utils/user.middleware';
+import { ListService } from './list/list.service';
+import { ListController } from './list/list.controller';
+import { ListEntryController } from './listEntry/listEntry.controller';
+import { ListEntryService } from './listEntry/listEntry.service';
 
 @Module({
   imports: [
@@ -53,6 +57,8 @@ import { UserMiddleware } from './utils/user.middleware';
     GenderController,
     CategoryController,
     RequestController,
+    ListController,
+    ListEntryController,
   ],
   providers: [
     AppService,
@@ -65,6 +71,8 @@ import { UserMiddleware } from './utils/user.middleware';
     GenderService,
     CategoryService,
     RequestService,
+    ListService,
+    ListEntryService,
   ],
 })
 export class AppModule implements NestModule {

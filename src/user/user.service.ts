@@ -15,7 +15,7 @@ import { UpdateProfileDTO } from './DTO/UpdateProfileDTO';
 export class UserService {
   constructor(
     @InjectRepository(UserDB)
-    private userRepository: Repository<UserDB>,
+    private readonly userRepository: Repository<UserDB>,
   ) {}
 
   /**

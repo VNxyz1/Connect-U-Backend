@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { CategoryDB } from '../database/CategoryDB';
 import { GetCategoryDTO } from '../category/DTO/GetCategoryDTO';
 import { GenderDB } from '../database/GenderDB';
@@ -13,9 +17,21 @@ import { GetEventJoinDTO } from '../event/DTO/GetEventJoinDTO';
 import { RequestDB } from '../database/RequestDB';
 import { GetEventJoinRequestDTO } from '../request/DTO/GetEventJoinRequestDTO';
 import { GetUserJoinRequestDTO } from '../request/DTO/GetUserJoinRequestDTO';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { ListDB } from '../database/ListDB';
+import { ListEntryDB } from '../database/ListEntryDB';
+import { GetListEntryDTO } from '../listEntry/DTO/GetListEntryDTO';
+import { GetListDetailsDTO } from '../list/DTO/GetListDetailsDTO';
+import { GetListDTO } from '../list/DTO/GetListDTO';
 
 @Injectable()
 export class UtilsService {
+  constructor(
+    @InjectRepository(EventDB)
+    private readonly eventRepository: Repository<EventDB>,
+  ) {}
+
   /**
    * Calculates the age of a user based on their date of birth.
    * @param birthday - The user's date of birth.
@@ -103,6 +119,36 @@ export class UtilsService {
 
     if (!dateValid) {
       throw new BadRequestException('The Event is outdated.');
+    }
+
+    return true;
+  }
+
+  /**
+   * Checks if a user is the host or a participant of an event.
+   *
+   * @param user - The user to check.
+   * @param eventId - The event to check against.
+   *
+   * @returns {boolean} - Returns true if the user is the host or a participant.
+   *
+   * @throws {ForbiddenException} - If the user is neither the host nor a participant.
+   */
+  async isHostOrParticipant(user: UserDB, eventId: string): Promise<boolean> {
+    const event = await this.eventRepository.findOne({
+      where: { id: eventId },
+      relations: ['participants', 'host'],
+    });
+
+    const isParticipant = event.participants.some(
+      (participant) => participant.id === user.id,
+    );
+    const isHost = event.host.id === user.id;
+
+    if (!isParticipant && !isHost) {
+      throw new ForbiddenException(
+        'You are not allowed to perform this action',
+      );
     }
 
     return true;
@@ -307,5 +353,56 @@ export class UtilsService {
     dto.user = this.transformUserDBtoGetUserProfileDTO(request.user, false);
 
     return dto;
+  }
+
+  /**
+   * Transforms a ListDB entity into a GetListDetailsDTO.
+   *
+   * @param list - The ListDB entity to transform.
+   * @returns The transformed GetListDTO.
+   */
+  transformListDBtoGetListDTO(list: ListDB): GetListDTO {
+    return {
+      id: list.id,
+      title: list.title,
+      description: list.description,
+      creator: this.transformUserDBtoGetUserProfileDTO(list.creator, false),
+      listEntriesNumber: list.listEntries.length,
+    };
+  }
+
+  /**
+   * Transforms a ListDB entity into a GetListDetailsDTO.
+   *
+   * @param list - The ListDB entity to transform.
+   * @returns The transformed GetListDTO.
+   */
+  transformListDBtoGetListDetailsDTO(list: ListDB): GetListDetailsDTO {
+    return {
+      id: list.id,
+      title: list.title,
+      description: list.description,
+      creator: this.transformUserDBtoGetUserProfileDTO(list.creator, false),
+      listEntries: list.listEntries.map(
+        this.transformListEntryDBtoGetListEntryDTO,
+      ),
+    };
+  }
+
+  /**
+   * Transforms a ListEntryDB entity into a GetListEntryDTO.
+   *
+   * @param entry - The ListEntryDB entity to transform.
+   * @returns The transformed GetListEntryDTO.
+   */
+  transformListEntryDBtoGetListEntryDTO(entry: ListEntryDB): GetListEntryDTO {
+    return {
+      id: entry.id,
+      timestamp: entry.timestamp,
+      content: entry.content,
+      user: entry.user
+        ? this.transformUserDBtoGetUserProfileDTO(entry.user, false)
+        : null,
+    };
   }
 }
