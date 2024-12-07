@@ -151,24 +151,24 @@ export class SurveyService {
    * Removes a user's vote from a survey entry.
    *
    * @param user - The user removing their vote.
-   * @param surveyEntry - survey entry to update
-   * @throws {NotFoundException} If the survey entry is not found.
+   * @param entry - The survey entry to remove the user from.
    * @throws {ForbiddenException} If the user has not voted for the entry.
    */
-  async removeVote(user: UserDB, surveyEntry: SurveyEntryDB): Promise<SurveyEntryDB> {
-
-    const userVotes = surveyEntry.users;
-    const hasVoted = userVotes.some((voter) => voter.id === user.id);
+  async removeVote(user: UserDB, entry: SurveyEntryDB): Promise<SurveyEntryDB> {
+    const userVotes = user.surveyEntries || [];
+    const hasVoted = userVotes.some((votedEntry) => votedEntry.id === entry.id);
 
     if (!hasVoted) {
       throw new ForbiddenException('You cannot remove a vote you have not assigned');
     }
 
-    surveyEntry.users = userVotes.filter((voter) => voter.id !== user.id);
+    user.surveyEntries = userVotes.filter((votedEntry) => votedEntry.id !== entry.id);
 
-    await this.surveyEntryRepository.save(surveyEntry);
-    return surveyEntry;
+    await this.userRepository.save(user);
+
+    return entry;
   }
+
 
   /**
    * Deletes a survey by its ID.
