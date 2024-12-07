@@ -80,24 +80,36 @@ export class SurveyService {
   }
 
   /**
-   * Adds a user's vote to a survey entry.
+   * Retrieves a survey entry by its ID.
    *
-   * @param user - The user voting for the survey entry.
-   * @param entryId - The ID of the survey entry to vote for.
-   * @throws {NotFoundException} If the survey entry is not found.
-   * @throws {ForbiddenException} If the user has already voted for the entry.
+   * @param surveyEntryId - The ID of the survey entry to retrieve.
+   * @returns The survey entry with the specified ID.
+   * @throws NotFoundException - If the survey does not exist.
    */
-  async addVote(user: UserDB, entryId: number): Promise<SurveyEntryDB> {
+  async getSurveyEntryById(surveyEntryId: number): Promise<SurveyEntryDB> {
     const surveyEntry = await this.surveyEntryRepository.findOne({
-      where: { id: entryId },
-      relations: ['users'],
+      where: { id: surveyEntryId },
+      relations:  ['survey', 'survey.event', 'users'],
     });
 
     if (!surveyEntry) {
       throw new NotFoundException('Survey entry not found');
     }
 
-    const userVotes = await surveyEntry.users;
+    return surveyEntry;
+  }
+
+  /**
+   * Adds a user's vote to a survey entry.
+   *
+   * @param user - The user voting for the survey entry.
+   * @param entry - survey entry to add the user for.
+   * @throws {NotFoundException} If the survey entry is not found.
+   * @throws {ForbiddenException} If the user has already voted for the entry.
+   */
+  async addVote(user: UserDB, entry: SurveyEntryDB): Promise<SurveyEntryDB> {
+
+    const userVotes = await entry.users;
     const hasVoted = userVotes.some((voter) => voter.id === user.id);
 
     if (hasVoted) {
@@ -105,29 +117,21 @@ export class SurveyService {
     }
 
     userVotes.push(user);
-    surveyEntry.users = Promise.resolve(userVotes);
+    entry.users = Promise.resolve(userVotes);
 
-    await this.surveyEntryRepository.save(surveyEntry);
-    return surveyEntry;
+    await this.surveyEntryRepository.save(entry);
+    return entry;
   }
 
   /**
    * Removes a user's vote from a survey entry.
    *
    * @param user - The user removing their vote.
-   * @param entryId - The ID of the survey entry to remove the vote from.
+   * @param surveyEntry - survey entry to update
    * @throws {NotFoundException} If the survey entry is not found.
    * @throws {ForbiddenException} If the user has not voted for the entry.
    */
-  async removeVote(user: UserDB, entryId: number): Promise<SurveyEntryDB> {
-    const surveyEntry = await this.surveyEntryRepository.findOne({
-      where: { id: entryId },
-      relations: ['users'],
-    });
-
-    if (!surveyEntry) {
-      throw new NotFoundException('Survey entry not found');
-    }
+  async removeVote(user: UserDB, surveyEntry: SurveyEntryDB): Promise<SurveyEntryDB> {
 
     const userVotes = await surveyEntry.users;
     const hasVoted = userVotes.some((voter) => voter.id === user.id);

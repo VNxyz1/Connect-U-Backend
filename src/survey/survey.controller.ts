@@ -5,7 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
-  Param,
+  Param, Patch,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '../auth/auth.guard';
@@ -15,6 +15,7 @@ import { SurveyService } from './survey.service';
 import { UtilsService } from '../utils/utils.service';
 import { CreateSurveyDTO } from './DTO/CreateSurveyDTO';
 import { CreateSurveyResDTO } from './DTO/CreateSurveyResDTO';
+import { OkDTO } from '../serverDTO/OkDTO';
 
 @ApiTags('survey')
 @Controller('survey')
@@ -51,6 +52,37 @@ export class SurveyController {
       'Survey was created successfully',
       newSurvey.id,
     );
+  }
+
+  @ApiResponse({
+    type: OkDTO,
+    status: HttpStatus.OK,
+    description:
+      'Updates the list entry by adding or removing the logged-in user',
+  })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard)
+  @Patch('/:surveyEntryId')
+  @HttpCode(HttpStatus.OK)
+  async addUserToListEntry(
+    @Param('surveyEntryId') surveyEntryId: number,
+    @User() user: UserDB,
+  ) {
+    const surveyEntry = await this.surveyService.getSurveyEntryById(surveyEntryId);
+
+    await this.utilsService.isHostOrParticipant(user, surveyEntry.survey.event.id);
+
+    const isUserInSurvey = (await surveyEntry.users).some(
+      (surveyUser) => surveyUser.id === user.id,
+    );
+
+    if (isUserInSurvey) {
+      await this.surveyService.removeVote(user, surveyEntry);
+      return new OkDTO(true, 'User removed from survey entry');
+    } else {
+      await this.surveyService.addVote(user, surveyEntry);
+      return new OkDTO(true, 'Survey entry was updated successfully');
+    }
   }
 
   /*
