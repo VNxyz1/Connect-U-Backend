@@ -145,9 +145,12 @@ export class UtilsService {
       relations: ['participants', 'host'],
     });
 
-    const isParticipant = event.participants.some(
-      (participant) => participant.id === user.id,
-    );
+    let isParticipant = false;
+    if(event.participants != null) {
+      isParticipant = event.participants.some(
+        (participant) => participant.id === user.id,
+      );
+    }
     const isHost = event.host.id === user.id;
 
     if (!isParticipant && !isHost) {

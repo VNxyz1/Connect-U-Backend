@@ -3,7 +3,7 @@ import {
   Column,
   PrimaryGeneratedColumn,
   ManyToOne,
-  ManyToMany,
+  ManyToMany, JoinTable,
 } from 'typeorm';
 import { UserDB } from './UserDB';
 import { SurveyDB } from './SurveyDB';
@@ -24,6 +24,7 @@ export class SurveyEntryDB {
   @Column()
   content: string;
 
-  @ManyToMany(() => UserDB, (user) => user.surveyEntries)
+  @ManyToMany(() => UserDB, (user) => user.surveyEntries, { cascade: true })
+  @JoinTable({ name: 'UserSurveyEntries' })
   users: UserDB[];
 }

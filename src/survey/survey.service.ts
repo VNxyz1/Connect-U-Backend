@@ -16,6 +16,8 @@ export class SurveyService {
     private readonly eventRepository: Repository<EventDB>,
     @InjectRepository(SurveyEntryDB)
     private readonly surveyEntryRepository: Repository<SurveyEntryDB>,
+    @InjectRepository(UserDB)
+    private readonly userRepository: Repository<UserDB>,
   ) {}
 
   /**
@@ -130,6 +132,7 @@ export class SurveyService {
    */
   async addVote(user: UserDB, entry: SurveyEntryDB): Promise<SurveyEntryDB> {
 
+
     const userVotes = entry.users;
     const hasVoted = userVotes.some((voter) => voter.id === user.id);
 
@@ -137,10 +140,13 @@ export class SurveyService {
       throw new ForbiddenException('You have already voted for this entry');
     }
 
-    userVotes.push(user);
-    entry.users = userVotes;
+    user.surveyEntries.push(entry);
 
-    await this.surveyEntryRepository.save(entry);
+    //entry.users.push(user);
+
+    //await this.surveyEntryRepository.save(entry);
+    await this.userRepository.save(user);
+
     return entry;
   }
 

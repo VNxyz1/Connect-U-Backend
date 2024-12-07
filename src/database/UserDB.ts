@@ -112,6 +112,7 @@ export class UserDB {
   achievements: Promise<AchievementDB[]>;
 
   @ManyToMany(() => SurveyEntryDB, (surveyEntry) => surveyEntry.users)
+  @JoinTable({ name: 'UserSurveyEntries' })
   surveyEntries: SurveyEntryDB[];
 
   @OneToMany(() => MessageDB, (message) => message.writer)
