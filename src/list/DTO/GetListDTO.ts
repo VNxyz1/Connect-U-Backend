@@ -25,4 +25,10 @@ export class GetListDTO {
   })
   @Type(() => GetUserProfileDTO)
   creator: GetUserProfileDTO;
+
+  @ApiProperty({
+    description: 'The number of list items',
+    example: 4,
+  })
+  listEntriesNumber: number;
 }

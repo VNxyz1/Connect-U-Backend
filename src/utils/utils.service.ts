@@ -367,6 +367,7 @@ export class UtilsService {
       title: list.title,
       description: list.description,
       creator: this.transformUserDBtoGetUserProfileDTO(list.creator, false),
+      listEntriesNumber: list.listEntries.length,
     };
   }
 
