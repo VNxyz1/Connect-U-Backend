@@ -124,16 +124,18 @@ export class UserService {
     const user = await this.findById(id);
 
     if (updateData.email && updateData.email !== user.email) {
-      const [existingEmail, existingUsername] = await Promise.all([
-        this.userRepository.findOne({ where: { email: updateData.email } }),
-        this.userRepository.findOne({
-          where: { username: updateData.username },
-        }),
-      ]);
-
+      const existingEmail = await this.userRepository.findOne({
+        where: { email: updateData.email },
+      });
       if (existingEmail) {
         throw new BadRequestException('e-mail address is already taken');
       }
+    }
+
+    if (updateData.username && updateData.username !== user.username) {
+      const existingUsername = await this.userRepository.findOne({
+        where: { username: updateData.username },
+      });
       if (existingUsername) {
         throw new BadRequestException('username is already taken');
       }
