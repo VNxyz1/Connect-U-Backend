@@ -6,9 +6,8 @@ import {
   IsString,
   MaxLength,
   ArrayMaxSize,
-  ValidateNested,
+  ArrayMinSize,
 } from 'class-validator';
-import { Type } from 'class-transformer';
 
 export class CreateSurveyDTO {
   @ApiProperty({
@@ -37,6 +36,7 @@ export class CreateSurveyDTO {
   })
   @IsArray({ message: 'Entries must be an array' })
   @ArrayMaxSize(50, { message: 'You can have a maximum of 50 survey entries' })
+  @ArrayMinSize(2, { message: 'You must provide at least 2 survey entries' })
   @IsString({ each: true, message: 'Each entry must be a string' })
   entries: string[];
 }
