@@ -142,9 +142,6 @@ export class SurveyService {
 
     user.surveyEntries.push(entry);
 
-    //entry.users.push(user);
-
-    //await this.surveyEntryRepository.save(entry);
     await this.userRepository.save(user);
 
     return entry;
@@ -168,6 +165,7 @@ export class SurveyService {
     }
 
     surveyEntry.users = userVotes.filter((voter) => voter.id !== user.id);
+
     await this.surveyEntryRepository.save(surveyEntry);
     return surveyEntry;
   }

@@ -29,6 +29,8 @@ export class SurveyDB {
   @Column({ nullable: true })
   description: string;
 
-  @OneToMany(() => SurveyEntryDB, (surveyEntry) => surveyEntry.survey)
+  @OneToMany(() => SurveyEntryDB, (surveyEntry) => surveyEntry.survey, {
+    onDelete: 'CASCADE',
+  })
   surveyEntries: SurveyEntryDB[];
 }

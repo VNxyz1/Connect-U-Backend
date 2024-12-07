@@ -30,7 +30,7 @@ export class ListDB {
   description: string;
 
   @OneToMany(() => ListEntryDB, (listEntry) => listEntry.list, {
-    cascade: true,
+    onDelete: 'CASCADE',
   })
   listEntries: ListEntryDB[];
 }
