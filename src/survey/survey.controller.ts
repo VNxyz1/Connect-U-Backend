@@ -5,7 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
-  Param, Patch,
+  Param, Patch, Get, Delete, ForbiddenException,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '../auth/auth.guard';
@@ -16,6 +16,8 @@ import { UtilsService } from '../utils/utils.service';
 import { CreateSurveyDTO } from './DTO/CreateSurveyDTO';
 import { CreateSurveyResDTO } from './DTO/CreateSurveyResDTO';
 import { OkDTO } from '../serverDTO/OkDTO';
+import { GetSurveyDTO } from './DTO/GetSurveyDTO';
+import { GetSurveyDetailsDTO } from './DTO/GetSurveyDetailsDTO';
 
 @ApiTags('survey')
 @Controller('survey')
@@ -55,6 +57,27 @@ export class SurveyController {
   }
 
   @ApiResponse({
+    type: [GetSurveyDTO],
+    description: 'Retrieves all surveys for a specific event',
+  })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard)
+  @Get('/event/:eventId')
+  async getSurveysForEvent(
+    @Param('eventId') eventId: string,
+    @User() user: UserDB,
+  ): Promise<GetSurveyDTO[]> {
+    await this.utilsService.isHostOrParticipant(user, eventId);
+
+    const surveys = await this.surveyService.getSurveysForEvent(eventId);
+
+    return surveys.map((survey) =>
+      this.utilsService.transformSurveyDBtoGetSurveyDTO(survey),
+    );
+  }
+
+
+  @ApiResponse({
     type: OkDTO,
     status: HttpStatus.OK,
     description:
@@ -64,7 +87,7 @@ export class SurveyController {
   @UseGuards(AuthGuard)
   @Patch('/:surveyEntryId')
   @HttpCode(HttpStatus.OK)
-  async addUserToListEntry(
+  async updateListEntry(
     @Param('surveyEntryId') surveyEntryId: number,
     @User() user: UserDB,
   ) {
@@ -72,7 +95,9 @@ export class SurveyController {
 
     await this.utilsService.isHostOrParticipant(user, surveyEntry.survey.event.id);
 
-    const isUserInSurvey = (await surveyEntry.users).some(
+    const users = surveyEntry.users || [];
+
+    const isUserInSurvey = users.length > 0 && users.some(
       (surveyUser) => surveyUser.id === user.id,
     );
 
@@ -85,7 +110,7 @@ export class SurveyController {
     }
   }
 
-  /*
+
   @ApiResponse({
     type: GetSurveyDetailsDTO,
     description: 'Retrieves a survey by its ID',
@@ -101,7 +126,7 @@ export class SurveyController {
 
     await this.utilsService.isHostOrParticipant(user, survey.event.id);
 
-    return this.utilsService.transformSurveyDBToGetSurveyDetailsDTO(survey);
+    return this.utilsService.transformSurveyDBtoGetSurveyDetailsDTO(survey, user.id);
   }
 
   @ApiResponse({
@@ -127,5 +152,4 @@ export class SurveyController {
     return new OkDTO(true, 'Survey was deleted successfully');
   }
 
-   */
 }

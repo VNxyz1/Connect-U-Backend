@@ -112,7 +112,7 @@ export class UserDB {
   achievements: Promise<AchievementDB[]>;
 
   @ManyToMany(() => SurveyEntryDB, (surveyEntry) => surveyEntry.users)
-  surveyEntries: Promise<SurveyEntryDB[]>;
+  surveyEntries: SurveyEntryDB[];
 
   @OneToMany(() => MessageDB, (message) => message.writer)
   messages: MessageDB[];

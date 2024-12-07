@@ -24,6 +24,11 @@ import { ListEntryDB } from '../database/ListEntryDB';
 import { GetListEntryDTO } from '../listEntry/DTO/GetListEntryDTO';
 import { GetListDetailsDTO } from '../list/DTO/GetListDetailsDTO';
 import { GetListDTO } from '../list/DTO/GetListDTO';
+import { SurveyDB } from '../database/SurveyDB';
+import { GetSurveyDTO } from '../survey/DTO/GetSurveyDTO';
+import { GetSurveyDetailsDTO } from '../survey/DTO/GetSurveyDetailsDTO';
+import { SurveyEntryDB } from '../database/SurveyEntryDB';
+import { GetSurveyEntryDTO } from '../survey/DTO/GetSurveyEntryDTO';
 
 @Injectable()
 export class UtilsService {
@@ -157,7 +162,7 @@ export class UtilsService {
   /**
    * Transforms a UserDB object into a GetUserProfileDTO.
    * @param user - The user entity from the database.
-   * @param isUser - boolean if logged in user is user whos visiting the profile
+   * @param isUser - boolean if logged-in user is user who's visiting the profile
    * @returns {GetUserProfileDTO} - The transformed user profile data transfer object.
    */
   transformUserDBtoGetUserProfileDTO(
@@ -405,4 +410,71 @@ export class UtilsService {
         : null,
     };
   }
+
+
+  /**
+   * Transforms a SurveyDB entity into a GetSurveyDTO.
+   *
+   * @returns The transformed GetListEntryDTO.
+   * @param survey -survey to transform
+   */
+  transformSurveyDBtoGetSurveyDTO(survey: SurveyDB): GetSurveyDTO {
+    return {
+      id: survey.id,
+      title: survey.title,
+      description: survey.description,
+      creator: this.transformUserDBtoGetUserProfileDTO(survey.creator, false)
+    };
+  }
+
+  /**
+   * Transforms a SurveyDB entity into a GetSurveyDTO.
+   *
+   * @returns The transformed GetListEntryDTO.
+   * @param survey -survey to transform
+   * @param currentUserId -ID of the current user
+   */
+  async transformSurveyDBtoGetSurveyDetailsDTO(
+    survey: SurveyDB,
+    currentUserId: string,
+  ): Promise<GetSurveyDetailsDTO> {
+    const surveyEntries = await Promise.all(
+      survey.surveyEntries.map((entry) =>
+        this.transformSurveyEntryDBtoGetSurveyEntryDTO(entry, currentUserId),
+      ),
+    );
+
+    return {
+      id: survey.id,
+      title: survey.title,
+      description: survey.description,
+      creator: this.transformUserDBtoGetUserProfileDTO(survey.creator, false),
+      surveyEntries,
+    };
+  }
+
+  /**
+   * Transforms a SurveyEntryDB entity into a GetSurveyEntryDTO.
+   *
+   * @param entry - The survey entry to transform.
+   * @param currentUserId - The ID of the current user.
+   * @returns The transformed GetSurveyEntryDTO.
+   */
+  async transformSurveyEntryDBtoGetSurveyEntryDTO(
+    entry: SurveyEntryDB,
+    currentUserId: string,
+  ): Promise<GetSurveyEntryDTO> {
+    const users = entry.users;
+
+    return {
+      id: entry.id,
+      content: entry.content,
+      users: users.map((user) => {
+        const isUser = user.id === currentUserId;
+        return this.transformUserDBtoGetUserProfileDTO(user, isUser);
+      }),
+    };
+  }
+
+
 }

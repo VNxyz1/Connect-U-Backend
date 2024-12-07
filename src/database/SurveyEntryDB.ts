@@ -25,5 +25,5 @@ export class SurveyEntryDB {
   content: string;
 
   @ManyToMany(() => UserDB, (user) => user.surveyEntries)
-  users: Promise<UserDB[]>;
+  users: UserDB[];
 }

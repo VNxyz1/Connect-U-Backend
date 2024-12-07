@@ -69,7 +69,7 @@ export class SurveyService {
   async getSurveyById(surveyId: number): Promise<SurveyDB> {
     const survey = await this.surveyRepository.findOne({
       where: { id: surveyId },
-      relations: ['event', 'creator', 'surveyEntries'],
+      relations: ['event', 'creator', 'surveyEntries', 'surveyEntries.users'],
     });
 
     if (!survey) {
@@ -100,6 +100,27 @@ export class SurveyService {
   }
 
   /**
+   * Retrieves all surveys for a specific event.
+   *
+   * @param eventId - The ID of the event.
+   * @returns An array of surveys for the event.
+   * @throws NotFoundException If the event does not exist.
+   * @throws ForbiddenException If the user is not the host or a participant of the event.
+   */
+  async getSurveysForEvent(eventId: string): Promise<SurveyDB[]> {
+    const event = await this.eventRepository.findOne({
+      where: { id: eventId },
+      relations: ['surveys', 'surveys.creator', 'surveys.surveyEntries', 'surveys.surveyEntries'],
+    });
+
+    if (!event) {
+      throw new NotFoundException('Event not found');
+    }
+
+    return event.surveys;
+  }
+
+  /**
    * Adds a user's vote to a survey entry.
    *
    * @param user - The user voting for the survey entry.
@@ -109,7 +130,7 @@ export class SurveyService {
    */
   async addVote(user: UserDB, entry: SurveyEntryDB): Promise<SurveyEntryDB> {
 
-    const userVotes = await entry.users;
+    const userVotes = entry.users;
     const hasVoted = userVotes.some((voter) => voter.id === user.id);
 
     if (hasVoted) {
@@ -117,7 +138,7 @@ export class SurveyService {
     }
 
     userVotes.push(user);
-    entry.users = Promise.resolve(userVotes);
+    entry.users = userVotes;
 
     await this.surveyEntryRepository.save(entry);
     return entry;
@@ -133,16 +154,14 @@ export class SurveyService {
    */
   async removeVote(user: UserDB, surveyEntry: SurveyEntryDB): Promise<SurveyEntryDB> {
 
-    const userVotes = await surveyEntry.users;
+    const userVotes = surveyEntry.users;
     const hasVoted = userVotes.some((voter) => voter.id === user.id);
 
     if (!hasVoted) {
       throw new ForbiddenException('You cannot remove a vote you have not assigned');
     }
 
-    surveyEntry.users = Promise.resolve(
-      userVotes.filter((voter) => voter.id !== user.id),
-    );
+    surveyEntry.users = userVotes.filter((voter) => voter.id !== user.id);
     await this.surveyEntryRepository.save(surveyEntry);
     return surveyEntry;
   }

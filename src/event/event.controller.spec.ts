@@ -537,7 +537,7 @@ const mockUser: UserDB = {
   friendOf: Promise.resolve([]),
   listEntries: [],
   achievements: Promise.resolve([]),
-  surveyEntries: Promise.resolve([]),
+  surveyEntries: [],
   messages: [],
   reactions: [],
   tags: [],

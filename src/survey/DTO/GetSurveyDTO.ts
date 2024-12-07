@@ -26,11 +26,4 @@ export class GetSurveyDTO {
   })
   @Type(() => GetUserProfileDTO)
   creator: GetUserProfileDTO;
-
-  @ApiProperty({
-    description: 'All entries of the survey',
-    type: [GetSurveyEntryDTO],
-  })
-  @Type(() => GetSurveyEntryDTO)
-  surveyEntries: GetSurveyEntryDTO[];
 }
