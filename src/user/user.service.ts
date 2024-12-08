@@ -98,7 +98,12 @@ export class UserService {
    * @throws {NotFoundException} - If no user with the given ID is found.
    */
   async findById(id: string): Promise<UserDB> {
-    const user = await this.userRepository.findOne({ where: { id } });
+    const user = await this.userRepository.findOne({
+      where: { id },
+      relations: {
+        surveyEntries: true,
+      },
+    });
 
     if (user === null) {
       throw new NotFoundException(
