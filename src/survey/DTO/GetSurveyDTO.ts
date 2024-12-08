@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { GetUserProfileDTO } from '../../user/DTO/GetUserProfileDTO';
-import { GetSurveyEntryDTO } from './GetSurveyEntryDTO';
 
 export class GetSurveyDTO {
   @ApiProperty({ description: 'The ID of the survey', example: 1 })
