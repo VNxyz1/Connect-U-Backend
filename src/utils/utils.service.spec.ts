@@ -239,5 +239,54 @@ export const mockUtilsService = {
     ),
   })),
 
+  transformSurveyDBtoGetSurveyDetailsDTO: jest
+    .fn()
+    .mockImplementation(async (survey, currentUserId) => {
+      const surveyEntries = (survey.surveyEntries || []).map((entry) => ({
+        id: entry.id,
+        content: entry.content,
+        answered: entry.answeredUsers?.includes(currentUserId) ?? false,
+      }));
+
+      return {
+        id: survey.id,
+        title: survey.title,
+        description: survey.description,
+        creator: {
+          id: survey.creator.id,
+          username: survey.creator.username,
+          profilePicture: survey.creator.profilePicture,
+          city: survey.creator.city,
+          age: survey.creator.age,
+          firstName: survey.creator.firstName,
+          isUser: survey.creator.isUser,
+          profileText: survey.creator.profileText,
+          pronouns: survey.creator.pronouns,
+        },
+        surveyEntries,
+      };
+    }),
+
+  transformSurveyDBtoGetSurveyDTO: jest
+    .fn()
+    .mockImplementation(async (survey) => {
+      return {
+        id: survey.id,
+        title: survey.title,
+        description: survey.description,
+        creator: {
+          id: survey.creator.id,
+          username: survey.creator.username,
+          profilePicture: survey.creator.profilePicture,
+          city: survey.creator.city,
+          age: survey.creator.age,
+          firstName: survey.creator.firstName,
+          isUser: survey.creator.isUser,
+          profileText: survey.creator.profileText,
+          pronouns: survey.creator.pronouns,
+        },
+      };
+    }),
+
   isHostOrParticipant: jest.fn(() => true),
 };

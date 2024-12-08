@@ -76,7 +76,7 @@ import { SurveyController } from './survey/survey.controller';
     RequestService,
     ListService,
     ListEntryService,
-    SurveyService
+    SurveyService,
   ],
 })
 export class AppModule implements NestModule {

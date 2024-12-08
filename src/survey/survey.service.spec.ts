@@ -15,7 +15,11 @@ describe('SurveyService', () => {
   let eventRepository: jest.Mocked<Repository<EventDB>>;
   let userRepository: jest.Mocked<Repository<UserDB>>;
 
-  const mockUser: UserDB = { id: '1', username: 'testUser', surveyEntries: [] } as UserDB;
+  const mockUser: UserDB = {
+    id: '1',
+    username: 'testUser',
+    surveyEntries: [],
+  } as UserDB;
   const mockEvent: EventDB = {
     id: '1',
     host: mockUser,
@@ -84,15 +88,20 @@ describe('SurveyService', () => {
     it('should create a new survey successfully', async () => {
       eventRepository.findOne.mockResolvedValue(mockEvent);
 
-      surveyRepository.create.mockReturnValue(mockSurvey  as SurveyDB);
-      surveyRepository.save.mockResolvedValue(mockSurvey  as SurveyDB);
+      surveyRepository.create.mockReturnValue(mockSurvey as SurveyDB);
+      surveyRepository.save.mockResolvedValue(mockSurvey as SurveyDB);
 
-      surveyEntryRepository.create.mockImplementation((entry) => ({
-        ...mockSurveyEntry,
-        content: entry?.content,
-        survey: entry?.survey,
-      } as SurveyEntryDB));
-      surveyEntryRepository.save.mockResolvedValue(mockSurveyEntry as SurveyEntryDB);
+      surveyEntryRepository.create.mockImplementation(
+        (entry) =>
+          ({
+            ...mockSurveyEntry,
+            content: entry?.content,
+            survey: entry?.survey,
+          }) as SurveyEntryDB,
+      );
+      surveyEntryRepository.save.mockResolvedValue(
+        mockSurveyEntry as SurveyEntryDB,
+      );
 
       const result = await surveyService.createSurvey(mockUser, '1', {
         title: 'Test Survey',
@@ -129,7 +138,6 @@ describe('SurveyService', () => {
       ).rejects.toThrow(new NotFoundException('Event not found'));
     });
   });
-
 
   describe('getSurveyById', () => {
     it('should retrieve a survey by its ID', async () => {
@@ -175,7 +183,6 @@ describe('SurveyService', () => {
     });
   });
 
-
   describe('addVote', () => {
     it('should add a user vote to a survey entry', async () => {
       userRepository.save.mockResolvedValue(mockUser);
@@ -204,7 +211,9 @@ describe('SurveyService', () => {
       await expect(
         surveyService.removeVote(mockUser, mockSurveyEntry),
       ).rejects.toThrow(
-        new ForbiddenException('You cannot remove a vote you have not assigned'),
+        new ForbiddenException(
+          'You cannot remove a vote you have not assigned',
+        ),
       );
     });
   });
@@ -219,3 +228,66 @@ describe('SurveyService', () => {
     });
   });
 });
+
+export const mockSurvey = {
+  id: 1,
+  title: 'Event Feedback Survey',
+  description: 'A survey to gather feedback from participants',
+  entries: [
+    { id: 1, content: 'Did you like the event?' },
+    { id: 2, content: 'What could we improve?' },
+  ],
+  creator: {
+    id: '1',
+    username: 'testUser',
+    age: '23',
+    firstName: 'test',
+    isUser: false,
+    profileText: 'eee',
+    pronouns: 'she/her',
+    profilePicture: 'string',
+    city: 'Giessen',
+  },
+  event: { id: '1', host: { id: '1', username: 'hostUser' } },
+};
+
+export const mockSurveyEntry = {
+  id: 1,
+  content: 'Did you like the event?',
+  users: [
+    {
+      id: '1',
+      username: 'testUser',
+      profilePicture: 'string',
+      city: 'Giessen',
+    },
+    {
+      id: '2',
+      username: 'anotherUser',
+      profilePicture: 'string',
+      city: 'Berlin',
+    },
+  ],
+  survey: {
+    id: 1,
+    title: 'Event Feedback Survey',
+    description: 'A survey to gather feedback from participants',
+    creator: {
+      id: '1',
+      username: 'testUser',
+      profilePicture: 'string',
+      city: 'Giessen',
+    },
+    event: { id: '1', host: { id: '1', username: 'hostUser' } },
+  },
+};
+
+export const mockSurveyService = {
+  createSurvey: jest.fn().mockResolvedValue(mockSurvey),
+  getSurveyById: jest.fn().mockResolvedValue(mockSurvey),
+  getSurveyEntryById: jest.fn().mockResolvedValue(mockSurveyEntry),
+  getSurveysForEvent: jest.fn().mockResolvedValue([mockSurvey]),
+  deleteSurvey: jest.fn().mockResolvedValue(undefined),
+  addVote: jest.fn().mockResolvedValue(mockSurveyEntry),
+  removeVote: jest.fn().mockResolvedValue(mockSurveyEntry),
+};

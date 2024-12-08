@@ -146,7 +146,7 @@ export class UtilsService {
     });
 
     let isParticipant = false;
-    if(event.participants != null) {
+    if (event.participants != null) {
       isParticipant = event.participants.some(
         (participant) => participant.id === user.id,
       );
@@ -414,7 +414,6 @@ export class UtilsService {
     };
   }
 
-
   /**
    * Transforms a SurveyDB entity into a GetSurveyDTO.
    *
@@ -426,7 +425,7 @@ export class UtilsService {
       id: survey.id,
       title: survey.title,
       description: survey.description,
-      creator: this.transformUserDBtoGetUserProfileDTO(survey.creator, false)
+      creator: this.transformUserDBtoGetUserProfileDTO(survey.creator, false),
     };
   }
 
@@ -478,6 +477,4 @@ export class UtilsService {
       }),
     };
   }
-
-
 }

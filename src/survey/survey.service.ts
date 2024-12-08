@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SurveyDB } from '../database/SurveyDB';
@@ -33,7 +37,7 @@ export class SurveyService {
   async createSurvey(
     user: UserDB,
     eventId: string,
-    body: CreateSurveyDTO
+    body: CreateSurveyDTO,
   ): Promise<SurveyDB> {
     const event = await this.eventRepository.findOne({
       where: { id: eventId },
@@ -52,9 +56,9 @@ export class SurveyService {
     const savedSurvey = await this.surveyRepository.save(newSurvey);
 
     for (const entryContent of body.entries) {
-      const surveyEntry = this.surveyEntryRepository.create()
-        surveyEntry.survey = newSurvey;
-        surveyEntry.content = entryContent;
+      const surveyEntry = this.surveyEntryRepository.create();
+      surveyEntry.survey = newSurvey;
+      surveyEntry.content = entryContent;
       await this.surveyEntryRepository.save(surveyEntry);
     }
 
@@ -91,7 +95,7 @@ export class SurveyService {
   async getSurveyEntryById(surveyEntryId: number): Promise<SurveyEntryDB> {
     const surveyEntry = await this.surveyEntryRepository.findOne({
       where: { id: surveyEntryId },
-      relations:  ['survey', 'survey.event', 'users'],
+      relations: ['survey', 'survey.event', 'users'],
     });
 
     if (!surveyEntry) {
@@ -112,7 +116,12 @@ export class SurveyService {
   async getSurveysForEvent(eventId: string): Promise<SurveyDB[]> {
     const event = await this.eventRepository.findOne({
       where: { id: eventId },
-      relations: ['surveys', 'surveys.creator', 'surveys.surveyEntries', 'surveys.surveyEntries'],
+      relations: [
+        'surveys',
+        'surveys.creator',
+        'surveys.surveyEntries',
+        'surveys.surveyEntries',
+      ],
     });
 
     if (!event) {
@@ -131,8 +140,6 @@ export class SurveyService {
    * @throws {ForbiddenException} If the user has already voted for the entry.
    */
   async addVote(user: UserDB, entry: SurveyEntryDB): Promise<SurveyEntryDB> {
-
-
     const userVotes = entry.users;
     const hasVoted = userVotes.some((voter) => voter.id === user.id);
 
@@ -159,16 +166,19 @@ export class SurveyService {
     const hasVoted = userVotes.some((votedEntry) => votedEntry.id === entry.id);
 
     if (!hasVoted) {
-      throw new ForbiddenException('You cannot remove a vote you have not assigned');
+      throw new ForbiddenException(
+        'You cannot remove a vote you have not assigned',
+      );
     }
 
-    user.surveyEntries = userVotes.filter((votedEntry) => votedEntry.id !== entry.id);
+    user.surveyEntries = userVotes.filter(
+      (votedEntry) => votedEntry.id !== entry.id,
+    );
 
     await this.userRepository.save(user);
 
     return entry;
   }
-
 
   /**
    * Deletes a survey by its ID.

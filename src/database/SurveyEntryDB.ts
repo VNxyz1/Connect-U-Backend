@@ -3,7 +3,8 @@ import {
   Column,
   PrimaryGeneratedColumn,
   ManyToOne,
-  ManyToMany, JoinTable,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { UserDB } from './UserDB';
 import { SurveyDB } from './SurveyDB';

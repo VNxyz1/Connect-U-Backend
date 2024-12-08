@@ -101,8 +101,8 @@ export class UserService {
     const user = await this.userRepository.findOne({
       where: { id },
       relations: {
-        surveyEntries: true
-      }
+        surveyEntries: true,
+      },
     });
 
     if (user === null) {

@@ -5,7 +5,11 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
-  Param, Patch, Get, Delete, ForbiddenException,
+  Param,
+  Patch,
+  Get,
+  Delete,
+  ForbiddenException,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '../auth/auth.guard';
@@ -46,7 +50,7 @@ export class SurveyController {
     const newSurvey = await this.surveyService.createSurvey(
       user,
       eventId,
-      body
+      body,
     );
 
     return new CreateSurveyResDTO(
@@ -76,7 +80,6 @@ export class SurveyController {
     );
   }
 
-
   @ApiResponse({
     type: OkDTO,
     status: HttpStatus.OK,
@@ -91,15 +94,18 @@ export class SurveyController {
     @Param('surveyEntryId') surveyEntryId: number,
     @User() user: UserDB,
   ) {
-    const surveyEntry = await this.surveyService.getSurveyEntryById(surveyEntryId);
+    const surveyEntry =
+      await this.surveyService.getSurveyEntryById(surveyEntryId);
 
-    await this.utilsService.isHostOrParticipant(user, surveyEntry.survey.event.id);
+    await this.utilsService.isHostOrParticipant(
+      user,
+      surveyEntry.survey.event.id,
+    );
 
     const users = surveyEntry.users || [];
 
-    const isUserInSurvey = users.length > 0 && users.some(
-      (surveyUser) => surveyUser.id === user.id,
-    );
+    const isUserInSurvey =
+      users.length > 0 && users.some((surveyUser) => surveyUser.id === user.id);
 
     if (isUserInSurvey) {
       await this.surveyService.removeVote(user, surveyEntry);
@@ -109,7 +115,6 @@ export class SurveyController {
       return new OkDTO(true, 'Survey entry was updated successfully');
     }
   }
-
 
   @ApiResponse({
     type: GetSurveyDetailsDTO,
@@ -126,7 +131,10 @@ export class SurveyController {
 
     await this.utilsService.isHostOrParticipant(user, survey.event.id);
 
-    return this.utilsService.transformSurveyDBtoGetSurveyDetailsDTO(survey, user.id);
+    return this.utilsService.transformSurveyDBtoGetSurveyDetailsDTO(
+      survey,
+      user.id,
+    );
   }
 
   @ApiResponse({
@@ -151,5 +159,4 @@ export class SurveyController {
     await this.surveyService.deleteSurvey(survey);
     return new OkDTO(true, 'Survey was deleted successfully');
   }
-
 }
