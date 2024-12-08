@@ -12,7 +12,7 @@ import { GenderEnum } from '../database/enums/GenderEnum';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { StatusEnum } from '../database/enums/StatusEnum';
 
-const mockEventRepository = {
+export const mockEventRepository = {
   create: jest.fn(),
   save: jest.fn(),
   find: jest.fn(),
@@ -21,6 +21,7 @@ const mockEventRepository = {
     leftJoinAndSelect: jest.fn().mockReturnThis(),
     where: jest.fn().mockReturnThis(),
     getMany: jest.fn(),
+    orderBy: jest.fn().mockReturnThis(),
   })),
 };
 
@@ -54,6 +55,8 @@ const mockUser: UserDB = {
   gender: 2,
   hostedEvents: [],
   requests: [],
+  lists: [],
+  surveys: [],
   participatedEvents: [],
   favoritedEvents: [],
   memories: [],
@@ -61,7 +64,7 @@ const mockUser: UserDB = {
   friendOf: Promise.resolve([]),
   listEntries: [],
   achievements: Promise.resolve([]),
-  surveyEntries: Promise.resolve([]),
+  surveyEntries: [],
   messages: [],
   reactions: [],
   tags: [],
@@ -86,6 +89,8 @@ const participantUser: UserDB = {
   city: 'Anytown',
   isVerified: true,
   gender: 2,
+  lists: [],
+  surveys: [],
   hostedEvents: [],
   requests: [],
   participatedEvents: [],
@@ -95,7 +100,7 @@ const participantUser: UserDB = {
   friendOf: Promise.resolve([]),
   listEntries: [],
   achievements: Promise.resolve([]),
-  surveyEntries: Promise.resolve([]),
+  surveyEntries: [],
   messages: [],
   reactions: [],
   tags: [],
@@ -123,6 +128,7 @@ const mockCreateEventDTO: CreateEventDTO = {
 const mockEventList: EventDB[] = [
   {
     id: '1',
+    timestamp: '2022-12-01T10:00:00',
     title: 'Tech Conference 2024',
     description: 'A conference for tech enthusiasts.',
     dateAndTime: '2024-12-01T10:00:00',
@@ -152,6 +158,7 @@ const mockEventList: EventDB[] = [
   },
   {
     id: '2',
+    timestamp: '2022-12-01T10:00:00',
     title: 'Game Jam 2024',
     description: 'Game Jam to create awesome new games!',
     dateAndTime: '2024-12-01T10:00:00',
@@ -185,6 +192,7 @@ const queryBuilderMock = {
   leftJoinAndSelect: jest.fn().mockReturnThis(),
   where: jest.fn().mockReturnThis(),
   getMany: jest.fn().mockResolvedValue(mockEventList),
+  orderBy: jest.fn().mockReturnThis(),
 };
 
 mockEventRepository.createQueryBuilder.mockReturnValue(queryBuilderMock);
@@ -267,7 +275,7 @@ describe('EventService', () => {
 
       expect(mockEventRepository.findOne).toHaveBeenCalledWith({
         where: { id: eventId },
-        relations: ['categories', 'participants', 'preferredGenders'],
+        relations: ['categories', 'participants', 'preferredGenders', 'host'],
       });
       expect(result).toEqual(mockEvent);
     });
@@ -282,7 +290,7 @@ describe('EventService', () => {
 
       expect(mockEventRepository.findOne).toHaveBeenCalledWith({
         where: { id: eventId },
-        relations: ['categories', 'participants', 'preferredGenders'],
+        relations: ['categories', 'participants', 'preferredGenders', 'host'],
       });
     });
   });
@@ -294,6 +302,9 @@ describe('EventService', () => {
 
     expect(mockEventRepository.find).toHaveBeenCalledWith({
       relations: ['categories', 'participants'],
+      order: {
+        timestamp: 'ASC',
+      },
     });
     expect(result).toEqual(mockEventList);
   });
@@ -313,6 +324,9 @@ describe('EventService', () => {
       expect(mockEventRepository.find).toHaveBeenCalledWith({
         where: { host: { id: mockUser.id } },
         relations: ['host', 'categories', 'participants'],
+        order: {
+          dateAndTime: 'ASC',
+        },
       });
       expect(result).toEqual(mockEventList);
     });
@@ -409,6 +423,29 @@ describe('EventService', () => {
       );
     });
   });
+
+  describe('EventService - getUpcoming events', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should return participating events when the user is a participant', async () => {
+      jest.spyOn(mockEventRepository, 'find').mockResolvedValue(mockEventList);
+
+      const result = await service.getUpcomingEvents('uuIdMock2');
+
+      expect(result).toEqual(mockEventList);
+      expect(mockEventRepository.find).toHaveBeenCalled();
+    });
+
+    it('should throw a NotFoundException when the user is not a participant in any events', async () => {
+      jest.spyOn(mockEventRepository, 'find').mockResolvedValue([]);
+
+      await expect(service.getUpcomingEvents('uuIdMock')).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+  });
 });
 
 export const mockEventService = {
@@ -419,4 +456,5 @@ export const mockEventService = {
   getHostingEvents: jest.fn().mockResolvedValue(mockEventList),
   getParticipatingEvents: jest.fn().mockResolvedValue(mockEventList),
   addUserToEvent: jest.fn().mockResolvedValue(new EventDB()),
+  getUpcomingEvents: jest.fn().mockResolvedValue(mockEventList),
 };

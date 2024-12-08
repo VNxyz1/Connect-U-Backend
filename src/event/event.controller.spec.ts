@@ -22,6 +22,8 @@ import { UserDB } from '../database/UserDB';
 import { EventDB } from '../database/EventDB';
 import { StatusEnum } from '../database/enums/StatusEnum';
 import { GetEventDetailsDTO } from './DTO/GetEventDetailsDTO';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { mockEventRepository } from './event.service.spec';
 
 describe('EventController', () => {
   let app: INestApplication;
@@ -33,6 +35,10 @@ describe('EventController', () => {
       providers: [
         ...mockProviders,
         UtilsService,
+        {
+          provide: getRepositoryToken(EventDB),
+          useValue: mockEventRepository,
+        },
         {
           provide: JwtService,
           useValue: {
@@ -433,6 +439,51 @@ describe('EventController', () => {
     });
   });
 
+  describe('EventController - getUpcomingEvents', () => {
+    it('/GET event/upcoming should return upcoming events of the user as host and participant', async () => {
+      const tokens = await mockAuthService.signIn();
+
+      jest
+        .spyOn(app.get(JwtService), 'verifyAsync')
+        .mockResolvedValue(mockAuthPayload);
+
+      return agent
+        .get('/event/upcoming')
+        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.OK)
+        .expect((response) => {
+          expect(Array.isArray(response.body)).toBe(true);
+          expect(response.body.length).toBeGreaterThan(0);
+          response.body.forEach((event: any) => {
+            expect(event).toHaveProperty('id');
+            expect(event).toHaveProperty('title');
+            expect(event).toHaveProperty('dateAndTime');
+            expect(event).toHaveProperty('city');
+          });
+        });
+    });
+
+    it('/GET event/upcoming should return 404 if user has no hosted events', async () => {
+      const tokens = await mockAuthService.signIn();
+
+      jest
+        .spyOn(app.get(EventController).eventService, 'getUpcomingEvents')
+        .mockRejectedValue(
+          new NotFoundException('No events found for this user'),
+        );
+
+      return agent
+        .get('/event/upcoming')
+        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.NOT_FOUND)
+        .expect((response) => {
+          expect(response.body.message).toBe('No events found for this user');
+        });
+    });
+  });
+
   afterAll(async () => {
     await app.close();
   });
@@ -475,6 +526,8 @@ const mockUser: UserDB = {
   city: 'Anytown',
   isVerified: true,
   gender: 2,
+  surveys: [],
+  lists: [],
   hostedEvents: [],
   requests: [],
   participatedEvents: [],
@@ -484,17 +537,20 @@ const mockUser: UserDB = {
   friendOf: Promise.resolve([]),
   listEntries: [],
   achievements: Promise.resolve([]),
-  surveyEntries: Promise.resolve([]),
+  surveyEntries: [],
   messages: [],
   reactions: [],
   tags: [],
   unreadMessages: [],
 };
-const MockPublicEvent: EventDB = {
+export const MockPublicEvent: EventDB = {
   id: '1',
+  timestamp: '2022-12-01T10:00:00',
   title: 'Tech Conference 2024',
   description: 'A conference for tech enthusiasts.',
-  dateAndTime: '2024-12-01T10:00:00',
+  dateAndTime: new Date(
+    new Date().setFullYear(new Date().getFullYear() + 1),
+  ).toISOString(),
   categories: [],
   host: mockUser,
   type: EventtypeEnum.public,
@@ -522,6 +578,7 @@ const MockPublicEvent: EventDB = {
 
 const MockPrivateEvent: EventDB = {
   id: '1',
+  timestamp: '2022-12-01T10:00:00',
   title: 'Tech Conference 2024',
   description: 'A conference for tech enthusiasts.',
   dateAndTime: '2024-12-01T10:00:00',
@@ -554,6 +611,19 @@ const MockEventDetailsDTO: GetEventDetailsDTO = {
   id: '1',
   categories: [],
   preferredGenders: [],
+  host: {
+    age: 44,
+    isUser: false,
+    city: 'Anytown',
+    firstName: 'Host',
+    id: '1',
+    profilePicture: 'profile.png',
+    profileText: 'Event organizer and tech enthusiast.',
+    pronouns: 'he/him',
+    username: 'hostuser',
+  },
+  isHost: false,
+  isParticipant: false,
   dateAndTime: '2024-12-01T10:00:00',
   title: 'Tech Conference 2024',
   description: 'A conference for tech enthusiasts.',
@@ -567,6 +637,7 @@ const MockEventDetailsDTO: GetEventDetailsDTO = {
   city: 'Tech City',
   participantsNumber: 0,
   maxParticipantsNumber: 100,
+  participants: [],
   startAge: null,
   endAge: null,
 };
@@ -575,6 +646,19 @@ const MockEventDetailsWOAddress: GetEventDetailsDTO = {
   id: '1',
   categories: [],
   preferredGenders: [],
+  host: {
+    age: 44,
+    isUser: false,
+    city: 'Anytown',
+    firstName: 'Host',
+    id: '1',
+    profilePicture: 'profile.png',
+    profileText: 'Event organizer and tech enthusiast.',
+    pronouns: 'he/him',
+    username: 'hostuser',
+  },
+  isHost: false,
+  isParticipant: false,
   dateAndTime: '2024-12-01T10:00:00',
   title: 'Tech Conference 2024',
   description: 'A conference for tech enthusiasts.',
@@ -585,6 +669,7 @@ const MockEventDetailsWOAddress: GetEventDetailsDTO = {
   zipCode: '67890',
   city: 'Tech City',
   participantsNumber: 0,
+  participants: [],
   maxParticipantsNumber: 100,
   startAge: null,
   endAge: null,

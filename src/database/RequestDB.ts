@@ -8,6 +8,9 @@ export class RequestDB {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({ default: new Date().toISOString() })
+  timestamp: string;
+
   @ManyToOne(() => UserDB)
   user: UserDB;
 
@@ -16,4 +19,7 @@ export class RequestDB {
 
   @Column()
   type: RequestEnum;
+
+  @Column({ default: false })
+  denied: boolean;
 }

@@ -12,10 +12,25 @@ import { StatusEnum } from '../../database/enums/StatusEnum';
 import { GetCategoryDTO } from '../../category/DTO/GetCategoryDTO';
 import { Type } from 'class-transformer';
 import { GetGenderDTO } from '../../gender/DTO/GetGenderDTO';
+import { GetUserProfileDTO } from '../../user/DTO/GetUserProfileDTO';
 
 export class GetEventDetailsDTO {
   @ApiProperty({ description: 'The ID of the event', example: '1' })
   id: string;
+
+  @ApiProperty({
+    description: 'boolean if the current user is the host',
+    example: true,
+  })
+  @IsBoolean()
+  isHost: boolean;
+
+  @ApiProperty({
+    description: 'boolean if the current user is a participant',
+    example: false,
+  })
+  @IsBoolean()
+  isParticipant: boolean;
 
   @ApiProperty({ type: [GetCategoryDTO] })
   @ValidateNested({ each: true })
@@ -26,6 +41,15 @@ export class GetEventDetailsDTO {
   @ValidateNested({ each: true })
   @Type(() => GetGenderDTO)
   preferredGenders: GetGenderDTO[];
+
+  @ApiProperty({ type: [GetUserProfileDTO] })
+  @ValidateNested({ each: true })
+  @Type(() => GetUserProfileDTO)
+  participants: GetUserProfileDTO[];
+
+  @ApiProperty({ type: GetUserProfileDTO })
+  @Type(() => GetUserProfileDTO)
+  host: GetUserProfileDTO;
 
   @ApiProperty({
     description: 'Date and time of the event',
