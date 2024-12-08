@@ -26,7 +26,7 @@ export class CreateSurveyDTO {
   })
   @IsString()
   @IsOptional()
-  @MaxLength(255, { message: 'Description must not exceed 255 characters' })
+  @MaxLength(2500, { message: 'Description must not exceed 2500 characters' })
   description?: string;
 
   @ApiProperty({
