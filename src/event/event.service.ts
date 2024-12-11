@@ -7,11 +7,17 @@ import { CategoryDB } from '../database/CategoryDB';
 import { GenderDB } from '../database/GenderDB';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { StatusEnum } from '../database/enums/StatusEnum';
+import { ListEntryDB } from '../database/ListEntryDB';
+import { SurveyEntryDB } from '../database/SurveyEntryDB';
 
 export class EventService {
   constructor(
     @InjectRepository(EventDB)
     private eventRepository: Repository<EventDB>,
+    @InjectRepository(ListEntryDB)
+    private listEntryRepository: Repository<ListEntryDB>,
+    @InjectRepository(SurveyEntryDB)
+    private surveyEntryRepository: Repository<SurveyEntryDB>,
   ) {}
 
   /**
@@ -231,6 +237,24 @@ export class EventService {
     event.participants = event.participants.filter(
       (participant) => participant.id !== user.id,
     );
+
+    for (const list of event.lists) {
+      for (const listEntry of list.listEntries) {
+        if (listEntry.user.id === user.id) {
+          listEntry.user = null;
+          await this.listEntryRepository.save(listEntry);
+        }
+      }
+    }
+
+    for (const survey of event.surveys) {
+      for (const surveyEntry of survey.surveyEntries) {
+        surveyEntry.users = surveyEntry.users.filter(
+          (participant) => participant.id !== user.id,
+        );
+        await this.surveyEntryRepository.save(surveyEntry);
+      }
+    }
 
     return await this.eventRepository.save(event);
   }
