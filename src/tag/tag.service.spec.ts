@@ -64,8 +64,6 @@ describe('TagService', () => {
   });
 });
 
-
 export const mockTagService = {
   findOrCreateTags: jest.fn().mockResolvedValue(['coding', 'travel']),
 };
-

@@ -78,7 +78,7 @@ import { TagService } from './tag/tag.service';
     ListService,
     ListEntryService,
     SurveyService,
-    TagService
+    TagService,
   ],
 })
 export class AppModule implements NestModule {

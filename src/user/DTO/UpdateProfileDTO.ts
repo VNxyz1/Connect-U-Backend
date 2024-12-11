@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ArrayMaxSize, IsArray, IsOptional, IsString, Matches, MaxLength } from 'class-validator';
+import {
+  ArrayMaxSize,
+  IsArray,
+  IsOptional,
+  IsString,
+  Matches,
+  MaxLength,
+} from 'class-validator';
 
 export class UpdateProfileDTO {
   @ApiProperty({
@@ -34,7 +41,10 @@ export class UpdateProfileDTO {
   @IsArray({ message: 'Entries must be an array' })
   @ArrayMaxSize(50, { message: 'You can have a maximum of 50 tags' })
   @IsString({ each: true, message: 'Each tag must be a string' })
-  @MaxLength(20, { each: true, message: 'Each tag must be at most 20 characters long' })
+  @MaxLength(20, {
+    each: true,
+    message: 'Each tag must be at most 20 characters long',
+  })
   @Matches(/^\S*$/, { each: true, message: 'Tags cannot contain spaces' })
   tags?: string[];
 }
