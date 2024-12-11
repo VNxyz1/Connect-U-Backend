@@ -32,7 +32,7 @@ import { ListEntryController } from './listEntry/listEntry.controller';
 import { ListEntryService } from './listEntry/listEntry.service';
 import { SurveyService } from './survey/survey.service';
 import { SurveyController } from './survey/survey.controller';
-import { TagService } from './tags/tag.service';
+import { TagService } from './tag/tag.service';
 
 @Module({
   imports: [

@@ -234,6 +234,7 @@ describe('EventService', () => {
 
     const result = await service.createEvent(
       mockUser,
+      null,
       mockCategoryList,
       mockGenderList,
       mockCreateEventDTO,
@@ -258,6 +259,7 @@ describe('EventService', () => {
     await expect(
       service.createEvent(
         mockUser,
+        null,
         mockCategoryList,
         mockGenderList,
         mockCreateEventDTO,

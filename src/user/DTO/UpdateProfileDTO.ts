@@ -36,5 +36,5 @@ export class UpdateProfileDTO {
   @IsString({ each: true, message: 'Each tag must be a string' })
   @MaxLength(20, { each: true, message: 'Each tag must be at most 20 characters long' })
   @Matches(/^\S*$/, { each: true, message: 'Tags cannot contain spaces' })
-  tags: string[];
+  tags?: string[];
 }

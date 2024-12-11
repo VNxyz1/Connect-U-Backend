@@ -27,7 +27,7 @@ import { UserDB } from '../database/UserDB';
 import { UpdateUserDataDTO } from './DTO/UpdateUserDataDTO';
 import { UpdateProfileDTO } from './DTO/UpdateProfileDTO';
 import { UpdatePasswordDTO } from './DTO/UpdatePasswordDTO';
-import { TagService } from '../tags/tag.service';
+import { TagService } from '../tag/tag.service';
 
 @ApiTags('user')
 @Controller('user')

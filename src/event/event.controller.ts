@@ -24,7 +24,7 @@ import { EventDB } from '../database/EventDB';
 import { EventtypeEnum } from '../database/enums/EventtypeEnum';
 import { CreateEventResDTO } from './DTO/CreateEventResDTO';
 import { GetEventDetailsDTO } from './DTO/GetEventDetailsDTO';
-import { TagService } from '../tags/tag.service';
+import { TagService } from '../tag/tag.service';
 
 @ApiTags('event')
 @Controller('event')

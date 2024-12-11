@@ -195,7 +195,7 @@ describe('UserService', () => {
       ...mockUpdateData,
     });
 
-    const result = await service.updateUserProfile('1', mockUpdateData);
+    const result = await service.updateUserProfile('1',null, mockUpdateData);
 
     expect(result.profileText).toBe(mockUpdateData.profileText);
   });

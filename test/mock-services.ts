@@ -20,6 +20,8 @@ import { ListEntryService } from '../src/listEntry/listEntry.service';
 import { mockListEntryService } from '../src/listEntry/listEntry.service.spec';
 import { SurveyService } from '../src/survey/survey.service';
 import { mockSurveyService } from '../src/survey/survey.service.spec';
+import { TagService } from '../src/tag/tag.service';
+import { mockTagService } from '../src/tag/tag.service.spec';
 
 export const mockProviders = [
   {
@@ -73,6 +75,10 @@ export const mockProviders = [
   {
     provide: ListEntryService,
     useValue: mockListEntryService,
+  },
+  {
+    provide: TagService,
+    useValue: mockTagService,
   },
   { provide: SurveyService, useValue: mockSurveyService },
 ];
