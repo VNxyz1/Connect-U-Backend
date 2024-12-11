@@ -7,12 +7,19 @@ import { CategoryDB } from '../database/CategoryDB';
 import { GenderDB } from '../database/GenderDB';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { StatusEnum } from '../database/enums/StatusEnum';
+import { ListEntryDB } from '../database/ListEntryDB';
+import { SurveyEntryDB } from '../database/SurveyEntryDB';
 
 export class EventService {
   constructor(
     @InjectRepository(EventDB)
-    private eventRepository: Repository<EventDB>,
-  ) {}
+    private readonly eventRepository: Repository<EventDB>,
+    @InjectRepository(ListEntryDB)
+    private readonly listEntryRepository: Repository<ListEntryDB>,
+    @InjectRepository(SurveyEntryDB)
+    private readonly surveyEntryRepository: Repository<SurveyEntryDB>,
+  ) {
+  }
 
   /**
    * Creates a new event in the database.
@@ -218,8 +225,13 @@ export class EventService {
    * @throws BadRequestException If the user is not a participant in the event.
    */
   async removeUserFromEvent(user: UserDB, eventId: string): Promise<EventDB> {
-    const event = await this.getEventById(eventId);
-
+    const event = await this.eventRepository.findOne({
+      where: { id: eventId },
+      relations: ['participants', 'host', 'lists.listEntries', 'lists.listEntries.user', 'surveys.surveyEntries', 'surveys.surveyEntries.users'],
+    });
+    if (!event) {
+      throw new NotFoundException(`Event with ID ${eventId} not found`);
+    }
     const isParticipant = event.participants.some(
       (participant) => participant.id === user.id,
     );
@@ -231,6 +243,28 @@ export class EventService {
     event.participants = event.participants.filter(
       (participant) => participant.id !== user.id,
     );
+
+    for (const list of event.lists) {
+      for (const listEntry of list.listEntries) {
+        if(listEntry.user) {
+          if (listEntry.user.id === user.id) {
+            listEntry.user = null;
+            await this.listEntryRepository.save(listEntry);
+          }
+        }
+      }
+    }
+
+    for (const survey of event.surveys) {
+      for (const surveyEntry of survey.surveyEntries) {
+        if(surveyEntry.users) {
+          surveyEntry.users = surveyEntry.users.filter(
+            (participant) => participant.id !== user.id,
+          );
+          await this.surveyEntryRepository.save(surveyEntry);
+        }
+      }
+    }
 
     return await this.eventRepository.save(event);
   }

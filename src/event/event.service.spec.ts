@@ -11,6 +11,9 @@ import { EventtypeEnum } from '../database/enums/EventtypeEnum';
 import { GenderEnum } from '../database/enums/GenderEnum';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { StatusEnum } from '../database/enums/StatusEnum';
+import { Repository } from 'typeorm';
+import { SurveyEntryDB } from '../database/SurveyEntryDB';
+import { ListEntryDB } from '../database/ListEntryDB';
 
 export const mockEventRepository = {
   create: jest.fn(),
@@ -199,6 +202,8 @@ mockEventRepository.createQueryBuilder.mockReturnValue(queryBuilderMock);
 
 describe('EventService', () => {
   let service: EventService;
+  let surveyEntryRepository: jest.Mocked<Repository<SurveyEntryDB>>;
+  let listEntryRepository: jest.Mocked<Repository<ListEntryDB>>;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -210,6 +215,14 @@ describe('EventService', () => {
         {
           provide: getRepositoryToken(EventDB),
           useValue: mockEventRepository,
+        },
+        {
+          provide: getRepositoryToken(ListEntryDB),
+          useValue: listEntryRepository,
+        },
+        {
+          provide: getRepositoryToken(SurveyEntryDB),
+          useValue: surveyEntryRepository,
         },
       ],
     }).compile();
