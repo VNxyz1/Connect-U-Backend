@@ -103,6 +103,7 @@ export class UserService {
       where: { id },
       relations: {
         surveyEntries: true,
+        tags: true,
       },
     });
 

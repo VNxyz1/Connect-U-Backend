@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsArray, IsString } from 'class-validator';
 
 export class GetUserProfileDTO {
   @ApiProperty({ description: 'the ID of the user', example: '2' })
@@ -41,4 +42,14 @@ export class GetUserProfileDTO {
       'Ich liebe es, mit Freunden spazieren zu gehen und die Natur zu genießen 🍃',
   })
   profileText: string;
+
+  @ApiProperty({
+    description: 'Array of tags associated with the user',
+    example: ['chillGirl', 'random'],
+    type: [String],
+    nullable: true,
+  })
+  @IsArray()
+  @IsString({ each: true })
+  tags?: string[];
 }

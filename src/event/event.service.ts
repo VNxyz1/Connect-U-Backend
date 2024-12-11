@@ -64,7 +64,7 @@ export class EventService {
   async getEventById(eventId: string): Promise<EventDB> {
     const event = await this.eventRepository.findOne({
       where: { id: eventId },
-      relations: ['categories', 'participants', 'preferredGenders', 'host'],
+      relations: ['categories', 'participants', 'preferredGenders', 'host', 'tags'],
     });
     if (!event) {
       throw new NotFoundException(`Event with ID ${eventId} not found`);
@@ -80,7 +80,7 @@ export class EventService {
    */
   async getAllEvents(): Promise<EventDB[]> {
     const events = await this.eventRepository.find({
-      relations: ['categories', 'participants'],
+      relations: ['categories', 'participants', 'tags'],
       order: {
         timestamp: 'ASC',
       },
@@ -105,6 +105,7 @@ export class EventService {
       .createQueryBuilder('event')
       .leftJoinAndSelect('event.participants', 'participant')
       .leftJoinAndSelect('event.categories', 'category')
+      .leftJoinAndSelect('event.tags', 'tag')
       .leftJoinAndSelect('event.host', 'host')
       .where('participant.id = :userId', { userId: userId })
       .orderBy('event.dateAndTime', 'ASC')
@@ -127,7 +128,7 @@ export class EventService {
   async getHostingEvents(userId: string): Promise<EventDB[]> {
     const events = await this.eventRepository.find({
       where: { host: { id: userId } },
-      relations: ['host', 'categories', 'participants'],
+      relations: ['host', 'categories', 'participants', 'tags'],
       order: {
         dateAndTime: 'ASC',
       },
