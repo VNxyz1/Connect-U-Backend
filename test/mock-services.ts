@@ -12,6 +12,14 @@ import { GenderService } from '../src/gender/gender.service';
 import { mockGenderService } from '../src/gender/gender.service.spec';
 import { RequestService } from '../src/request/request.service';
 import { mockRequestService } from '../src/request/request.service.spec';
+import { UtilsService } from '../src/utils/utils.service';
+import { mockUtilsService } from '../src/utils/utils.service.spec';
+import { ListService } from '../src/list/list.service';
+import { mockListService } from '../src/list/list.service.spec';
+import { ListEntryService } from '../src/listEntry/listEntry.service';
+import { mockListEntryService } from '../src/listEntry/listEntry.service.spec';
+import { SurveyService } from '../src/survey/survey.service';
+import { mockSurveyService } from '../src/survey/survey.service.spec';
 
 export const mockProviders = [
   {
@@ -54,4 +62,17 @@ export const mockProviders = [
     provide: RequestService,
     useValue: mockRequestService,
   },
+  {
+    provide: UtilsService,
+    useValue: mockUtilsService,
+  },
+  {
+    provide: ListService,
+    useValue: mockListService,
+  },
+  {
+    provide: ListEntryService,
+    useValue: mockListEntryService,
+  },
+  { provide: SurveyService, useValue: mockSurveyService },
 ];

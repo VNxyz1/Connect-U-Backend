@@ -79,9 +79,26 @@ export class EventController {
   @Get('/eventDetails/:eventId')
   async getEventById(
     @Param('eventId') eventId: string,
+    @User() user: UserDB | null,
   ): Promise<GetEventDetailsDTO> {
     const event = await this.eventService.getEventById(eventId);
-    return await this.utilsService.transformEventDBtoGetEventDetailsDTO(event);
+
+    let isHost: boolean = false;
+    let isParticipant: boolean = false;
+
+    if (user) {
+      if (event.host.id === user.id) {
+        isHost = true;
+      }
+      isParticipant = event.participants.some(
+        (participant) => participant.id === user.id,
+      );
+    }
+    return await this.utilsService.transformEventDBtoGetEventDetailsDTO(
+      event,
+      isHost,
+      isParticipant,
+    );
   }
 
   @ApiResponse({
@@ -127,6 +144,23 @@ export class EventController {
   @Get('/hostingEvents')
   async getHostingEvents(@User() user: UserDB): Promise<GetEventCardDTO[]> {
     const events = await this.eventService.getHostingEvents(user.id);
+    return await Promise.all(
+      events.map(async (event) => {
+        return this.utilsService.transformEventDBtoGetEventCardDTO(event);
+      }),
+    );
+  }
+
+  @ApiResponse({
+    type: [GetEventCardDTO],
+    description:
+      'gets the upcoming events the current user is hosting or participating',
+  })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard)
+  @Get('/upcoming')
+  async getUpcomingEvents(@User() user: UserDB): Promise<GetEventCardDTO[]> {
+    const events = await this.eventService.getUpcomingEvents(user.id);
     return await Promise.all(
       events.map(async (event) => {
         return this.utilsService.transformEventDBtoGetEventCardDTO(event);

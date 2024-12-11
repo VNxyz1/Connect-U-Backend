@@ -3,13 +3,23 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { EventDB } from '../database/EventDB';
 import { GetEventCardDTO } from '../event/DTO/GetEventCardDTO';
 import { UserDB } from '../database/UserDB';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { mockEventRepository } from '../event/event.service.spec';
+import { GetUserProfileDTO } from '../user/DTO/GetUserProfileDTO';
+import { GetUserDataDTO } from '../user/DTO/GetUserDataDTO';
 
 describe('UtilsService', () => {
   let service: UtilsService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [UtilsService],
+      providers: [
+        UtilsService,
+        {
+          provide: getRepositoryToken(EventDB),
+          useValue: mockEventRepository,
+        },
+      ],
     }).compile();
 
     service = module.get<UtilsService>(UtilsService);
@@ -88,9 +98,11 @@ describe('UtilsService', () => {
       friendOf: Promise.resolve([]),
       listEntries: [],
       achievements: Promise.resolve([]),
-      surveyEntries: Promise.resolve([]),
+      surveyEntries: [],
       messages: [],
       reactions: [],
+      surveys: [],
+      lists: [],
       tags: [],
       unreadMessages: [],
     },
@@ -121,9 +133,11 @@ describe('UtilsService', () => {
       friendOf: Promise.resolve([]),
       listEntries: [],
       achievements: Promise.resolve([]),
-      surveyEntries: Promise.resolve([]),
+      surveyEntries: [],
       messages: [],
       reactions: [],
+      surveys: [],
+      lists: [],
       tags: [],
       unreadMessages: [],
     },
@@ -154,9 +168,11 @@ describe('UtilsService', () => {
       friendOf: Promise.resolve([]),
       listEntries: [],
       achievements: Promise.resolve([]),
-      surveyEntries: Promise.resolve([]),
+      surveyEntries: [],
       messages: [],
       reactions: [],
+      surveys: [],
+      lists: [],
       tags: [],
       unreadMessages: [],
     },
@@ -176,3 +192,101 @@ describe('UtilsService', () => {
     participantsNumber: 10,
   };
 });
+
+export const mockUtilsService = {
+  transformUserDBtoGetUserProfileDTO: jest.fn(
+    (user): GetUserProfileDTO => ({
+      id: user.id,
+      isUser: false,
+      firstName: user.firstName,
+      username: user.username,
+      city: user.city,
+      profilePicture: user.profilePicture,
+      pronouns: user.pronouns,
+      age: 23,
+      profileText: user.profileText,
+    }),
+  ),
+
+  transformUserDBtoGetUserDataDTO: jest.fn(
+    (user): GetUserDataDTO => ({
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      username: user.username,
+      email: user.email,
+      city: user.city,
+      streetNumber: user.streetNumber,
+      birthday: user.birthday,
+      gender: user.gender,
+      street: user.street,
+      zipCode: user.zipCode,
+    }),
+  ),
+
+  transformListEntryDBtoGetListEntryDTO: jest.fn((entry) => ({
+    id: entry.id,
+    content: entry.content,
+  })),
+
+  transformListDBtoGetListDetailsDTO: jest.fn((list) => ({
+    id: list.id,
+    title: list.title,
+    description: list.description,
+    creator: mockUtilsService.transformUserDBtoGetUserProfileDTO(list.creator),
+    listEntries: list.listEntries.map((entry) =>
+      mockUtilsService.transformListEntryDBtoGetListEntryDTO(entry),
+    ),
+  })),
+
+  transformSurveyDBtoGetSurveyDetailsDTO: jest
+    .fn()
+    .mockImplementation(async (survey, currentUserId) => {
+      const surveyEntries = (survey.surveyEntries || []).map((entry) => ({
+        id: entry.id,
+        content: entry.content,
+        answered: entry.answeredUsers?.includes(currentUserId) ?? false,
+      }));
+
+      return {
+        id: survey.id,
+        title: survey.title,
+        description: survey.description,
+        creator: {
+          id: survey.creator.id,
+          username: survey.creator.username,
+          profilePicture: survey.creator.profilePicture,
+          city: survey.creator.city,
+          age: survey.creator.age,
+          firstName: survey.creator.firstName,
+          isUser: survey.creator.isUser,
+          profileText: survey.creator.profileText,
+          pronouns: survey.creator.pronouns,
+        },
+        surveyEntries,
+      };
+    }),
+
+  transformSurveyDBtoGetSurveyDTO: jest
+    .fn()
+    .mockImplementation(async (survey) => {
+      return {
+        id: survey.id,
+        title: survey.title,
+        description: survey.description,
+        creator: {
+          id: survey.creator.id,
+          username: survey.creator.username,
+          profilePicture: survey.creator.profilePicture,
+          city: survey.creator.city,
+          age: survey.creator.age,
+          firstName: survey.creator.firstName,
+          isUser: survey.creator.isUser,
+          profileText: survey.creator.profileText,
+          pronouns: survey.creator.pronouns,
+        },
+      };
+    }),
+
+  isHostOrParticipant: jest.fn(() => true),
+};

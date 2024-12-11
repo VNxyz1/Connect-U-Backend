@@ -8,12 +8,14 @@ import { Repository } from 'typeorm';
 import { UserDB } from '../database/UserDB';
 import * as bcrypt from 'bcryptjs';
 import { CreateUserDTO } from './DTO/CreateUserDTO';
+import { UpdateUserDataDTO } from './DTO/UpdateUserDataDTO';
+import { UpdateProfileDTO } from './DTO/UpdateProfileDTO';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(UserDB)
-    private userRepository: Repository<UserDB>,
+    private readonly userRepository: Repository<UserDB>,
   ) {}
 
   /**
@@ -96,7 +98,12 @@ export class UserService {
    * @throws {NotFoundException} - If no user with the given ID is found.
    */
   async findById(id: string): Promise<UserDB> {
-    const user = await this.userRepository.findOne({ where: { id } });
+    const user = await this.userRepository.findOne({
+      where: { id },
+      relations: {
+        surveyEntries: true,
+      },
+    });
 
     if (user === null) {
       throw new NotFoundException(
@@ -105,5 +112,73 @@ export class UserService {
     }
 
     return user;
+  }
+
+  /**
+   * Updates a user's information.
+   *
+   * @param {string} id - The unique ID of the user to update.
+   * @param {Partial<UpdateUserDataDTO>} updateData - Partial DTO with fields to update.
+   * @returns {Promise<UserDB>} - The updated user.
+   * @throws {BadRequestException} - If the email or username is already taken (if being updated).
+   */
+  async updateUser(
+    id: string,
+    updateData: Partial<UpdateUserDataDTO>,
+  ): Promise<UserDB> {
+    const user = await this.findById(id);
+
+    if (updateData.email && updateData.email !== user.email) {
+      const existingEmail = await this.userRepository.findOne({
+        where: { email: updateData.email },
+      });
+      if (existingEmail) {
+        throw new BadRequestException('e-mail address is already taken');
+      }
+    }
+
+    if (updateData.username && updateData.username !== user.username) {
+      const existingUsername = await this.userRepository.findOne({
+        where: { username: updateData.username },
+      });
+      if (existingUsername) {
+        throw new BadRequestException('username is already taken');
+      }
+    }
+    Object.assign(user, updateData);
+    return await this.userRepository.save(user);
+  }
+
+  /**
+   * Updates a user's profile.
+   *
+   * @param {string} id - The unique ID of the user to update.
+   * @param {Partial<UpdateProfileDTO>} updateData - Partial DTO with fields to update.
+   * @returns {Promise<UserDB>} - The updated user.
+   */
+  async updateUserProfile(
+    id: string,
+    updateData: Partial<UpdateProfileDTO>,
+  ): Promise<UserDB> {
+    const user = await this.findById(id);
+
+    Object.assign(user, updateData);
+    return await this.userRepository.save(user);
+  }
+
+  /**
+   * Updates a user's password.
+   *
+   * @param {string} id - The unique ID of the user to update.
+   * @param {string} password - password to update.
+   * @returns {Promise<UserDB>} - The updated user.
+   */
+  async updatePassword(id: string, password: string): Promise<UserDB> {
+    const user = await this.findById(id);
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(password, salt);
+
+    return await this.userRepository.save(user);
   }
 }

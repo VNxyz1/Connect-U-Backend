@@ -36,7 +36,7 @@ function createSwagger(app: INestApplication) {
 function enableCors(app: INestApplication) {
   app.enableCors({
     origin: true,
-    methods: ['GET', 'PUT', 'POST', 'DELETE'],
+    methods: ['GET', 'PUT', 'POST', 'DELETE', 'PATCH'],
     allowedHeaders: [
       'Content-Type',
       'Authorization',

@@ -24,10 +24,13 @@ export class EventDB {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ default: new Date().toISOString() })
+  timestamp: string;
+
   @ManyToOne(() => UserDB)
   host: UserDB;
 
-  @Column({ default: 0 })
+  @Column({ default: StatusEnum.upcoming })
   status: StatusEnum;
 
   @Column({ type: 'datetime' })

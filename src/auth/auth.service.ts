@@ -20,13 +20,17 @@ export class AuthService {
     private jwtConstants: JWTConstants,
   ) {}
 
+  async validatePassword(password: string, userPassword: string) {
+    return await bcrypt.compare(password, userPassword);
+  }
+
   async signIn(
     email: string,
     password: string,
   ): Promise<{ access_token: string; refresh_token: string }> {
     const user = await this.userService.findByEmail(email);
 
-    const valid = await bcrypt.compare(password, user.password);
+    const valid = await this.validatePassword(password, user.password);
 
     if (!valid) {
       throw new NotFoundException(
