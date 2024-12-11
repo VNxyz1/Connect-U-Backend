@@ -203,7 +203,6 @@ export class EventController {
     @User() user: UserDB,
     @Param('eventId') eventId: string,
   ): Promise<OkDTO> {
-
     await this.eventService.removeUserFromEvent(user, eventId);
     return new OkDTO(true, 'User was removed from participant list');
   }

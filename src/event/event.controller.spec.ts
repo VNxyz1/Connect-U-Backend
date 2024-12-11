@@ -459,7 +459,6 @@ describe('EventController', () => {
     });
   });
 
-
   describe('EventController - getUpcomingEvents', () => {
     it('/GET event/upcoming should return upcoming events of the user as host and participant', async () => {
       const tokens = await mockAuthService.signIn();

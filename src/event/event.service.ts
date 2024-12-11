@@ -18,8 +18,7 @@ export class EventService {
     private readonly listEntryRepository: Repository<ListEntryDB>,
     @InjectRepository(SurveyEntryDB)
     private readonly surveyEntryRepository: Repository<SurveyEntryDB>,
-  ) {
-  }
+  ) {}
 
   /**
    * Creates a new event in the database.
@@ -227,7 +226,14 @@ export class EventService {
   async removeUserFromEvent(user: UserDB, eventId: string): Promise<EventDB> {
     const event = await this.eventRepository.findOne({
       where: { id: eventId },
-      relations: ['participants', 'host', 'lists.listEntries', 'lists.listEntries.user', 'surveys.surveyEntries', 'surveys.surveyEntries.users'],
+      relations: [
+        'participants',
+        'host',
+        'lists.listEntries',
+        'lists.listEntries.user',
+        'surveys.surveyEntries',
+        'surveys.surveyEntries.users',
+      ],
     });
     if (!event) {
       throw new NotFoundException(`Event with ID ${eventId} not found`);
@@ -246,7 +252,7 @@ export class EventService {
 
     for (const list of event.lists) {
       for (const listEntry of list.listEntries) {
-        if(listEntry.user) {
+        if (listEntry.user) {
           if (listEntry.user.id === user.id) {
             listEntry.user = null;
             await this.listEntryRepository.save(listEntry);
@@ -257,7 +263,7 @@ export class EventService {
 
     for (const survey of event.surveys) {
       for (const surveyEntry of survey.surveyEntries) {
-        if(surveyEntry.users) {
+        if (surveyEntry.users) {
           surveyEntry.users = surveyEntry.users.filter(
             (participant) => participant.id !== user.id,
           );
@@ -268,5 +274,4 @@ export class EventService {
 
     return await this.eventRepository.save(event);
   }
-
 }

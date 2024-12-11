@@ -228,8 +228,12 @@ describe('EventService', () => {
     }).compile();
 
     service = module.get<EventService>(EventService);
-    listEntryRepository = module.get<Repository<ListEntryDB>>(getRepositoryToken(ListEntryDB));
-    surveyEntryRepository = module.get<Repository<SurveyEntryDB>>(getRepositoryToken(SurveyEntryDB));
+    listEntryRepository = module.get<Repository<ListEntryDB>>(
+      getRepositoryToken(ListEntryDB),
+    );
+    surveyEntryRepository = module.get<Repository<SurveyEntryDB>>(
+      getRepositoryToken(SurveyEntryDB),
+    );
   });
 
   it('should be defined', () => {
@@ -467,12 +471,8 @@ describe('EventService', () => {
       const mockEvent = {
         id: 'event-id',
         participants: [{ id: 'user-id' }],
-        lists: [
-          { listEntries: [{ user: { id: 'user-id' } }] },
-        ],
-        surveys: [
-          { surveyEntries: [{ users: [{ id: 'user-id' }] }] },
-        ],
+        lists: [{ listEntries: [{ user: { id: 'user-id' } }] }],
+        surveys: [{ surveyEntries: [{ users: [{ id: 'user-id' }] }] }],
       } as unknown as EventDB;
 
       const mockUser = { id: 'user-id' } as UserDB;
@@ -505,7 +505,10 @@ describe('EventService', () => {
       jest.spyOn(mockEventRepository, 'findOne').mockResolvedValue(null);
 
       await expect(
-        service.removeUserFromEvent({ id: 'user-id' } as UserDB, 'invalid-event-id'),
+        service.removeUserFromEvent(
+          { id: 'user-id' } as UserDB,
+          'invalid-event-id',
+        ),
       ).rejects.toThrow(NotFoundException);
     });
 
