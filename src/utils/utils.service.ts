@@ -391,8 +391,8 @@ export class UtilsService {
       title: list.title,
       description: list.description,
       creator: this.transformUserDBtoGetUserProfileDTO(list.creator, false),
-      listEntries: list.listEntries.map(
-        this.transformListEntryDBtoGetListEntryDTO,
+      listEntries: list.listEntries.map((entry) =>
+        this.transformListEntryDBtoGetListEntryDTO(entry),
       ),
     };
   }
