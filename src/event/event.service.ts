@@ -19,7 +19,7 @@ export class EventService {
    * Creates a new event in the database.
    *
    * @param user - the user that creates the event
-   * @param eventTags
+   * @param eventTags -tags for the event
    * @param categories - categories of the event
    * @param preferredGenders - preferred genders of the event
    * @param {CreateEventDTO} body - Data transfer object containing event information.
@@ -27,7 +27,7 @@ export class EventService {
    */
   async createEvent(
     user: UserDB,
-    eventTags: TagDB[],
+    eventTags: TagDB[] | null,
     categories: CategoryDB[],
     preferredGenders: GenderDB[],
     body: CreateEventDTO,

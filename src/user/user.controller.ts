@@ -134,7 +134,11 @@ export class UserController {
     @Body() body: UpdateProfileDTO,
     @User() user: UserDB,
   ): Promise<OkDTO> {
-    const tags = await this.tagService.findOrCreateTags(body.tags);
+
+    let tags = [];
+    if (body.tags) {
+      tags = await this.tagService.findOrCreateTags(body.tags);
+    }
 
     await this.userService.updateUserProfile(user.id, tags, body);
     return new OkDTO(true, 'user profile was updated successfully');

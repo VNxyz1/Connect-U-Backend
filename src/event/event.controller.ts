@@ -65,7 +65,10 @@ export class EventController {
       throw new BadRequestException('Event Date must be in the future');
     }
 
-    const eventTags = await this.tagService.findOrCreateTags(body.tags);
+    let eventTags = [];
+    if (body.tags) {
+      eventTags = await this.tagService.findOrCreateTags(body.tags);
+    }
 
     const newEvent = await this.eventService.createEvent(
       user,

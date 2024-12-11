@@ -160,13 +160,17 @@ export class UserService {
    */
   async updateUserProfile(
     id: string,
-    tags: TagDB[],
+    tags: TagDB[] | null,
     updateData: Partial<UpdateProfileDTO>,
   ): Promise<UserDB> {
     const user = await this.findById(id);
 
     Object.assign(user, updateData);
-    user.tags = tags;
+
+    if (tags !== null) {
+      user.tags = tags;
+    }
+
     return await this.userRepository.save(user);
   }
 
