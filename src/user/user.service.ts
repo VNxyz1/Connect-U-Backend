@@ -10,6 +10,7 @@ import * as bcrypt from 'bcryptjs';
 import { CreateUserDTO } from './DTO/CreateUserDTO';
 import { UpdateUserDataDTO } from './DTO/UpdateUserDataDTO';
 import { UpdateProfileDTO } from './DTO/UpdateProfileDTO';
+import { TagDB } from '../database/TagDB';
 
 @Injectable()
 export class UserService {
@@ -153,16 +154,19 @@ export class UserService {
    * Updates a user's profile.
    *
    * @param {string} id - The unique ID of the user to update.
+   * @param tags - tags for the user
    * @param {Partial<UpdateProfileDTO>} updateData - Partial DTO with fields to update.
    * @returns {Promise<UserDB>} - The updated user.
    */
   async updateUserProfile(
     id: string,
+    tags: TagDB[],
     updateData: Partial<UpdateProfileDTO>,
   ): Promise<UserDB> {
     const user = await this.findById(id);
 
     Object.assign(user, updateData);
+    user.tags = tags;
     return await this.userRepository.save(user);
   }
 

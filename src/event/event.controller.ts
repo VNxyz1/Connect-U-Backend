@@ -24,6 +24,7 @@ import { EventDB } from '../database/EventDB';
 import { EventtypeEnum } from '../database/enums/EventtypeEnum';
 import { CreateEventResDTO } from './DTO/CreateEventResDTO';
 import { GetEventDetailsDTO } from './DTO/GetEventDetailsDTO';
+import { TagService } from '../tags/tag.service';
 
 @ApiTags('event')
 @Controller('event')
@@ -33,6 +34,7 @@ export class EventController {
     public readonly utilsService: UtilsService,
     public readonly categoryService: CategoryService,
     public readonly genderService: GenderService,
+    public readonly tagService: TagService,
   ) {}
 
   @ApiResponse({
@@ -63,8 +65,11 @@ export class EventController {
       throw new BadRequestException('Event Date must be in the future');
     }
 
+    const eventTags = await this.tagService.findOrCreateTags(body.tags);
+
     const newEvent = await this.eventService.createEvent(
       user,
+      eventTags,
       categories,
       genders,
       body,

@@ -7,6 +7,7 @@ import { CategoryDB } from '../database/CategoryDB';
 import { GenderDB } from '../database/GenderDB';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { StatusEnum } from '../database/enums/StatusEnum';
+import { TagDB } from '../database/TagDB';
 
 export class EventService {
   constructor(
@@ -18,6 +19,7 @@ export class EventService {
    * Creates a new event in the database.
    *
    * @param user - the user that creates the event
+   * @param eventTags
    * @param categories - categories of the event
    * @param preferredGenders - preferred genders of the event
    * @param {CreateEventDTO} body - Data transfer object containing event information.
@@ -25,6 +27,7 @@ export class EventService {
    */
   async createEvent(
     user: UserDB,
+    eventTags: TagDB[],
     categories: CategoryDB[],
     preferredGenders: GenderDB[],
     body: CreateEventDTO,
@@ -46,6 +49,7 @@ export class EventService {
     newEvent.description = body.description;
     newEvent.categories = categories;
     newEvent.preferredGenders = preferredGenders;
+    newEvent.tags = eventTags;
     return await this.eventRepository.save(newEvent);
   }
 

@@ -162,4 +162,16 @@ export class CreateEventDTO {
   @Max(150, { message: 'Maximum age cannot exceed 150' })
   @IsOptional()
   endAge?: number;
+
+  @ApiProperty({
+    description: 'An array of tags for the event',
+    example: ['girlstrip', 'coding'],
+    type: [String],
+  })
+  @IsArray({ message: 'Entries must be an array' })
+  @ArrayMaxSize(50, { message: 'You can have a maximum of 50 tags' })
+  @IsString({ each: true, message: 'Each tag must be a string' })
+  @MaxLength(20, { each: true, message: 'Each tag must be at most 20 characters long' })
+  @Matches(/^\S*$/, { each: true, message: 'Tags cannot contain spaces' })
+  tags: string[];
 }
