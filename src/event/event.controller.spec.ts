@@ -439,6 +439,27 @@ describe('EventController', () => {
     });
   });
 
+  describe('EventController - removeUserFromEvent', () => {
+    it('/POST event/leave/:eventId should remove user from event participants list', async () => {
+      const tokens = await mockAuthService.signIn();
+
+      jest
+        .spyOn(app.get(EventController).eventService, 'removeUserFromEvent')
+        .mockResolvedValue(MockPublicEvent);
+
+      return agent
+        .post('/event/leave/1')
+        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.OK)
+        .expect({
+          ok: true,
+          message: 'User was removed from participant list',
+        });
+    });
+  });
+
+
   describe('EventController - getUpcomingEvents', () => {
     it('/GET event/upcoming should return upcoming events of the user as host and participant', async () => {
       const tokens = await mockAuthService.signIn();
