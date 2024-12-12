@@ -267,26 +267,5 @@ export const mockUtilsService = {
       };
     }),
 
-  transformSurveyDBtoGetSurveyDTO: jest
-    .fn()
-    .mockImplementation(async (survey) => {
-      return {
-        id: survey.id,
-        title: survey.title,
-        description: survey.description,
-        creator: {
-          id: survey.creator.id,
-          username: survey.creator.username,
-          profilePicture: survey.creator.profilePicture,
-          city: survey.creator.city,
-          age: survey.creator.age,
-          firstName: survey.creator.firstName,
-          isUser: survey.creator.isUser,
-          profileText: survey.creator.profileText,
-          pronouns: survey.creator.pronouns,
-        },
-      };
-    }),
-
   isHostOrParticipant: jest.fn(() => true),
 };

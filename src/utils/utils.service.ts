@@ -25,7 +25,6 @@ import { GetListEntryDTO } from '../listEntry/DTO/GetListEntryDTO';
 import { GetListDetailsDTO } from '../list/DTO/GetListDetailsDTO';
 import { GetListDTO } from '../list/DTO/GetListDTO';
 import { SurveyDB } from '../database/SurveyDB';
-import { GetSurveyDTO } from '../survey/DTO/GetSurveyDTO';
 import { GetSurveyDetailsDTO } from '../survey/DTO/GetSurveyDetailsDTO';
 import { SurveyEntryDB } from '../database/SurveyEntryDB';
 import { GetSurveyEntryDTO } from '../survey/DTO/GetSurveyEntryDTO';
@@ -417,21 +416,6 @@ export class UtilsService {
       user: entry.user
         ? this.transformUserDBtoGetUserProfileDTO(entry.user, false)
         : null,
-    };
-  }
-
-  /**
-   * Transforms a SurveyDB entity into a GetSurveyDTO.
-   *
-   * @returns The transformed GetListEntryDTO.
-   * @param survey -survey to transform
-   */
-  transformSurveyDBtoGetSurveyDTO(survey: SurveyDB): GetSurveyDTO {
-    return {
-      id: survey.id,
-      title: survey.title,
-      description: survey.description,
-      creator: this.transformUserDBtoGetUserProfileDTO(survey.creator, false),
     };
   }
 

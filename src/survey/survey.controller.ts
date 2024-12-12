@@ -1,15 +1,15 @@
 import {
   Body,
   Controller,
-  Post,
-  HttpCode,
-  HttpStatus,
-  UseGuards,
-  Param,
-  Patch,
-  Get,
   Delete,
   ForbiddenException,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '../auth/auth.guard';
@@ -20,7 +20,6 @@ import { UtilsService } from '../utils/utils.service';
 import { CreateSurveyDTO } from './DTO/CreateSurveyDTO';
 import { CreateSurveyResDTO } from './DTO/CreateSurveyResDTO';
 import { OkDTO } from '../serverDTO/OkDTO';
-import { GetSurveyDTO } from './DTO/GetSurveyDTO';
 import { GetSurveyDetailsDTO } from './DTO/GetSurveyDetailsDTO';
 
 @ApiTags('survey')
@@ -61,7 +60,7 @@ export class SurveyController {
   }
 
   @ApiResponse({
-    type: [GetSurveyDTO],
+    type: [GetSurveyDetailsDTO],
     description: 'Retrieves all surveys for a specific event',
   })
   @ApiBearerAuth('access-token')
@@ -70,13 +69,18 @@ export class SurveyController {
   async getSurveysForEvent(
     @Param('eventId') eventId: string,
     @User() user: UserDB,
-  ): Promise<GetSurveyDTO[]> {
+  ): Promise<GetSurveyDetailsDTO[]> {
     await this.utilsService.isHostOrParticipant(user, eventId);
 
     const surveys = await this.surveyService.getSurveysForEvent(eventId);
 
-    return surveys.map((survey) =>
-      this.utilsService.transformSurveyDBtoGetSurveyDTO(survey),
+    return await Promise.all(
+      surveys.map((survey) =>
+        this.utilsService.transformSurveyDBtoGetSurveyDetailsDTO(
+          survey,
+          user.id,
+        ),
+      ),
     );
   }
 
