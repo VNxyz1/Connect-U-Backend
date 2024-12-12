@@ -11,6 +11,9 @@ import { EventtypeEnum } from '../database/enums/EventtypeEnum';
 import { GenderEnum } from '../database/enums/GenderEnum';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { StatusEnum } from '../database/enums/StatusEnum';
+import { Repository } from 'typeorm';
+import { SurveyEntryDB } from '../database/SurveyEntryDB';
+import { ListEntryDB } from '../database/ListEntryDB';
 
 export const mockEventRepository = {
   create: jest.fn(),
@@ -199,6 +202,8 @@ mockEventRepository.createQueryBuilder.mockReturnValue(queryBuilderMock);
 
 describe('EventService', () => {
   let service: EventService;
+  let listEntryRepository: Repository<ListEntryDB>;
+  let surveyEntryRepository: Repository<SurveyEntryDB>;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -211,10 +216,24 @@ describe('EventService', () => {
           provide: getRepositoryToken(EventDB),
           useValue: mockEventRepository,
         },
+        {
+          provide: getRepositoryToken(ListEntryDB),
+          useClass: Repository,
+        },
+        {
+          provide: getRepositoryToken(SurveyEntryDB),
+          useClass: Repository,
+        },
       ],
     }).compile();
 
     service = module.get<EventService>(EventService);
+    listEntryRepository = module.get<Repository<ListEntryDB>>(
+      getRepositoryToken(ListEntryDB),
+    );
+    surveyEntryRepository = module.get<Repository<SurveyEntryDB>>(
+      getRepositoryToken(SurveyEntryDB),
+    );
   });
 
   it('should be defined', () => {
@@ -446,6 +465,66 @@ describe('EventService', () => {
       );
     });
   });
+
+  describe('removeUserFromEvent', () => {
+    it('should remove a user from the event participants list', async () => {
+      const mockEvent = {
+        id: 'event-id',
+        participants: [{ id: 'user-id' }],
+        lists: [{ listEntries: [{ user: { id: 'user-id' } }] }],
+        surveys: [{ surveyEntries: [{ users: [{ id: 'user-id' }] }] }],
+      } as unknown as EventDB;
+
+      const mockUser = { id: 'user-id' } as UserDB;
+
+      mockEventRepository.findOne.mockResolvedValue(mockEvent);
+      jest.spyOn(listEntryRepository, 'save').mockResolvedValue(undefined);
+      jest.spyOn(surveyEntryRepository, 'save').mockResolvedValue(undefined);
+      mockEventRepository.save.mockResolvedValue(mockEvent);
+
+      const result = await service.removeUserFromEvent(mockUser, 'event-id');
+
+      expect(mockEventRepository.findOne).toHaveBeenCalledWith({
+        where: { id: 'event-id' },
+        relations: [
+          'participants',
+          'host',
+          'lists.listEntries',
+          'lists.listEntries.user',
+          'surveys.surveyEntries',
+          'surveys.surveyEntries.users',
+        ],
+      });
+      expect(listEntryRepository.save).toHaveBeenCalledTimes(1);
+      expect(surveyEntryRepository.save).toHaveBeenCalledTimes(1);
+      expect(mockEventRepository.save).toHaveBeenCalledWith(mockEvent);
+      expect(result.participants).toEqual([]);
+    });
+
+    it('should throw NotFoundException if the event does not exist', async () => {
+      jest.spyOn(mockEventRepository, 'findOne').mockResolvedValue(null);
+
+      await expect(
+        service.removeUserFromEvent(
+          { id: 'user-id' } as UserDB,
+          'invalid-event-id',
+        ),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw BadRequestException if the user is not a participant', async () => {
+      const mockEvent = {
+        id: 'event-id',
+        participants: [{ id: 'other-user-id' }],
+      } as unknown as EventDB;
+
+      jest.spyOn(mockEventRepository, 'findOne').mockResolvedValue(mockEvent);
+
+      await expect(
+        service.removeUserFromEvent({ id: 'user-id' } as UserDB, 'event-id'),
+      ).rejects.toThrow(BadRequestException);
+    });
+  });
 });
 
 export const mockEventService = {
@@ -457,4 +536,5 @@ export const mockEventService = {
   getParticipatingEvents: jest.fn().mockResolvedValue(mockEventList),
   addUserToEvent: jest.fn().mockResolvedValue(new EventDB()),
   getUpcomingEvents: jest.fn().mockResolvedValue(mockEventList),
+  removeUserFromEvent: jest.fn().mockResolvedValue(new EventDB()),
 };
