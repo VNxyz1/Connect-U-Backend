@@ -269,7 +269,7 @@ export class UtilsService {
     event: EventDB,
     isHost: boolean,
     isParticipant: boolean,
-    isLoggedIn: boolean
+    isLoggedIn: boolean,
   ): Promise<GetEventDetailsDTO> {
     const dto = new GetEventDetailsDTO();
     dto.id = event.id;
