@@ -38,6 +38,7 @@ export class UpdateProfileDTO {
     example: ['funny', 'adventurous'],
     type: [String],
   })
+  @IsOptional()
   @IsArray({ message: 'Entries must be an array' })
   @ArrayMaxSize(50, { message: 'You can have a maximum of 50 tags' })
   @IsString({ each: true, message: 'Each tag must be a string' })

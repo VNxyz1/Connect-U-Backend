@@ -11,9 +11,10 @@ export class TagService {
   ) {}
 
   async findOrCreateTags(tags: string[]): Promise<TagDB[]> {
+    const uniqueTags = Array.from(new Set(tags));
     const resultTags: TagDB[] = [];
 
-    for (const tag of tags) {
+    for (const tag of uniqueTags) {
       let existingTag = await this.tagRepository.findOne({
         where: { title: tag },
       });
@@ -25,7 +26,6 @@ export class TagService {
 
       resultTags.push(existingTag);
     }
-
     return resultTags;
   }
 }
