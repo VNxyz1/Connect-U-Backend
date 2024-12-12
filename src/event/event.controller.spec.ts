@@ -174,7 +174,6 @@ describe('EventController', () => {
             'dateAndTime',
             MockEventDetailsDTO.dateAndTime,
           );
-          // Ensure address is not included when showAddress is false
           expect(response.body).not.toHaveProperty('address');
         });
     });
@@ -631,17 +630,7 @@ const MockEventDetailsDTO: GetEventDetailsDTO = {
   id: '1',
   categories: [],
   preferredGenders: [],
-  host: {
-    age: 44,
-    isUser: false,
-    city: 'Anytown',
-    firstName: 'Host',
-    id: '1',
-    profilePicture: 'profile.png',
-    profileText: 'Event organizer and tech enthusiast.',
-    pronouns: 'he/him',
-    username: 'hostuser',
-  },
+  host: null,
   isHost: false,
   isParticipant: false,
   dateAndTime: '2024-12-01T10:00:00',
@@ -666,17 +655,7 @@ const MockEventDetailsWOAddress: GetEventDetailsDTO = {
   id: '1',
   categories: [],
   preferredGenders: [],
-  host: {
-    age: 44,
-    isUser: false,
-    city: 'Anytown',
-    firstName: 'Host',
-    id: '1',
-    profilePicture: 'profile.png',
-    profileText: 'Event organizer and tech enthusiast.',
-    pronouns: 'he/him',
-    username: 'hostuser',
-  },
+  host: null,
   isHost: false,
   isParticipant: false,
   dateAndTime: '2024-12-01T10:00:00',
