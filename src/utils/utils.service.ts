@@ -262,12 +262,14 @@ export class UtilsService {
    * @param event - The event entity from the database.
    * @param isHost - bool if user is host
    * @param isParticipant - bool if user is a participant
+   * @param isLoggedIn -bool if the current user is logged in
    * @returns {Promise<GetEventDetailsDTO>} - A promise resolving to the transformed event details data transfer object.
    */
   async transformEventDBtoGetEventDetailsDTO(
     event: EventDB,
     isHost: boolean,
     isParticipant: boolean,
+    isLoggedIn: boolean
   ): Promise<GetEventDetailsDTO> {
     const dto = new GetEventDetailsDTO();
     dto.id = event.id;
@@ -296,11 +298,15 @@ export class UtilsService {
     dto.participantsNumber = participants.length;
     dto.maxParticipantsNumber = event.participantsNumber;
 
-    dto.host = this.transformUserDBtoGetUserProfileDTO(event.host, false);
-
-    dto.participants = participants.map((user) => {
-      return this.transformUserDBtoGetUserProfileDTO(user, false);
-    });
+    if (isLoggedIn) {
+      dto.host = this.transformUserDBtoGetUserProfileDTO(event.host, false);
+      dto.participants = event.participants.map((user) =>
+        this.transformUserDBtoGetUserProfileDTO(user, false),
+      );
+    } else {
+      dto.host = null;
+      dto.participants = [];
+    }
 
     dto.startAge = event.startAge || null;
     dto.endAge = event.endAge || null;

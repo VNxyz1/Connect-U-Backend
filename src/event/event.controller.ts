@@ -85,6 +85,7 @@ export class EventController {
 
     let isHost: boolean = false;
     let isParticipant: boolean = false;
+    let isLoggedIn: boolean = false;
 
     if (user) {
       if (event.host.id === user.id) {
@@ -93,11 +94,13 @@ export class EventController {
       isParticipant = event.participants.some(
         (participant) => participant.id === user.id,
       );
+      isLoggedIn = true;
     }
     return await this.utilsService.transformEventDBtoGetEventDetailsDTO(
       event,
       isHost,
       isParticipant,
+      isLoggedIn,
     );
   }
 
