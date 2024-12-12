@@ -7,12 +7,18 @@ import { CategoryDB } from '../database/CategoryDB';
 import { GenderDB } from '../database/GenderDB';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { StatusEnum } from '../database/enums/StatusEnum';
+import { ListEntryDB } from '../database/ListEntryDB';
+import { SurveyEntryDB } from '../database/SurveyEntryDB';
 import { TagDB } from '../database/TagDB';
 
 export class EventService {
   constructor(
     @InjectRepository(EventDB)
-    private eventRepository: Repository<EventDB>,
+    private readonly eventRepository: Repository<EventDB>,
+    @InjectRepository(ListEntryDB)
+    private readonly listEntryRepository: Repository<ListEntryDB>,
+    @InjectRepository(SurveyEntryDB)
+    private readonly surveyEntryRepository: Repository<SurveyEntryDB>,
   ) {}
 
   /**
@@ -215,6 +221,67 @@ export class EventService {
     }
 
     event.participants.push(user);
+
+    return await this.eventRepository.save(event);
+  }
+
+  /**
+   * Removes a user from the participants list of a specific event.
+   * @param user - The user to be removed from the event.
+   * @param eventId - The ID of the event from which the user is being removed.
+   *
+   * @returns The updated event after the user has been removed from the participants list.
+   *
+   * @throws BadRequestException If the user is not a participant in the event.
+   */
+  async removeUserFromEvent(user: UserDB, eventId: string): Promise<EventDB> {
+    const event = await this.eventRepository.findOne({
+      where: { id: eventId },
+      relations: [
+        'participants',
+        'host',
+        'lists.listEntries',
+        'lists.listEntries.user',
+        'surveys.surveyEntries',
+        'surveys.surveyEntries.users',
+      ],
+    });
+    if (!event) {
+      throw new NotFoundException(`Event with ID ${eventId} not found`);
+    }
+    const isParticipant = event.participants.some(
+      (participant) => participant.id === user.id,
+    );
+
+    if (!isParticipant) {
+      throw new BadRequestException('User is not a participant in this event');
+    }
+
+    event.participants = event.participants.filter(
+      (participant) => participant.id !== user.id,
+    );
+
+    for (const list of event.lists) {
+      for (const listEntry of list.listEntries) {
+        if (listEntry.user) {
+          if (listEntry.user.id === user.id) {
+            listEntry.user = null;
+            await this.listEntryRepository.save(listEntry);
+          }
+        }
+      }
+    }
+
+    for (const survey of event.surveys) {
+      for (const surveyEntry of survey.surveyEntries) {
+        if (surveyEntry.users) {
+          surveyEntry.users = surveyEntry.users.filter(
+            (participant) => participant.id !== user.id,
+          );
+          await this.surveyEntryRepository.save(surveyEntry);
+        }
+      }
+    }
 
     return await this.eventRepository.save(event);
   }

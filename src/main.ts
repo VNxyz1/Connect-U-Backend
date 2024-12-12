@@ -8,7 +8,7 @@ const API_DEFAULT_PORT = 3000;
 const API_DEFAULT_PREFIX = '/api/';
 
 const SWAGGER_TITLE = 'ConnectU API';
-const SWAGGER_DESCRIPTION = 'API used for ConntectU application';
+const SWAGGER_DESCRIPTION = 'API used for ConnectU application';
 const SWAGGER_PREFIX = '/docs';
 
 function createSwagger(app: INestApplication) {

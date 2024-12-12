@@ -197,4 +197,21 @@ export class EventController {
     await this.eventService.addUserToEvent(user, eventId);
     return new OkDTO(true, 'user was added to participant list');
   }
+
+  @ApiResponse({
+    type: OkDTO,
+    description: 'Removes the user from the event participants list',
+    status: HttpStatus.OK,
+  })
+  @ApiBearerAuth('access-token')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard)
+  @Post('/leave/:eventId')
+  async removeUserFromEvent(
+    @User() user: UserDB,
+    @Param('eventId') eventId: string,
+  ): Promise<OkDTO> {
+    await this.eventService.removeUserFromEvent(user, eventId);
+    return new OkDTO(true, 'User was removed from participant list');
+  }
 }
