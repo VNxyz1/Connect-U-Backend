@@ -166,14 +166,22 @@ export class UserService {
   ): Promise<UserDB> {
     const user = await this.findById(id);
 
-    Object.assign(user, updateData);
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
 
-    if (tags !== null) {
+    user.pronouns = updateData.pronouns?.trim() || null;
+    user.profileText = updateData.profileText?.trim() || null;
+
+    if (tags === null) {
+      user.tags = [];
+    } else {
       user.tags = tags;
     }
 
     return await this.userRepository.save(user);
   }
+
 
   /**
    * Updates a user's password.
