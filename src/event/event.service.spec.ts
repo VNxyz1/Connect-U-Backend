@@ -253,6 +253,7 @@ describe('EventService', () => {
 
     const result = await service.createEvent(
       mockUser,
+      null,
       mockCategoryList,
       mockGenderList,
       mockCreateEventDTO,
@@ -277,6 +278,7 @@ describe('EventService', () => {
     await expect(
       service.createEvent(
         mockUser,
+        null,
         mockCategoryList,
         mockGenderList,
         mockCreateEventDTO,
@@ -294,7 +296,13 @@ describe('EventService', () => {
 
       expect(mockEventRepository.findOne).toHaveBeenCalledWith({
         where: { id: eventId },
-        relations: ['categories', 'participants', 'preferredGenders', 'host'],
+        relations: [
+          'categories',
+          'participants',
+          'preferredGenders',
+          'host',
+          'tags',
+        ],
       });
       expect(result).toEqual(mockEvent);
     });
@@ -309,7 +317,13 @@ describe('EventService', () => {
 
       expect(mockEventRepository.findOne).toHaveBeenCalledWith({
         where: { id: eventId },
-        relations: ['categories', 'participants', 'preferredGenders', 'host'],
+        relations: [
+          'categories',
+          'participants',
+          'preferredGenders',
+          'host',
+          'tags',
+        ],
       });
     });
   });
@@ -320,7 +334,7 @@ describe('EventService', () => {
     const result = await service.getAllEvents();
 
     expect(mockEventRepository.find).toHaveBeenCalledWith({
-      relations: ['categories', 'participants'],
+      relations: ['categories', 'participants', 'tags'],
       order: {
         timestamp: 'ASC',
       },
@@ -342,7 +356,7 @@ describe('EventService', () => {
 
       expect(mockEventRepository.find).toHaveBeenCalledWith({
         where: { host: { id: mockUser.id } },
-        relations: ['host', 'categories', 'participants'],
+        relations: ['host', 'categories', 'participants', 'tags'],
         order: {
           dateAndTime: 'ASC',
         },

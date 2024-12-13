@@ -182,6 +182,9 @@ export class UtilsService {
     dto.city = user.city;
     const birthday = new Date(user.birthday);
     dto.age = this.calculateAge(birthday);
+    if (user.tags && user.tags.length > 0) {
+      dto.tags = user.tags.map((tag) => tag.title);
+    }
     return dto;
   }
 
@@ -252,7 +255,9 @@ export class UtilsService {
     const participants = event.participants;
     dto.participantsNumber = participants.length;
     dto.maxParticipantsNumber = event.participantsNumber;
-
+    if (event.tags && event.tags.length > 0) {
+      dto.tags = event.tags.map((tag) => tag.title);
+    }
     return dto;
   }
 
@@ -314,6 +319,10 @@ export class UtilsService {
     dto.preferredGenders = preferredGenders.map(
       this.transformGenderDBtoGetGenderDTO,
     );
+
+    if (event.tags && event.tags.length > 0) {
+      dto.tags = event.tags.map((tag) => tag.title);
+    }
 
     return dto;
   }

@@ -27,6 +27,7 @@ import { UserDB } from '../database/UserDB';
 import { UpdateUserDataDTO } from './DTO/UpdateUserDataDTO';
 import { UpdateProfileDTO } from './DTO/UpdateProfileDTO';
 import { UpdatePasswordDTO } from './DTO/UpdatePasswordDTO';
+import { TagService } from '../tag/tag.service';
 
 @ApiTags('user')
 @Controller('user')
@@ -36,6 +37,7 @@ export class UserController {
     public readonly utils: UtilsService,
     public readonly authService: AuthService,
     public readonly utilsService: UtilsService,
+    public readonly tagService: TagService,
   ) {}
 
   @ApiResponse({
@@ -132,7 +134,12 @@ export class UserController {
     @Body() body: UpdateProfileDTO,
     @User() user: UserDB,
   ): Promise<OkDTO> {
-    await this.userService.updateUserProfile(user.id, body);
+    let tags = [];
+    if (body.tags) {
+      tags = await this.tagService.findOrCreateTags(body.tags);
+    }
+
+    await this.userService.updateUserProfile(user.id, tags, body);
     return new OkDTO(true, 'user profile was updated successfully');
   }
 

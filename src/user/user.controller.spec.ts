@@ -21,6 +21,7 @@ import { UserDB } from '../database/UserDB';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { EventDB } from '../database/EventDB';
 import { mockEventRepository } from '../event/event.service.spec';
+import { mockProviders } from '../../test/mock-services';
 
 describe('UserController', () => {
   let app: INestApplication;
@@ -30,6 +31,7 @@ describe('UserController', () => {
       controllers: [UserController],
       imports: [],
       providers: [
+        ...mockProviders,
         UserService,
         UtilsService,
         {

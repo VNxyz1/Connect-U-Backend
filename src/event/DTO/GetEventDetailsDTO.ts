@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { EventtypeEnum } from '../../database/enums/EventtypeEnum';
 import {
+  IsArray,
   IsBoolean,
   IsISO8601,
   IsNotEmpty,
@@ -158,4 +159,14 @@ export class GetEventDetailsDTO {
   })
   @IsNumber()
   endAge?: number;
+
+  @ApiProperty({
+    description: 'Array of tags associated with the event',
+    example: ['coding', 'beginner'],
+    type: [String],
+    nullable: true,
+  })
+  @IsArray()
+  @IsString({ each: true })
+  tags?: string[];
 }

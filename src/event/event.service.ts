@@ -9,6 +9,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { StatusEnum } from '../database/enums/StatusEnum';
 import { ListEntryDB } from '../database/ListEntryDB';
 import { SurveyEntryDB } from '../database/SurveyEntryDB';
+import { TagDB } from '../database/TagDB';
 
 export class EventService {
   constructor(
@@ -24,6 +25,7 @@ export class EventService {
    * Creates a new event in the database.
    *
    * @param user - the user that creates the event
+   * @param eventTags -tags for the event
    * @param categories - categories of the event
    * @param preferredGenders - preferred genders of the event
    * @param {CreateEventDTO} body - Data transfer object containing event information.
@@ -31,6 +33,7 @@ export class EventService {
    */
   async createEvent(
     user: UserDB,
+    eventTags: TagDB[] | null,
     categories: CategoryDB[],
     preferredGenders: GenderDB[],
     body: CreateEventDTO,
@@ -52,6 +55,7 @@ export class EventService {
     newEvent.description = body.description;
     newEvent.categories = categories;
     newEvent.preferredGenders = preferredGenders;
+    newEvent.tags = eventTags;
     return await this.eventRepository.save(newEvent);
   }
 
@@ -66,7 +70,13 @@ export class EventService {
   async getEventById(eventId: string): Promise<EventDB> {
     const event = await this.eventRepository.findOne({
       where: { id: eventId },
-      relations: ['categories', 'participants', 'preferredGenders', 'host'],
+      relations: [
+        'categories',
+        'participants',
+        'preferredGenders',
+        'host',
+        'tags',
+      ],
     });
     if (!event) {
       throw new NotFoundException(`Event with ID ${eventId} not found`);
@@ -82,7 +92,7 @@ export class EventService {
    */
   async getAllEvents(): Promise<EventDB[]> {
     const events = await this.eventRepository.find({
-      relations: ['categories', 'participants'],
+      relations: ['categories', 'participants', 'tags'],
       order: {
         timestamp: 'ASC',
       },
@@ -107,6 +117,7 @@ export class EventService {
       .createQueryBuilder('event')
       .leftJoinAndSelect('event.participants', 'participant')
       .leftJoinAndSelect('event.categories', 'category')
+      .leftJoinAndSelect('event.tags', 'tag')
       .leftJoinAndSelect('event.host', 'host')
       .where('participant.id = :userId', { userId: userId })
       .orderBy('event.dateAndTime', 'ASC')
@@ -129,7 +140,7 @@ export class EventService {
   async getHostingEvents(userId: string): Promise<EventDB[]> {
     const events = await this.eventRepository.find({
       where: { host: { id: userId } },
-      relations: ['host', 'categories', 'participants'],
+      relations: ['host', 'categories', 'participants', 'tags'],
       order: {
         dateAndTime: 'ASC',
       },
