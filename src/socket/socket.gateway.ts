@@ -3,8 +3,12 @@ import {
   WebSocketServer,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  SubscribeMessage,
+  MessageBody,
+  ConnectedSocket,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { EventService } from '../event/event.service';
 
 interface ActiveRoom {
   eventId: string;
@@ -14,7 +18,7 @@ interface ActiveRoom {
 @WebSocketGateway({
   cors: {
     origin: true,
-    methods: ['GET', 'POST'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     credentials: true,
   },
 })
@@ -24,15 +28,15 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   private connectedClients = new Set<string>();
 
-  private activeRooms: Map<number, ActiveRoom> = new Map();
+  private activeRooms: Map<string, ActiveRoom> = new Map();
 
   /**
-   * First string is the userid, the second one the clientId
+   * First string is the clientId, the second one the userId
    * @private
    */
   private users: Map<string, string> = new Map();
 
-  constructor() {}
+  constructor(private readonly eventService: EventService) {}
 
   handleConnection(client: Socket) {
     this.connectedClients.add(client.id);
@@ -40,5 +44,45 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   handleDisconnect(client: Socket) {
     this.connectedClients.delete(client.id);
+    this.users.delete(client.id);
+  }
+
+  @SubscribeMessage('handleConnect')
+  async handleConnectUser(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() userId: string,
+  ) {
+    this.users.set(client.id, userId);
+    client.join(`user_${userId}`);
+
+    const hostingEvents = await this.eventService.getHostingEvents(userId);
+    const participatingEvents =
+      await this.eventService.getParticipatingEvents(userId);
+
+    [...hostingEvents, ...participatingEvents].forEach((event) => {
+      const roomName = `event_${event.id}`;
+      client.join(roomName);
+      this.addUserToRoom(userId, event.id);
+    });
+  }
+
+  private addUserToRoom(userId: string, eventId: string): void {
+    let room: ActiveRoom;
+
+    if (this.activeRooms.has(eventId)) {
+      room = this.activeRooms.get(eventId);
+      room.users.add(userId);
+    } else {
+      room = { eventId: eventId, users: new Set([userId]) };
+      this.activeRooms.set(eventId, room);
+    }
+  }
+
+  emitNewList(eventId: string): void {
+    this.server.to(`event_${eventId}`).emit('updateListOverview');
+  }
+
+  emitListDetail(eventId: string): void {
+    this.server.to(`event_${eventId}`).emit('updateListDetail');
   }
 }
