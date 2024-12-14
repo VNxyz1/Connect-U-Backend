@@ -465,7 +465,7 @@ describe('EventService', () => {
     it('should return participating events when the user is a participant', async () => {
       jest.spyOn(mockEventRepository, 'find').mockResolvedValue(mockEventList);
 
-      const result = await service.getUpcomingEvents('uuIdMock2');
+      const result = await service.getUpcomingAndLiveEvents('uuIdMock2');
 
       expect(result).toEqual(mockEventList);
       expect(mockEventRepository.find).toHaveBeenCalled();
@@ -474,9 +474,9 @@ describe('EventService', () => {
     it('should throw a NotFoundException when the user is not a participant in any events', async () => {
       jest.spyOn(mockEventRepository, 'find').mockResolvedValue([]);
 
-      await expect(service.getUpcomingEvents('uuIdMock')).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.getUpcomingAndLiveEvents('uuIdMock'),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -549,6 +549,6 @@ export const mockEventService = {
   getHostingEvents: jest.fn().mockResolvedValue(mockEventList),
   getParticipatingEvents: jest.fn().mockResolvedValue(mockEventList),
   addUserToEvent: jest.fn().mockResolvedValue(new EventDB()),
-  getUpcomingEvents: jest.fn().mockResolvedValue(mockEventList),
+  getUpcomingAndLiveEvents: jest.fn().mockResolvedValue(mockEventList),
   removeUserFromEvent: jest.fn().mockResolvedValue(new EventDB()),
 };

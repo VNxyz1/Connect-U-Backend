@@ -165,13 +165,13 @@ export class EventController {
   @ApiResponse({
     type: [GetEventCardDTO],
     description:
-      'gets the upcoming events the current user is hosting or participating',
+      'gets the upcoming and live events the current user is hosting or participating',
   })
   @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard)
   @Get('/upcoming')
   async getUpcomingEvents(@User() user: UserDB): Promise<GetEventCardDTO[]> {
-    const events = await this.eventService.getUpcomingEvents(user.id);
+    const events = await this.eventService.getUpcomingAndLiveEvents(user.id);
     return await Promise.all(
       events.map(async (event) => {
         return this.utilsService.transformEventDBtoGetEventCardDTO(event);
