@@ -21,6 +21,7 @@ import { OkDTO } from '../serverDTO/OkDTO';
 import { UtilsService } from '../utils/utils.service';
 import { GetListDetailsDTO } from './DTO/GetListDetailsDTO';
 import { GetListDTO } from './DTO/GetListDTO';
+import { SocketGateway } from '../socket/socket.gateway';
 
 @ApiTags('list')
 @Controller('list')
@@ -28,6 +29,7 @@ export class ListController {
   constructor(
     private readonly listService: ListService,
     private readonly utilsService: UtilsService,
+    private readonly socketService: SocketGateway,
   ) {}
 
   @ApiResponse({
@@ -52,6 +54,8 @@ export class ListController {
       body.title,
       body.description,
     );
+
+    this.socketService.emitNewList(eventId);
 
     return new CreateListResDTO(
       true,
