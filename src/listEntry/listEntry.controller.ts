@@ -86,6 +86,7 @@ export class ListEntryController {
     if (listEntry.user) {
       if (listEntry.user.id === user.id) {
         await this.listEntryService.removeUserFromListEntry(listEntry);
+        this.socketService.emitListDetail(listEntry.list.event.id);
         return new OkDTO(true, 'user was removed from list');
       } else {
         throw new ForbiddenException(
