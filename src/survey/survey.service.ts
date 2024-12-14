@@ -120,7 +120,7 @@ export class SurveyService {
         'surveys',
         'surveys.creator',
         'surveys.surveyEntries',
-        'surveys.surveyEntries.users'
+        'surveys.surveyEntries.users',
       ],
     });
 
