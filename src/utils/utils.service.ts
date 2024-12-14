@@ -218,6 +218,7 @@ export class UtilsService {
     const dto = new GetCategoryDTO();
     dto.id = category.id;
     dto.name = category.name;
+    dto.germanName = category.germanName;
     return dto;
   }
 

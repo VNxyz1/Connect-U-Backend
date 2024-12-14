@@ -6,4 +6,10 @@ export class GetCategoryDTO {
 
   @ApiProperty({ description: 'the name of the category', example: 'Party' })
   name: string;
+
+  @ApiProperty({
+    description: 'the german name of the category',
+    example: 'Party',
+  })
+  germanName: string;
 }

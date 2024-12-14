@@ -29,8 +29,8 @@ export const mockEventRepository = {
 };
 
 const mockCategoryList: CategoryDB[] = [
-  { id: 1, name: 'Tech', events: [] },
-  { id: 2, name: 'Sports', events: [] },
+  { id: 1, name: 'Tech', germanName: 'Technologie', events: [] },
+  { id: 2, name: 'Sports', germanName: 'Sport', events: [] },
 ];
 
 const mockGenderList: GenderDB[] = [
