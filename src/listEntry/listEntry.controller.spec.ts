@@ -20,6 +20,7 @@ import { mockUtilsService } from '../utils/utils.service.spec';
 import { CreateListEntryDTO } from './DTO/CreateListEntryDTO';
 import { mockProviders } from '../../test/mock-services';
 import { mockListEntryService } from './listEntry.service.spec';
+import { SocketGateway } from '../socket/socket.gateway';
 
 describe('ListEntryController', () => {
   let app: INestApplication;
@@ -29,6 +30,7 @@ describe('ListEntryController', () => {
     const moduleRef = await Test.createTestingModule({
       controllers: [ListEntryController],
       providers: [
+        SocketGateway,
         ...mockProviders,
         {
           provide: ListEntryService,

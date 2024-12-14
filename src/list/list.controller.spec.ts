@@ -22,6 +22,7 @@ import { mockProviders } from '../../test/mock-services';
 import { mockListService } from './list.service.spec';
 import { mockUtilsService } from '../utils/utils.service.spec';
 import { mockUserList, mockUserService } from '../user/user.service.spec';
+import { SocketGateway } from '../socket/socket.gateway';
 
 describe('ListController', () => {
   let app: INestApplication;
@@ -31,6 +32,7 @@ describe('ListController', () => {
     const moduleRef = await Test.createTestingModule({
       controllers: [ListController],
       providers: [
+        SocketGateway,
         ...mockProviders,
         {
           provide: ListService,
