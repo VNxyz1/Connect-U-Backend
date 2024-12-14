@@ -10,6 +10,7 @@ import { StatusEnum } from '../database/enums/StatusEnum';
 import { ListEntryDB } from '../database/ListEntryDB';
 import { SurveyEntryDB } from '../database/SurveyEntryDB';
 import { TagDB } from '../database/TagDB';
+import { SchedulerService } from '../scheduler/scheduler.service';
 
 export class EventService {
   constructor(
@@ -19,6 +20,7 @@ export class EventService {
     private readonly listEntryRepository: Repository<ListEntryDB>,
     @InjectRepository(SurveyEntryDB)
     private readonly surveyEntryRepository: Repository<SurveyEntryDB>,
+    private readonly schedulerService: SchedulerService,
   ) {}
 
   /**
@@ -56,7 +58,11 @@ export class EventService {
     newEvent.categories = categories;
     newEvent.preferredGenders = preferredGenders;
     newEvent.tags = eventTags;
-    return await this.eventRepository.save(newEvent);
+    const savedEvent = await this.eventRepository.save(newEvent);
+
+    await this.schedulerService.scheduleEventStatusUpdate(savedEvent);
+
+    return savedEvent;
   }
 
   /**
@@ -94,7 +100,7 @@ export class EventService {
     const events = await this.eventRepository.find({
       relations: ['categories', 'participants', 'tags'],
       order: {
-        timestamp: 'ASC',
+        timestamp: 'DESC',
       },
     });
 

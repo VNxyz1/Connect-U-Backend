@@ -28,6 +28,7 @@ import { SurveyDB } from '../database/SurveyDB';
 import { GetSurveyDetailsDTO } from '../survey/DTO/GetSurveyDetailsDTO';
 import { SurveyEntryDB } from '../database/SurveyEntryDB';
 import { GetSurveyEntryDTO } from '../survey/DTO/GetSurveyEntryDTO';
+import { StatusEnum } from '../database/enums/StatusEnum';
 
 @Injectable()
 export class UtilsService {
@@ -78,13 +79,13 @@ export class UtilsService {
 
   /**
    * Determines if a given date is in the future.
-   * @param dateISOString - The date to check, in ISO string format.
+   * @param dateAndTime - The date to check, in ISO string format.
    * @returns {boolean} - True if the date is in the future, otherwise false.
    */
-  isFutureDate(dateISOString: string): boolean {
-    const eventDate = new Date(dateISOString);
+  isFutureDate(dateAndTime: string): boolean {
+    const eventDate = new Date(dateAndTime);
     const now = new Date();
-    return eventDate > now;
+    return eventDate.getTime() > now.getTime();
   }
 
   /**
@@ -119,10 +120,10 @@ export class UtilsService {
       }
     }
 
-    const dateValid = this.isFutureDate(event.dateAndTime);
-
-    if (!dateValid) {
-      throw new BadRequestException('The Event is outdated.');
+    if (![StatusEnum.live, StatusEnum.upcoming].includes(event.status)) {
+      throw new BadRequestException(
+        'The Event is outdated or not in a valid state.',
+      );
     }
 
     return true;

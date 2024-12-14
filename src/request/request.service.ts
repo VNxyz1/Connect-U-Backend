@@ -221,4 +221,20 @@ export class RequestService {
     }
     await this.requestRepository.remove(request);
   }
+
+  /**
+   * Deletes all requests associated with the given event ID.
+   * @param eventId The ID of the event to delete requests for.
+   */
+  async deleteRequestsByEventId(eventId: string): Promise<void> {
+    const event = await this.eventRepository.findOne({
+      where: { id: eventId },
+    });
+
+    if (!event) {
+      throw new Error(`Event with ID ${eventId} not found.`);
+    }
+
+    await this.requestRepository.delete({ event });
+  }
 }
