@@ -487,7 +487,10 @@ describe('EventController', () => {
       const tokens = await mockAuthService.signIn();
 
       jest
-        .spyOn(app.get(EventController).eventService, 'getUpcomingEvents')
+        .spyOn(
+          app.get(EventController).eventService,
+          'getUpcomingAndLiveEvents',
+        )
         .mockRejectedValue(
           new NotFoundException('No events found for this user'),
         );

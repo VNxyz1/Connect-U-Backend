@@ -1,5 +1,5 @@
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { EventDB } from '../database/EventDB';
 import { CreateEventDTO } from './DTO/CreateEventDTO';
 import { UserDB } from '../database/UserDB';
@@ -166,11 +166,17 @@ export class EventService {
    * @returns {Promise<EventDB[]>} - The events.
    * @throws {NotFoundException} - If there are no events found.
    */
-  async getUpcomingEvents(userId: string): Promise<EventDB[]> {
+  async getUpcomingAndLiveEvents(userId: string): Promise<EventDB[]> {
     const events = await this.eventRepository.find({
       where: [
-        { host: { id: userId }, status: StatusEnum.upcoming },
-        { participants: { id: userId }, status: StatusEnum.upcoming },
+        {
+          host: { id: userId },
+          status: In([StatusEnum.upcoming, StatusEnum.live]),
+        },
+        {
+          participants: { id: userId },
+          status: In([StatusEnum.upcoming, StatusEnum.live]),
+        },
       ],
       relations: {
         host: true,
