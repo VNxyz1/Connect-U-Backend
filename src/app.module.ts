@@ -33,6 +33,7 @@ import { ListEntryService } from './listEntry/listEntry.service';
 import { SurveyService } from './survey/survey.service';
 import { SurveyController } from './survey/survey.controller';
 import { TagService } from './tag/tag.service';
+import { SchedulerService } from './scheduler/scheduler.service';
 
 @Module({
   imports: [
@@ -79,6 +80,7 @@ import { TagService } from './tag/tag.service';
     ListEntryService,
     SurveyService,
     TagService,
+    SchedulerService,
   ],
 })
 export class AppModule implements NestModule {

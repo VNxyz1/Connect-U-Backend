@@ -34,13 +34,13 @@ describe('CategoryController', () => {
   describe('getAllCategories', () => {
     it('should return an array of GetCategoryDTO', async () => {
       const mockCategories = [
-        { id: 1, name: 'Tech' },
-        { id: 2, name: 'Sports' },
+        { id: 1, name: 'Tech', germanName: 'Technologie' },
+        { id: 2, name: 'Sports', germanName: 'Sport' },
       ];
 
       const transformedCategoryDTO: GetCategoryDTO[] = [
-        { id: 1, name: 'Tech' },
-        { id: 2, name: 'Sports' },
+        { id: 1, name: 'Tech', germanName: 'Technologie' },
+        { id: 2, name: 'Sports', germanName: 'Sport' },
       ];
 
       mockCategoryService.getCategories.mockResolvedValue(mockCategories);

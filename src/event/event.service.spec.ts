@@ -14,6 +14,7 @@ import { StatusEnum } from '../database/enums/StatusEnum';
 import { Repository } from 'typeorm';
 import { SurveyEntryDB } from '../database/SurveyEntryDB';
 import { ListEntryDB } from '../database/ListEntryDB';
+import { SchedulerService } from '../scheduler/scheduler.service';
 
 export const mockEventRepository = {
   create: jest.fn(),
@@ -29,8 +30,8 @@ export const mockEventRepository = {
 };
 
 const mockCategoryList: CategoryDB[] = [
-  { id: 1, name: 'Tech', events: [] },
-  { id: 2, name: 'Sports', events: [] },
+  { id: 1, name: 'Tech', germanName: 'Technologie', events: [] },
+  { id: 2, name: 'Sports', germanName: 'Sport', events: [] },
 ];
 
 const mockGenderList: GenderDB[] = [
@@ -211,6 +212,7 @@ describe('EventService', () => {
         EventService,
         ...mockProviders.filter(
           (provider) => provider.provide !== EventService,
+          SchedulerService,
         ),
         {
           provide: getRepositoryToken(EventDB),
@@ -223,6 +225,10 @@ describe('EventService', () => {
         {
           provide: getRepositoryToken(SurveyEntryDB),
           useClass: Repository,
+        },
+        {
+          provide: SchedulerService,
+          useValue: mockSchedulerService,
         },
       ],
     }).compile();
@@ -261,6 +267,9 @@ describe('EventService', () => {
 
     expect(mockEventRepository.create).toHaveBeenCalledWith();
     expect(mockEventRepository.save).toHaveBeenCalledWith(newEvent);
+    expect(mockSchedulerService.scheduleEventStatusUpdate).toHaveBeenCalledWith(
+      newEvent,
+    );
     expect(result).toEqual(newEvent);
   });
 
@@ -336,7 +345,7 @@ describe('EventService', () => {
     expect(mockEventRepository.find).toHaveBeenCalledWith({
       relations: ['categories', 'participants', 'tags'],
       order: {
-        timestamp: 'ASC',
+        timestamp: 'DESC',
       },
     });
     expect(result).toEqual(mockEventList);
@@ -551,4 +560,8 @@ export const mockEventService = {
   addUserToEvent: jest.fn().mockResolvedValue(new EventDB()),
   getUpcomingAndLiveEvents: jest.fn().mockResolvedValue(mockEventList),
   removeUserFromEvent: jest.fn().mockResolvedValue(new EventDB()),
+};
+
+export const mockSchedulerService = {
+  scheduleEventStatusUpdate: jest.fn().mockResolvedValue(new EventDB()),
 };
