@@ -32,7 +32,7 @@ export class CreateEventDTO {
 
   @ApiProperty({
     description: 'Datum und Uhrzeit des Events',
-    example: '2024-12-15T18:00:00Z',
+    example: '2025-06-15T18:00:00',
   })
   @IsISO8601()
   @IsNotEmpty()

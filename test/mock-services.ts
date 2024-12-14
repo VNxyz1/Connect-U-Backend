@@ -5,7 +5,10 @@ import { JWTConstants } from '../src/auth/constants';
 import { AuthService } from '../src/auth/auth.service';
 import { mockAuthService } from '../src/auth/auth.service.spec';
 import { EventService } from '../src/event/event.service';
-import { mockEventService } from '../src/event/event.service.spec';
+import {
+  mockEventService,
+  mockSchedulerService,
+} from '../src/event/event.service.spec';
 import { CategoryService } from '../src/category/category.service';
 import { mockCategoryService } from '../src/category/category.service.spec';
 import { GenderService } from '../src/gender/gender.service';
@@ -22,6 +25,7 @@ import { SurveyService } from '../src/survey/survey.service';
 import { mockSurveyService } from '../src/survey/survey.service.spec';
 import { TagService } from '../src/tag/tag.service';
 import { mockTagService } from '../src/tag/tag.service.spec';
+import { SchedulerService } from '../src/scheduler/scheduler.service';
 
 export const mockProviders = [
   {
@@ -79,6 +83,10 @@ export const mockProviders = [
   {
     provide: TagService,
     useValue: mockTagService,
+  },
+  {
+    provide: SchedulerService,
+    useValue: mockSchedulerService,
   },
   { provide: SurveyService, useValue: mockSurveyService },
 ];
