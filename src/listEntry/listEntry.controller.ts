@@ -20,6 +20,7 @@ import { User } from '../utils/user.decorator';
 import { ListService } from '../list/list.service';
 import { AuthGuard } from '../auth/auth.guard';
 import { OkDTO } from '../serverDTO/OkDTO';
+import { SocketGateway } from '../socket/socket.gateway';
 
 @ApiTags('list-entry')
 @Controller('list-entry')
@@ -28,6 +29,7 @@ export class ListEntryController {
     private readonly listEntryService: ListEntryService,
     private readonly utilsService: UtilsService,
     private readonly listService: ListService,
+    private readonly socketService: SocketGateway,
   ) {}
 
   @ApiResponse({
@@ -59,6 +61,8 @@ export class ListEntryController {
     await this.utilsService.isHostOrParticipant(user, list.event.id);
 
     await this.listEntryService.createListEntry(listId, body.content);
+
+    this.socketService.emitListDetail(list.event.id);
 
     return new OkDTO(true, 'List Entry was created successfully');
   }
@@ -94,6 +98,8 @@ export class ListEntryController {
 
     await this.listEntryService.updateListEntry(listEntry, user);
 
+    this.socketService.emitListDetail(listEntry.list.event.id);
+
     return new OkDTO(true, 'List entry was updated successfully');
   }
 
@@ -115,6 +121,8 @@ export class ListEntryController {
     await this.utilsService.isHostOrParticipant(user, listEntry.list.event.id);
 
     await this.listEntryService.deleteListEntry(listEntry);
+
+    this.socketService.emitListDetail(listEntry.list.event.id);
 
     return new OkDTO(true, 'List entry was deleted successfully');
   }
