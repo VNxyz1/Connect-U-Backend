@@ -1,4 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  UpdateDateColumn,
+} from 'typeorm';
 import { UserDB } from './UserDB';
 import { EventDB } from './EventDB';
 import { RequestEnum } from './enums/RequestEnum';

@@ -58,7 +58,11 @@ export class EventService {
     newEvent.categories = categories;
     newEvent.preferredGenders = preferredGenders;
     newEvent.tags = eventTags;
-    return await this.eventRepository.save(newEvent);
+    const savedEvent = await this.eventRepository.save(newEvent);
+
+    await this.schedulerService.scheduleEventStatusUpdate(savedEvent);
+
+    return savedEvent;
   }
 
   /**
@@ -96,7 +100,7 @@ export class EventService {
     const events = await this.eventRepository.find({
       relations: ['categories', 'participants', 'tags'],
       order: {
-        timestamp: 'ASC',
+        timestamp: 'DESC',
       },
     });
 
@@ -286,19 +290,5 @@ export class EventService {
     }
 
     return await this.eventRepository.save(event);
-  }
-
-  async updateEvent(eventId: string, body: Partial<CreateEventDTO>): Promise<EventDB> {
-    const event = await this.getEventById(eventId);
-
-    Object.assign(event, body);
-
-    const updatedEvent = await this.eventRepository.save(event);
-
-    if (body.dateAndTime) {
-      await this.schedulerService.scheduleEventStatusUpdate(updatedEvent);
-    }
-
-    return updatedEvent;
   }
 }
