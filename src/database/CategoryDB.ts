@@ -9,6 +9,9 @@ export class CategoryDB {
   @Column({ unique: true })
   name: string;
 
+  @Column({ unique: true })
+  germanName: string;
+
   @ManyToMany(() => EventDB, (event) => event.categories)
   events: EventDB[];
 }

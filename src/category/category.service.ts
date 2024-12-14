@@ -1,23 +1,23 @@
-import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { CategoryDB } from '../database/CategoryDB';
+import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 
 @Injectable()
 export class CategoryService implements OnModuleInit {
   private readonly predefinedCategories = [
-    { name: 'outdoor' },
-    { name: 'indoor' },
-    { name: 'music' },
-    { name: 'sports' },
-    { name: 'gaming' },
-    { name: 'eating' },
-    { name: 'learning' },
-    { name: 'cooking' },
-    { name: 'movies' },
-    { name: 'adventure' },
-    { name: 'party' },
-    { name: 'other' },
+    { name: 'Outdoor', germanName: 'Outdoor' },
+    { name: 'Indoor', germanName: 'Indoor' },
+    { name: 'Music', germanName: 'Musik' },
+    { name: 'Sports', germanName: 'Sport' },
+    { name: 'Gaming', germanName: 'Gaming' },
+    { name: 'Eating', germanName: 'Essen' },
+    { name: 'Learning', germanName: 'Lernen' },
+    { name: 'Cooking', germanName: 'Kochen' },
+    { name: 'Movies', germanName: 'Filme' },
+    { name: 'Adventure', germanName: 'Abenteuer' },
+    { name: 'Party', germanName: 'Party' },
+    { name: 'Other', germanName: 'Andere' },
   ];
 
   constructor(
