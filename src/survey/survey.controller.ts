@@ -29,7 +29,7 @@ export class SurveyController {
   constructor(
     private readonly surveyService: SurveyService,
     private readonly utilsService: UtilsService,
-    private readonly socketService: SocketGateway
+    private readonly socketService: SocketGateway,
   ) {}
 
   @ApiResponse({
@@ -117,11 +117,17 @@ export class SurveyController {
 
     if (isUserInSurvey) {
       await this.surveyService.removeVote(user, surveyEntry);
-      this.socketService.emitSurveyDetail(surveyEntry.survey.event.id, surveyEntryId);
+      this.socketService.emitSurveyDetail(
+        surveyEntry.survey.event.id,
+        surveyEntryId,
+      );
       return new OkDTO(true, 'User removed from survey entry');
     } else {
       await this.surveyService.addVote(user, surveyEntry);
-      this.socketService.emitSurveyDetail(surveyEntry.survey.event.id, surveyEntryId);
+      this.socketService.emitSurveyDetail(
+        surveyEntry.survey.event.id,
+        surveyEntryId,
+      );
       return new OkDTO(true, 'Survey entry was updated successfully');
     }
   }

@@ -9,7 +9,6 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { EventService } from '../event/event.service';
-import { NotFoundException } from '@nestjs/common';
 
 interface ActiveRoom {
   eventId: string;
