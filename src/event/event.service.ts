@@ -116,7 +116,6 @@ export class EventService {
    *
    * @param userId - the user who is a participant
    * @returns {Promise<EventDB[]>} - The events where the user is a participant.
-   * @throws {NotFoundException} - If no events are found.
    */
   async getParticipatingEvents(userId: string): Promise<EventDB[]> {
     const events = await this.eventRepository
@@ -129,11 +128,7 @@ export class EventService {
       .orderBy('event.dateAndTime', 'ASC')
       .getMany();
 
-    if (!events || events.length === 0) {
-      throw new NotFoundException('No events found');
-    }
-
-    return events;
+    return events.length > 0 ? events : [];
   }
 
   /**
@@ -141,7 +136,6 @@ export class EventService {
    *
    * @param userId - the user that is logged in
    * @returns {Promise<EventDB[]>} - The events.
-   * @throws {NotFoundException} - If there are no events found.
    */
   async getHostingEvents(userId: string): Promise<EventDB[]> {
     const events = await this.eventRepository.find({
@@ -152,11 +146,7 @@ export class EventService {
       },
     });
 
-    if (!events || events.length === 0) {
-      throw new NotFoundException('No events found for this user');
-    }
-
-    return events;
+    return events.length > 0 ? events : [];
   }
 
   /**
