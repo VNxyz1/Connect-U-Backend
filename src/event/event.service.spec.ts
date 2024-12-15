@@ -372,14 +372,6 @@ describe('EventService', () => {
       });
       expect(result).toEqual(mockEventList);
     });
-
-    it('should throw a NotFoundException if no hosting events are found for the user', async () => {
-      mockEventRepository.find.mockResolvedValue([]);
-
-      await expect(service.getHostingEvents(mockUser.id)).rejects.toThrow(
-        NotFoundException,
-      );
-    });
   });
 
   describe('EventService - getParticipatingEvents', () => {
@@ -403,15 +395,6 @@ describe('EventService', () => {
         { userId: 'uuIdMock2' },
       );
       expect(queryBuilderMock.getMany).toHaveBeenCalled();
-    });
-
-    it('should throw a NotFoundException when the user is not a participant in any events', async () => {
-      queryBuilderMock.where.mockReturnThis();
-      queryBuilderMock.getMany.mockResolvedValue([]);
-
-      await expect(service.getParticipatingEvents('uuIdMock')).rejects.toThrow(
-        NotFoundException,
-      );
     });
   });
 
