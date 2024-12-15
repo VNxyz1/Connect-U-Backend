@@ -4,7 +4,7 @@ import { EventDB } from '../database/EventDB';
 import { StatusEnum } from '../database/enums/StatusEnum';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { RequestService } from '../request/request.service'; // Import the RequestService
+import { RequestService } from '../request/request.service';
 
 @Injectable()
 export class SchedulerService implements OnModuleInit {

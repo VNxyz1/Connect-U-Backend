@@ -79,7 +79,7 @@ export class ListController {
 
     await this.utilsService.isHostOrParticipant(user, list.event.id);
 
-    return this.utilsService.transformListDBtoGetListDetailsDTO(list);
+    return this.utilsService.transformListDBtoGetListDetailsDTO(list, user.id);
   }
 
   @ApiResponse({

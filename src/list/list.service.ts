@@ -60,7 +60,13 @@ export class ListService {
   async getListById(listId: number): Promise<ListDB> {
     const list = await this.listRepository.findOne({
       where: { id: listId },
-      relations: ['event', 'creator', 'listEntries', 'listEntries.user'],
+      relations: [
+        'event',
+        'event.host',
+        'creator',
+        'listEntries',
+        'listEntries.user',
+      ],
     });
 
     if (!list) {
@@ -81,7 +87,7 @@ export class ListService {
   async getListsForEvent(eventId: string): Promise<ListDB[]> {
     const event = await this.eventRepository.findOne({
       where: { id: eventId },
-      relations: ['lists', 'lists.creator', 'lists.listEntries'],
+      relations: ['lists', 'host', 'lists.creator', 'lists.listEntries'],
     });
 
     if (!event) {

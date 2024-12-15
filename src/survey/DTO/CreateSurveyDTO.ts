@@ -1,10 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsArray,
-  IsNotEmpty,
-  IsOptional,
   IsString,
+  IsNotEmpty,
   MaxLength,
+  Matches,
+  IsOptional,
+  IsArray,
   ArrayMaxSize,
   ArrayMinSize,
 } from 'class-validator';
@@ -17,6 +18,9 @@ export class CreateSurveyDTO {
   @IsString()
   @IsNotEmpty({ message: 'Title is required' })
   @MaxLength(100, { message: 'Title must not exceed 100 characters' })
+  @Matches(/\S/, {
+    message: 'Title must not be empty or contain only whitespace',
+  })
   title: string;
 
   @ApiProperty({
@@ -38,5 +42,9 @@ export class CreateSurveyDTO {
   @ArrayMaxSize(50, { message: 'You can have a maximum of 50 survey entries' })
   @ArrayMinSize(2, { message: 'You must provide at least 2 survey entries' })
   @IsString({ each: true, message: 'Each entry must be a string' })
+  @Matches(/\S/, {
+    each: true,
+    message: 'Each entry must not be empty or contain only whitespace',
+  })
   entries: string[];
 }

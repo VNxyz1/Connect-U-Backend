@@ -147,7 +147,13 @@ describe('SurveyService', () => {
 
       expect(surveyRepository.findOne).toHaveBeenCalledWith({
         where: { id: 1 },
-        relations: ['event', 'creator', 'surveyEntries', 'surveyEntries.users'],
+        relations: [
+          'event',
+          'creator',
+          'surveyEntries',
+          'surveyEntries.users',
+          'event.host',
+        ],
       });
       expect(result).toEqual(mockSurvey);
     });

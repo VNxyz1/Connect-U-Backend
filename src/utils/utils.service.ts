@@ -399,14 +399,25 @@ export class UtilsService {
    * Transforms a ListDB entity into a GetListDetailsDTO.
    *
    * @param list - The ListDB entity to transform.
+   * @param currentUserId - id of the current user
    * @returns The transformed GetListDTO.
    */
-  transformListDBtoGetListDetailsDTO(list: ListDB): GetListDetailsDTO {
+  transformListDBtoGetListDetailsDTO(
+    list: ListDB,
+    currentUserId: string,
+  ): GetListDetailsDTO {
+    const isCreatorOrHost =
+      list.creator.id === currentUserId ||
+      (list.event && list.event.host.id === currentUserId);
+
     return {
       id: list.id,
       title: list.title,
       description: list.description,
-      creator: this.transformUserDBtoGetUserProfileDTO(list.creator, false),
+      creator: this.transformUserDBtoGetUserProfileDTO(
+        list.creator,
+        isCreatorOrHost,
+      ),
       listEntries: list.listEntries.map((entry) =>
         this.transformListEntryDBtoGetListEntryDTO(entry),
       ),
@@ -447,11 +458,18 @@ export class UtilsService {
       ),
     );
 
+    const isCreatorOrHost =
+      survey.creator.id === currentUserId ||
+      (survey.event && survey.event.host.id === currentUserId);
+
     return {
       id: survey.id,
       title: survey.title,
       description: survey.description,
-      creator: this.transformUserDBtoGetUserProfileDTO(survey.creator, false),
+      creator: this.transformUserDBtoGetUserProfileDTO(
+        survey.creator,
+        isCreatorOrHost,
+      ),
       surveyEntries,
     };
   }
