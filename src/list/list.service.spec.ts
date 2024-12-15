@@ -104,7 +104,13 @@ describe('ListService', () => {
 
       expect(listRepository.findOne).toHaveBeenCalledWith({
         where: { id: 1 },
-        relations: ['event', 'creator', 'listEntries', 'listEntries.user'],
+        relations: [
+          'event',
+          'event.host',
+          'creator',
+          'listEntries',
+          'listEntries.user',
+        ],
       });
       expect(result).toEqual(mockList);
     });
@@ -129,7 +135,7 @@ describe('ListService', () => {
 
       expect(eventRepository.findOne).toHaveBeenCalledWith({
         where: { id: '1' },
-        relations: ['lists', 'lists.creator', 'lists.listEntries'],
+        relations: ['lists', 'host', 'lists.creator', 'lists.listEntries'],
       });
       expect(result).toEqual([mockList]);
     });

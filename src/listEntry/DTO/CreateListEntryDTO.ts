@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
+import { IsNotEmpty, IsString, Matches, MaxLength } from 'class-validator';
 
 export class CreateListEntryDTO {
   @ApiProperty({
@@ -9,5 +9,8 @@ export class CreateListEntryDTO {
   @IsString()
   @IsNotEmpty({ message: 'Content is required' })
   @MaxLength(255, { message: 'Content must not exceed 255 characters' })
+  @Matches(/\S/, {
+    message: 'Content must not be empty or contain only whitespace',
+  })
   content: string;
 }
