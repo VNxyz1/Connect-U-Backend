@@ -9,6 +9,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { EventService } from '../event/event.service';
+import { NotFoundException } from '@nestjs/common';
 
 interface ActiveRoom {
   eventId: string;
@@ -84,5 +85,13 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   emitListDetail(eventId: string): void {
     this.server.to(`event_${eventId}`).emit('updateListDetail');
+  }
+
+  emitNewSurvey(eventId: string): void {
+    this.server.to(`event_${eventId}`).emit('updateSurveyOverview');
+  }
+
+  emitSurveyDetail(eventId: string, surveyId: number): void {
+    this.server.to(`event_${eventId}`).emit('updateSurveyDetail', { surveyId });
   }
 }

@@ -21,6 +21,7 @@ import { CreateSurveyDTO } from './DTO/CreateSurveyDTO';
 import { CreateSurveyResDTO } from './DTO/CreateSurveyResDTO';
 import { OkDTO } from '../serverDTO/OkDTO';
 import { GetSurveyDetailsDTO } from './DTO/GetSurveyDetailsDTO';
+import { SocketGateway } from '../socket/socket.gateway';
 
 @ApiTags('survey')
 @Controller('survey')
@@ -28,6 +29,7 @@ export class SurveyController {
   constructor(
     private readonly surveyService: SurveyService,
     private readonly utilsService: UtilsService,
+    private readonly socketService: SocketGateway
   ) {}
 
   @ApiResponse({
@@ -51,6 +53,8 @@ export class SurveyController {
       eventId,
       body,
     );
+
+    this.socketService.emitNewSurvey(eventId);
 
     return new CreateSurveyResDTO(
       true,
@@ -113,9 +117,11 @@ export class SurveyController {
 
     if (isUserInSurvey) {
       await this.surveyService.removeVote(user, surveyEntry);
+      this.socketService.emitSurveyDetail(surveyEntry.survey.event.id, surveyEntryId);
       return new OkDTO(true, 'User removed from survey entry');
     } else {
       await this.surveyService.addVote(user, surveyEntry);
+      this.socketService.emitSurveyDetail(surveyEntry.survey.event.id, surveyEntryId);
       return new OkDTO(true, 'Survey entry was updated successfully');
     }
   }
