@@ -54,7 +54,7 @@ export class SurveyController {
       body,
     );
 
-    this.socketService.emitNewSurvey(eventId);
+    this.socketService.emitUpdateSurveys(eventId);
 
     return new CreateSurveyResDTO(
       true,
@@ -172,6 +172,7 @@ export class SurveyController {
       throw new ForbiddenException('You are not allowed to delete this survey');
     }
 
+    this.socketService.emitUpdateSurveys(survey.event.id);
     await this.surveyService.deleteSurvey(survey);
     return new OkDTO(true, 'Survey was deleted successfully');
   }
