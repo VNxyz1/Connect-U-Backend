@@ -85,4 +85,12 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   emitListDetail(eventId: string): void {
     this.server.to(`event_${eventId}`).emit('updateListDetail');
   }
+
+  emitUpdateSurveys(eventId: string): void {
+    this.server.to(`event_${eventId}`).emit('updateSurveyOverview');
+  }
+
+  emitSurveyDetail(eventId: string, surveyId: number): void {
+    this.server.to(`event_${eventId}`).emit('updateSurveyDetail', { surveyId });
+  }
 }

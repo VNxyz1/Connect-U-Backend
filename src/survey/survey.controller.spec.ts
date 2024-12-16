@@ -20,6 +20,7 @@ import { mockProviders } from '../../test/mock-services';
 import { mockSurveyEntry, mockSurveyService } from './survey.service.spec';
 import { mockUtilsService } from '../utils/utils.service.spec';
 import { mockUserService } from '../user/user.service.spec';
+import { SocketGateway } from '../socket/socket.gateway';
 
 describe('SurveyController', () => {
   let app: INestApplication;
@@ -29,6 +30,7 @@ describe('SurveyController', () => {
     const moduleRef = await Test.createTestingModule({
       controllers: [SurveyController],
       providers: [
+        SocketGateway,
         ...mockProviders,
         {
           provide: JwtService,
