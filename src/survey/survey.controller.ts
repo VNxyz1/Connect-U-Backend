@@ -119,14 +119,14 @@ export class SurveyController {
       await this.surveyService.removeVote(user, surveyEntry);
       this.socketService.emitSurveyDetail(
         surveyEntry.survey.event.id,
-        surveyEntryId,
+        surveyEntry.survey.id,
       );
       return new OkDTO(true, 'User removed from survey entry');
     } else {
       await this.surveyService.addVote(user, surveyEntry);
       this.socketService.emitSurveyDetail(
         surveyEntry.survey.event.id,
-        surveyEntryId,
+        surveyEntry.survey.id,
       );
       return new OkDTO(true, 'Survey entry was updated successfully');
     }
