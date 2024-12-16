@@ -34,6 +34,7 @@ import { SurveyService } from './survey/survey.service';
 import { SurveyController } from './survey/survey.controller';
 import { TagService } from './tag/tag.service';
 import { SchedulerService } from './scheduler/scheduler.service';
+import { TagController } from './tag/tag.controller';
 
 @Module({
   imports: [
@@ -64,6 +65,7 @@ import { SchedulerService } from './scheduler/scheduler.service';
     ListController,
     ListEntryController,
     SurveyController,
+    TagController,
   ],
   providers: [
     AppService,

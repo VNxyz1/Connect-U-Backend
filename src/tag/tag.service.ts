@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { TagDB } from '../database/TagDB';
 
 @Injectable()
@@ -27,5 +27,13 @@ export class TagService {
       resultTags.push(existingTag);
     }
     return resultTags;
+  }
+
+  async getAllTags(tagSearch: string): Promise<TagDB[]> {
+    return this.tagRepository.find({
+      where: {
+        title: Like(`%${tagSearch.toLowerCase()}%`),
+      },
+    });
   }
 }
