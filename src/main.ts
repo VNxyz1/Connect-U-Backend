@@ -2,25 +2,31 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as cookieParser from 'cookie-parser';
 
-/**
- * These are API defaults that can be changed using environment variables,
- * it is not required to change them (see the `.env.example` file)
- */
 const API_DEFAULT_PORT = 3000;
 const API_DEFAULT_PREFIX = '/api/';
 
-/**
- * These are the Swagger documentation defaults
- */
-const SWAGGER_TITLE = 'Passenger API';
-const SWAGGER_DESCRIPTION = 'API used for passenger management';
+const SWAGGER_TITLE = 'ConnectU API';
+const SWAGGER_DESCRIPTION = 'API used for ConnectU application';
 const SWAGGER_PREFIX = '/docs';
 
 function createSwagger(app: INestApplication) {
   const config = new DocumentBuilder()
     .setTitle(SWAGGER_TITLE)
     .setDescription(SWAGGER_DESCRIPTION)
+    .addBearerAuth(
+      {
+        description:
+          '[just text field] Please enter token in following format: Bearer <JWT>',
+        name: 'Authorization',
+        bearerFormat: 'JWT',
+        scheme: 'Bearer',
+        type: 'http',
+        in: 'Header',
+      },
+      'access-token',
+    )
     .build();
 
   const documentFactory = () => SwaggerModule.createDocument(app, config);
@@ -30,8 +36,14 @@ function createSwagger(app: INestApplication) {
 function enableCors(app: INestApplication) {
   app.enableCors({
     origin: true,
-    methods: ['GET', 'PUT', 'POST', 'DELETE'],
-    allowedHeaders: ['Content-Type', '*'],
+    methods: ['GET', 'PUT', 'POST', 'DELETE', 'PATCH'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Requested-With',
+      'Origin',
+      'Accept',
+    ],
     credentials: true,
   });
 }
@@ -48,6 +60,8 @@ async function bootstrap() {
   if (!process.env.API_CORS || process.env.API_CORS === '1') {
     enableCors(app);
   }
+
+  app.use(cookieParser());
 
   app.useGlobalPipes(
     new ValidationPipe({
