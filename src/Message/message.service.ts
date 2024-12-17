@@ -55,7 +55,7 @@ export class MessageService {
   async getEventChat(eventId: string): Promise<{ messages: MessageDB[]; hostId: string }> {
     const event = await this.eventRepository.findOne({
       where: { id: eventId },
-      relations: ['messages', 'messages.writer', 'messages.unreadUsers', 'host'],
+      relations: ['messages', 'messages.writer', 'messages.unreadUsers', 'host', 'participants'],
     });
 
     if (!event) {

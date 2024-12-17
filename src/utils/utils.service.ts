@@ -555,7 +555,7 @@ export class UtilsService {
       const transformedMessage = this.transformMessageDBtoChatMessageDTO(
         message,
         currentUserId,
-        hostId
+        hostId,
       );
 
       if (isUnread) {
@@ -565,9 +565,33 @@ export class UtilsService {
       }
     }
 
+    const latestReadTimestamp =
+      readMessages.length > 0
+        ? new Date(readMessages[readMessages.length - 1].timestamp).getTime()
+        : null;
+
+    const adjustedUnreadMessages = [];
+    for (const message of unreadMessages) {
+      const messageTimestamp = new Date(message.timestamp).getTime();
+
+      if (latestReadTimestamp !== null && messageTimestamp <= latestReadTimestamp) {
+        readMessages.push(message);
+      } else {
+        adjustedUnreadMessages.push(message);
+      }
+    }
+
+    readMessages.sort(
+      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+    );
+    adjustedUnreadMessages.sort(
+      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+    );
+
     return {
       readMessages,
-      unreadMessages,
+      unreadMessages: adjustedUnreadMessages,
     };
   }
+
 }
