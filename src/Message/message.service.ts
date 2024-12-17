@@ -46,18 +46,26 @@ export class MessageService {
       : allUsers;
 
     const newMessage: MessageDB = this.messageRepository.create();
-      newMessage.event = event;
-      newMessage.text = text;
-      newMessage.writer = user;
-      newMessage.unreadUsers = unreadUsers;
+    newMessage.event = event;
+    newMessage.text = text;
+    newMessage.writer = user;
+    newMessage.unreadUsers = unreadUsers;
 
     return await this.messageRepository.save(newMessage);
   }
 
-  async getEventChat(eventId: string): Promise<{ messages: MessageDB[]; hostId: string }> {
+  async getEventChat(
+    eventId: string,
+  ): Promise<{ messages: MessageDB[]; hostId: string }> {
     const event = await this.eventRepository.findOne({
       where: { id: eventId },
-      relations: ['messages', 'messages.writer', 'messages.unreadUsers', 'host', 'participants'],
+      relations: [
+        'messages',
+        'messages.writer',
+        'messages.unreadUsers',
+        'host',
+        'participants',
+      ],
     });
 
     if (!event) {

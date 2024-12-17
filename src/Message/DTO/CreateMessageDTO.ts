@@ -12,5 +12,8 @@ export class CreateMessageDTO {
   @Matches(/\S/, {
     message: 'Content must not be empty or contain only whitespace',
   })
+  @Matches(/^(?!.*https?:\/\/).+$/, {
+    message: 'Messages cannot contain links',
+  })
   content: string;
 }

@@ -5,7 +5,8 @@ import {
   Body,
   UseGuards,
   HttpCode,
-  HttpStatus, Get,
+  HttpStatus,
+  Get,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { MessageService } from './message.service';
@@ -41,18 +42,15 @@ export class MessageController {
   ): Promise<OkDTO> {
     await this.utilsService.isHostOrParticipant(user, eventId);
 
-   await this.messageService.createMessage(
-      user,
-      eventId,
-      body.content,
-    );
+    await this.messageService.createMessage(user, eventId, body.content);
 
     return new OkDTO(true, 'Message was posted successfully');
   }
 
   @ApiResponse({
     type: GetEventChatDTO,
-    description: 'Retrieves the event chat, sorted by timestamp, with read and unread messages',
+    description:
+      'Retrieves the event chat, sorted by timestamp, with read and unread messages',
   })
   @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard)
@@ -63,14 +61,20 @@ export class MessageController {
   ): Promise<GetEventChatDTO> {
     await this.utilsService.isHostOrParticipant(user, eventId);
 
-    const { messages, hostId } = await this.messageService.getEventChat(eventId);
+    const { messages, hostId } =
+      await this.messageService.getEventChat(eventId);
 
-    return this.utilsService.transformEventChatToGetEventChatDTO(messages, user.id, hostId);
+    return this.utilsService.transformEventChatToGetEventChatDTO(
+      messages,
+      user.id,
+      hostId,
+    );
   }
 
   @ApiResponse({
     type: OkDTO,
-    description: 'Marks all unread messages for the user in the specified event as read.',
+    description:
+      'Marks all unread messages for the user in the specified event as read.',
     status: HttpStatus.OK,
   })
   @ApiBearerAuth('access-token')

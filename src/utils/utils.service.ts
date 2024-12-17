@@ -520,9 +520,9 @@ export class UtilsService {
       isHost: currentUserId === eventHostId,
       writer: message.writer
         ? this.transformUserDBtoGetUserProfileDTO(
-          message.writer,
-          message.writer.id === currentUserId,
-        )
+            message.writer,
+            message.writer.id === currentUserId,
+          )
         : null,
     };
   }
@@ -541,7 +541,8 @@ export class UtilsService {
     hostId: string,
   ): GetEventChatDTO {
     const sortedMessages = messages.sort(
-      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+      (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
     );
 
     const readMessages = [];
@@ -574,7 +575,10 @@ export class UtilsService {
     for (const message of unreadMessages) {
       const messageTimestamp = new Date(message.timestamp).getTime();
 
-      if (latestReadTimestamp !== null && messageTimestamp <= latestReadTimestamp) {
+      if (
+        latestReadTimestamp !== null &&
+        messageTimestamp <= latestReadTimestamp
+      ) {
         readMessages.push(message);
       } else {
         adjustedUnreadMessages.push(message);
@@ -582,10 +586,12 @@ export class UtilsService {
     }
 
     readMessages.sort(
-      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+      (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
     );
     adjustedUnreadMessages.sort(
-      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+      (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
     );
 
     return {
@@ -593,5 +599,4 @@ export class UtilsService {
       unreadMessages: adjustedUnreadMessages,
     };
   }
-
 }
