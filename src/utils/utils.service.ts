@@ -517,7 +517,7 @@ export class UtilsService {
       id: message.id,
       text: message.text,
       timestamp: message.timestamp,
-      isHost: currentUserId === eventHostId,
+      isHost: message.writer.id === eventHostId,
       writer: message.writer
         ? this.transformUserDBtoGetUserProfileDTO(
             message.writer,
