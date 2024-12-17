@@ -33,7 +33,7 @@ export class MessageController {
   @ApiBearerAuth('access-token')
   @HttpCode(HttpStatus.CREATED)
   @UseGuards(AuthGuard)
-  @Post('/:eventId')
+  @Post('/:eventId/message')
   async createMessage(
     @Body() body: CreateMessageDTO,
     @Param('eventId') eventId: string,
@@ -68,4 +68,21 @@ export class MessageController {
     return this.utilsService.transformEventChatToGetEventChatDTO(messages, user.id, hostId);
   }
 
+  @ApiResponse({
+    type: OkDTO,
+    description: 'Marks all unread messages for the user in the specified event as read.',
+    status: HttpStatus.OK,
+  })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @Post('/:eventId/read')
+  async markMessagesAsRead(
+    @Param('eventId') eventId: string,
+    @User() user: UserDB,
+  ): Promise<OkDTO> {
+    await this.messageService.markMessagesAsRead(user.id, eventId);
+
+    return new OkDTO(true, 'Unread messages have been marked as read.');
+  }
 }

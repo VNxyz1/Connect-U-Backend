@@ -12,6 +12,8 @@ export class MessageService {
     private readonly messageRepository: Repository<MessageDB>,
     @InjectRepository(EventDB)
     private readonly eventRepository: Repository<EventDB>,
+    @InjectRepository(UserDB)
+    private readonly userRepository: Repository<UserDB>,
   ) {}
 
   /**
@@ -66,5 +68,36 @@ export class MessageService {
       messages: event.messages,
       hostId: event.host.id,
     };
+  }
+
+  /**
+   * Marks all unread messages for a specific user in an event as read.
+   *
+   * @param userId - The ID of the user.
+   * @param eventId - The ID of the event.
+   */
+  async markMessagesAsRead(userId: string, eventId: string): Promise<void> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['unreadMessages', 'unreadMessages.event'],
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const unreadMessagesForEvent = user.unreadMessages.filter(
+      (message) => message.event.id === eventId,
+    );
+
+    if (unreadMessagesForEvent.length === 0) {
+      return;
+    }
+
+    user.unreadMessages = user.unreadMessages.filter(
+      (message) => message.event.id !== eventId,
+    );
+
+    await this.userRepository.save(user);
   }
 }
