@@ -1,5 +1,5 @@
 import { UserService } from './user.service';
-import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   BadRequestException,
   Body,
@@ -9,17 +9,18 @@ import {
   HttpCode,
   HttpStatus,
   NotFoundException,
-  Param,
+  Param, ParseFilePipeBuilder,
   Patch,
   Post,
-  Res,
-  UseGuards,
+  Res, UploadedFile,
+  UseGuards, UseInterceptors,
 } from '@nestjs/common';
 import { CreateUserDTO } from './DTO/CreateUserDTO';
 import { OkDTO } from '../serverDTO/OkDTO';
 import { UtilsService } from '../utils/utils.service';
 import { AuthService } from '../auth/auth.service';
 import { Response } from 'express';
+import { extname } from 'path';
 import { GetUserProfileDTO } from './DTO/GetUserProfileDTO';
 import { GetUserDataDTO } from './DTO/GetUserDataDTO';
 import { AuthGuard } from '../auth/auth.guard';
@@ -30,7 +31,8 @@ import { UpdateProfileDTO } from './DTO/UpdateProfileDTO';
 import { UpdatePasswordDTO } from './DTO/UpdatePasswordDTO';
 import { TagService } from '../tag/tag.service';
 import * as fs from 'node:fs';
-import { CreateProfilePicDTO } from './DTO/CreateProfilePicDTO';
+import { diskStorage } from 'multer';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('user')
 @Controller('user')
@@ -185,36 +187,50 @@ export class UserController {
     return new OkDTO(true, 'password was updated successfully');
   }
 
+
   @ApiResponse({
     type: OkDTO,
-    description: 'Updates or uploads a profile picture',
-    status: HttpStatus.OK,
+    description: 'posts a profile picture for a specific user',
   })
   @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard)
-  @HttpCode(HttpStatus.OK)
-  @Patch('/profilePicture')
+  @Patch('ProfilePicture')
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads/profilePictures',
+        filename: (_req: any, file, callback) => {
+          const randomName = Array(32)
+            .fill(null)
+            .map(() => Math.round(Math.random() * 16).toString(16))
+            .join('');
+          callback(null, `${randomName}${extname(file.originalname)}`);
+        },
+      }),
+    }),
+  )
   async uploadProfilePicture(
-    @Body() body: CreateProfilePicDTO,
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addFileTypeValidator({
+          fileType: /^image/
+        })
+        .addMaxSizeValidator({
+          maxSize: 1000
+        })
+        .build({
+          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY
+        }),
+      ) file: Express.Multer.File,
     @User() user: UserDB,
   ) {
-    const buffer = Buffer.from(body.profilePicture, 'base64');
-    const fileName = `${user.id}-${Date.now()}.png`;
-    const filePath = `./uploads/profilePictures/${fileName}`;
 
-    const currentProfilePic = user.profilePicture;
+      await this.userService.updateProfilePic(user.id, file.filename);
 
-    await fs.promises.writeFile(filePath, buffer);
-
-    await this.userService.updateProfilePic(user.id, fileName);
-
-    if (currentProfilePic && currentProfilePic !== 'empty.png') {
-      const oldFilePath = `./uploads/profilePictures/${currentProfilePic}`;
-      await fs.promises.unlink(oldFilePath);
-    }
-
-    return new OkDTO(true, 'Profile Picture Upload successful');
+      return new OkDTO(true, 'Profile Picture Upload successful');
   }
+
 
   @ApiResponse({
     type: OkDTO,
