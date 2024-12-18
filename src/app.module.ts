@@ -41,6 +41,8 @@ import { MessageService } from './Message/message.service';
 @Module({
   imports: [
     ConfigModule.forRoot({
+      ignoreEnvVars: false,
+      isGlobal: true,
       envFilePath: ['.env.development.local', '.env.development', '.env'],
     }),
     databaseConfig(),
