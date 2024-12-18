@@ -202,9 +202,17 @@ export class UserController {
     const fileName = `${user.id}-${Date.now()}.png`;
     const filePath = `./uploads/profilePictures/${fileName}`;
 
+    const currentProfilePic = user.profilePicture;
+
     await fs.promises.writeFile(filePath, buffer);
 
     await this.userService.updateProfilePic(user.id, fileName);
+
+    if (currentProfilePic && currentProfilePic !== 'empty.png') {
+      const oldFilePath = `./uploads/profilePictures/${currentProfilePic}`;
+        await fs.promises.unlink(oldFilePath);
+    }
+
 
     return new OkDTO(true, 'Profile Picture Upload successful');
   }
@@ -222,10 +230,17 @@ export class UserController {
     @User() user: UserDB,
   ) {
 
+    const currentProfilePic = user.profilePicture;
+
     const fileName = 'empty.png';
 
     await this.userService.updateProfilePic(user.id, fileName);
 
-    return new OkDTO(true, 'Profile Picture Upload successful');
+    if (currentProfilePic && currentProfilePic !== 'empty.png') {
+      const oldFilePath = `./uploads/profilePictures/${currentProfilePic}`;
+      await fs.promises.unlink(oldFilePath);
+    }
+
+    return new OkDTO(true, 'Deleting profile picture was successful');
   }
 }
