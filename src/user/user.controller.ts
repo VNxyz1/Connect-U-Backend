@@ -192,9 +192,9 @@ export class UserController {
   @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
-  @Post('upload-profile-picture')
+  @Patch('/profilePicture')
   async uploadProfilePicture(
-    @Body('profilePicture') body: CreateProfilePicDTO,
+    @Body() body: CreateProfilePicDTO,
     @User() user: UserDB,
   ) {
 
