@@ -219,7 +219,6 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   @Delete('/profilePicture')
   async deleteProfilePicture(
-    @Body() body: CreateProfilePicDTO,
     @User() user: UserDB,
   ) {
 
