@@ -201,7 +201,7 @@ export class UserController {
   })
   @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard)
-  @Patch('ProfilePicture')
+  @Patch('profilePicture')
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
     FileInterceptor('file', {
@@ -215,6 +215,15 @@ export class UserController {
           callback(null, `${randomName}${extname(file.originalname)}`);
         },
       }),
+      limits: {
+        fileSize: 5242880,
+      },
+      fileFilter: (req, file, callback) => {
+        if (!file.mimetype.startsWith('image/')) {
+          return callback(new Error('Invalid file type'), false);
+        }
+        callback(null, true);
+      },
     }),
   )
   async uploadProfilePicture(
@@ -224,7 +233,7 @@ export class UserController {
           fileType: /^image/,
         })
         .addMaxSizeValidator({
-          maxSize: 5000,
+          maxSize: 5242880,
         })
         .build({
           errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
@@ -233,14 +242,10 @@ export class UserController {
     file: Express.Multer.File,
     @User() user: UserDB,
   ) {
-    const currentProfilePic = user.profilePicture;
 
     await this.userService.updateProfilePic(user.id, file.filename);
 
-    if (currentProfilePic && currentProfilePic !== 'empty.png') {
-      const oldFilePath = `./uploads/profilePictures/${currentProfilePic}`;
-      await fs.promises.unlink(oldFilePath);
-    }
+
     return new OkDTO(true, 'Profile Picture Upload successful');
   }
 
