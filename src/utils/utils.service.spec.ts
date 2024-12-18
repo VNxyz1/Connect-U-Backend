@@ -267,5 +267,54 @@ export const mockUtilsService = {
       };
     }),
 
+  transformMessageDBtoChatMessageDTO: jest.fn(
+    (message, currentUserId, hostId) => ({
+      id: message.id,
+      text: message.text,
+      timestamp: message.timestamp,
+      writer: message.writer
+        ? mockUtilsService.transformUserDBtoGetUserProfileDTO(message.writer)
+        : null,
+      reactionsNumber: message.reactions?.length || 0,
+      isHost: message.writer?.id === hostId,
+    }),
+  ),
+
+  transformEventChatToGetEventChatDTO: jest.fn(
+    (messages, currentUserId, hostId) => {
+      const sortedMessages = messages.sort(
+        (a, b) =>
+          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+      );
+
+      const readMessages = [];
+      const unreadMessages = [];
+
+      for (const message of sortedMessages) {
+        const isUnread = message.unreadUsers?.some(
+          (user) => user.id === currentUserId,
+        );
+
+        const transformedMessage =
+          mockUtilsService.transformMessageDBtoChatMessageDTO(
+            message,
+            currentUserId,
+            hostId,
+          );
+
+        if (isUnread) {
+          unreadMessages.push(transformedMessage);
+        } else {
+          readMessages.push(transformedMessage);
+        }
+      }
+
+      return {
+        readMessages,
+        unreadMessages,
+      };
+    },
+  ),
+
   isHostOrParticipant: jest.fn(() => true),
 };

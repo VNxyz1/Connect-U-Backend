@@ -35,10 +35,14 @@ import { SurveyController } from './survey/survey.controller';
 import { TagService } from './tag/tag.service';
 import { SchedulerService } from './scheduler/scheduler.service';
 import { TagController } from './tag/tag.controller';
+import { MessageController } from './Message/message.controller';
+import { MessageService } from './Message/message.service';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
+      ignoreEnvVars: false,
+      isGlobal: true,
       envFilePath: ['.env.development.local', '.env.development', '.env'],
     }),
     databaseConfig(),
@@ -66,6 +70,7 @@ import { TagController } from './tag/tag.controller';
     ListEntryController,
     SurveyController,
     TagController,
+    MessageController,
   ],
   providers: [
     AppService,
@@ -83,6 +88,7 @@ import { TagController } from './tag/tag.controller';
     SurveyService,
     TagService,
     SchedulerService,
+    MessageService,
   ],
 })
 export class AppModule implements NestModule {

@@ -29,6 +29,9 @@ import { GetSurveyDetailsDTO } from '../survey/DTO/GetSurveyDetailsDTO';
 import { SurveyEntryDB } from '../database/SurveyEntryDB';
 import { GetSurveyEntryDTO } from '../survey/DTO/GetSurveyEntryDTO';
 import { StatusEnum } from '../database/enums/StatusEnum';
+import { MessageDB } from '../database/MessageDB';
+import { GetEventChatDTO } from '../Message/DTO/GetEventChatDTO';
+import { GetMessageDTO } from '../Message/DTO/GetMessageDTO';
 
 @Injectable()
 export class UtilsService {
@@ -494,6 +497,106 @@ export class UtilsService {
         const isUser = user.id === currentUserId;
         return this.transformUserDBtoGetUserProfileDTO(user, isUser);
       }),
+    };
+  }
+
+  /**
+   * Transforms a MessageDB entity into a ChatMessageDTO.
+   *
+   * @param message - The message entity to transform.
+   * @param currentUserId - The ID of the current user.
+   * @param eventHostId - ID of the event host.
+   * @returns The transformed ChatMessageDTO.
+   */
+  transformMessageDBtoChatMessageDTO(
+    message: MessageDB,
+    currentUserId: string,
+    eventHostId: string,
+  ): GetMessageDTO {
+    return {
+      id: message.id,
+      text: message.text,
+      timestamp: message.timestamp,
+      isHost: message.writer.id === eventHostId,
+      writer: message.writer
+        ? this.transformUserDBtoGetUserProfileDTO(
+            message.writer,
+            message.writer.id === currentUserId,
+          )
+        : null,
+    };
+  }
+
+  /**
+   * Transforms an EventDB entity into a GetEventChatDTO, grouping messages into read and unread.
+   *
+   * @param messages - messages to be sorted
+   * @param currentUserId - The ID of the current user.
+   * @param hostId - ID of the event host
+   * @returns The transformed GetEventChatDTO.
+   */
+  transformEventChatToGetEventChatDTO(
+    messages: MessageDB[],
+    currentUserId: string,
+    hostId: string,
+  ): GetEventChatDTO {
+    const sortedMessages = messages.sort(
+      (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+    );
+
+    const readMessages = [];
+    const unreadMessages = [];
+
+    for (const message of sortedMessages) {
+      const isUnread = message.unreadUsers.some(
+        (user) => user.id === currentUserId,
+      );
+
+      const transformedMessage = this.transformMessageDBtoChatMessageDTO(
+        message,
+        currentUserId,
+        hostId,
+      );
+
+      if (isUnread) {
+        unreadMessages.push(transformedMessage);
+      } else {
+        readMessages.push(transformedMessage);
+      }
+    }
+
+    const latestReadTimestamp =
+      readMessages.length > 0
+        ? new Date(readMessages[readMessages.length - 1].timestamp).getTime()
+        : null;
+
+    const adjustedUnreadMessages = [];
+    for (const message of unreadMessages) {
+      const messageTimestamp = new Date(message.timestamp).getTime();
+
+      if (
+        latestReadTimestamp !== null &&
+        messageTimestamp <= latestReadTimestamp
+      ) {
+        readMessages.push(message);
+      } else {
+        adjustedUnreadMessages.push(message);
+      }
+    }
+
+    readMessages.sort(
+      (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+    );
+    adjustedUnreadMessages.sort(
+      (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+    );
+
+    return {
+      readMessages,
+      unreadMessages: adjustedUnreadMessages,
     };
   }
 }
