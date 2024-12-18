@@ -1,5 +1,5 @@
 import { UserService } from './user.service';
-import { ApiBearerAuth, ApiConsumes, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   BadRequestException,
   Body,
@@ -11,8 +11,8 @@ import {
   Param,
   Patch,
   Post,
-  Res, UploadedFile,
-  UseGuards, UseInterceptors,
+  Res,
+  UseGuards,
 } from '@nestjs/common';
 import { CreateUserDTO } from './DTO/CreateUserDTO';
 import { OkDTO } from '../serverDTO/OkDTO';
@@ -28,9 +28,7 @@ import { UpdateUserDataDTO } from './DTO/UpdateUserDataDTO';
 import { UpdateProfileDTO } from './DTO/UpdateProfileDTO';
 import { UpdatePasswordDTO } from './DTO/UpdatePasswordDTO';
 import { TagService } from '../tag/tag.service';
-import { extname } from 'path';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
+import * as fs from 'node:fs';
 
 @ApiTags('user')
 @Controller('user')
@@ -185,34 +183,23 @@ export class UserController {
     return new OkDTO(true, 'password was updated successfully');
   }
 
-  @ApiResponse({
-    type: OkDTO,
-    description: 'posts a profile picture for a specific user',
-  })
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard)
   @Post('upload-profile-picture')
-  @ApiConsumes('multipart/form-data')
-  @UseInterceptors(
-    FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './uploads/profilePictures',
-        filename: (_req: any, file, callback) => {
-          const randomName = Array(32)
-            .fill(null)
-            .map(() => Math.round(Math.random() * 16).toString(16))
-            .join('');
-          callback(null, `${randomName}${extname(file.originalname)}`);
-        },
-      }),
-    }),
-  )
   async uploadProfilePicture(
-    @UploadedFile() file: Express.Multer.File,
+    @Body('profilePicture') profilePicture: string,
     @User() user: UserDB,
   ) {
-    const profilePic = file.filename;
-      await this.userService.updateProfilePic(user.id, profilePic);
-      return new OkDTO(true, 'Profile Picture Upload successful');
+    if (!profilePicture) {
+      throw new BadRequestException('Profile picture is required');
+    }
+
+    const buffer = Buffer.from(profilePicture, 'base64');
+    const fileName = `${user.id}-${Date.now()}.png`;
+    const filePath = `./uploads/profilePictures/${fileName}`;
+
+    await fs.promises.writeFile(filePath, buffer);
+
+    await this.userService.updateProfilePic(user.id, fileName);
+
+    return new OkDTO(true, 'Profile Picture Upload successful');
   }
 }
