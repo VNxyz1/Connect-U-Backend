@@ -184,6 +184,14 @@ export class UserController {
     return new OkDTO(true, 'password was updated successfully');
   }
 
+  @ApiResponse({
+    type: OkDTO,
+    description: 'Updates or uploads a profile picture',
+    status: HttpStatus.OK,
+  })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.OK)
   @Post('upload-profile-picture')
   async uploadProfilePicture(
     @Body('profilePicture') body: CreateProfilePicDTO,
