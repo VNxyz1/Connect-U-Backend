@@ -29,6 +29,7 @@ import { UpdateProfileDTO } from './DTO/UpdateProfileDTO';
 import { UpdatePasswordDTO } from './DTO/UpdatePasswordDTO';
 import { TagService } from '../tag/tag.service';
 import * as fs from 'node:fs';
+import { CreateProfilePicDTO } from './DTO/CreateProfilePicDTO';
 
 @ApiTags('user')
 @Controller('user')
@@ -185,14 +186,11 @@ export class UserController {
 
   @Post('upload-profile-picture')
   async uploadProfilePicture(
-    @Body('profilePicture') profilePicture: string,
+    @Body('profilePicture') body: CreateProfilePicDTO,
     @User() user: UserDB,
   ) {
-    if (!profilePicture) {
-      throw new BadRequestException('Profile picture is required');
-    }
 
-    const buffer = Buffer.from(profilePicture, 'base64');
+    const buffer = Buffer.from(body.profilePicture, 'base64');
     const fileName = `${user.id}-${Date.now()}.png`;
     const filePath = `./uploads/profilePictures/${fileName}`;
 
