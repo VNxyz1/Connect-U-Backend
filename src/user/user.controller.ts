@@ -1,5 +1,10 @@
 import { UserService } from './user.service';
-import { ApiBearerAuth, ApiConsumes, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import {
   BadRequestException,
   Body,
@@ -9,11 +14,14 @@ import {
   HttpCode,
   HttpStatus,
   NotFoundException,
-  Param, ParseFilePipeBuilder,
+  Param,
+  ParseFilePipeBuilder,
   Patch,
   Post,
-  Res, UploadedFile,
-  UseGuards, UseInterceptors,
+  Res,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { CreateUserDTO } from './DTO/CreateUserDTO';
 import { OkDTO } from '../serverDTO/OkDTO';
@@ -187,7 +195,6 @@ export class UserController {
     return new OkDTO(true, 'password was updated successfully');
   }
 
-
   @ApiResponse({
     type: OkDTO,
     description: 'posts a profile picture for a specific user',
@@ -214,23 +221,28 @@ export class UserController {
     @UploadedFile(
       new ParseFilePipeBuilder()
         .addFileTypeValidator({
-          fileType: /^image/
+          fileType: /^image/,
         })
         .addMaxSizeValidator({
-          maxSize: 1000
+          maxSize: 5000,
         })
         .build({
-          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY
+          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
         }),
-      ) file: Express.Multer.File,
+    )
+    file: Express.Multer.File,
     @User() user: UserDB,
   ) {
+    const currentProfilePic = user.profilePicture;
 
-      await this.userService.updateProfilePic(user.id, file.filename);
+    await this.userService.updateProfilePic(user.id, file.filename);
 
-      return new OkDTO(true, 'Profile Picture Upload successful');
+    if (currentProfilePic && currentProfilePic !== 'empty.png') {
+      const oldFilePath = `./uploads/profilePictures/${currentProfilePic}`;
+      await fs.promises.unlink(oldFilePath);
+    }
+    return new OkDTO(true, 'Profile Picture Upload successful');
   }
-
 
   @ApiResponse({
     type: OkDTO,
