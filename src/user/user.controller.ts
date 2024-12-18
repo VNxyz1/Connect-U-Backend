@@ -3,7 +3,8 @@ import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   BadRequestException,
   Body,
-  Controller, Delete,
+  Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -197,7 +198,6 @@ export class UserController {
     @Body() body: CreateProfilePicDTO,
     @User() user: UserDB,
   ) {
-
     const buffer = Buffer.from(body.profilePicture, 'base64');
     const fileName = `${user.id}-${Date.now()}.png`;
     const filePath = `./uploads/profilePictures/${fileName}`;
@@ -210,9 +210,8 @@ export class UserController {
 
     if (currentProfilePic && currentProfilePic !== 'empty.png') {
       const oldFilePath = `./uploads/profilePictures/${currentProfilePic}`;
-        await fs.promises.unlink(oldFilePath);
+      await fs.promises.unlink(oldFilePath);
     }
-
 
     return new OkDTO(true, 'Profile Picture Upload successful');
   }
@@ -226,10 +225,7 @@ export class UserController {
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
   @Delete('/profilePicture')
-  async deleteProfilePicture(
-    @User() user: UserDB,
-  ) {
-
+  async deleteProfilePicture(@User() user: UserDB) {
     const currentProfilePic = user.profilePicture;
 
     const fileName = 'empty.png';
