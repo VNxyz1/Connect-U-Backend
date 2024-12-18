@@ -3,7 +3,7 @@ import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   BadRequestException,
   Body,
-  Controller,
+  Controller, Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -203,6 +203,27 @@ export class UserController {
     const filePath = `./uploads/profilePictures/${fileName}`;
 
     await fs.promises.writeFile(filePath, buffer);
+
+    await this.userService.updateProfilePic(user.id, fileName);
+
+    return new OkDTO(true, 'Profile Picture Upload successful');
+  }
+
+  @ApiResponse({
+    type: OkDTO,
+    description: 'Deletes a users profile picture',
+    status: HttpStatus.OK,
+  })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @Delete('/profilePicture')
+  async deleteProfilePicture(
+    @Body() body: CreateProfilePicDTO,
+    @User() user: UserDB,
+  ) {
+
+    const fileName = 'empty.png';
 
     await this.userService.updateProfilePic(user.id, fileName);
 
