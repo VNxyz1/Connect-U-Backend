@@ -39,6 +39,8 @@ import { TagController } from './tag/tag.controller';
 @Module({
   imports: [
     ConfigModule.forRoot({
+      ignoreEnvVars: false,
+      isGlobal: true,
       envFilePath: ['.env.development.local', '.env.development', '.env'],
     }),
     databaseConfig(),
