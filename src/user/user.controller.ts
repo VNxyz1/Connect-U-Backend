@@ -242,9 +242,7 @@ export class UserController {
     file: Express.Multer.File,
     @User() user: UserDB,
   ) {
-
     await this.userService.updateProfilePic(user.id, file.filename);
-
 
     return new OkDTO(true, 'Profile Picture Upload successful');
   }
