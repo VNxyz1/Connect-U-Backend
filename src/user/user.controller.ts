@@ -242,7 +242,14 @@ export class UserController {
     file: Express.Multer.File,
     @User() user: UserDB,
   ) {
+    const currentProfilePic = user.profilePicture;
+
     await this.userService.updateProfilePic(user.id, file.filename);
+
+    if (currentProfilePic && currentProfilePic !== 'empty.png') {
+      const oldFilePath = `./uploads/profilePictures/${currentProfilePic}`;
+      await fs.promises.unlink(oldFilePath);
+    }
 
     return new OkDTO(true, 'Profile Picture Upload successful');
   }
