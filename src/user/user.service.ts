@@ -197,4 +197,19 @@ export class UserService {
 
     return await this.userRepository.save(user);
   }
+
+  /**
+   * Updates a user's password.
+   *
+   * @param {string} id - The unique ID of the user to update.
+   * @param profilePic - new profile picture path
+   * @returns {Promise<UserDB>} - The updated user.
+   */
+  async updateProfilePic(id: string, profilePic: string): Promise<UserDB> {
+    const user = await this.findById(id);
+
+    user.profilePicture = profilePic;
+
+    return await this.userRepository.save(user);
+  }
 }
