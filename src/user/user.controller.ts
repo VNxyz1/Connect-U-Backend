@@ -1,7 +1,7 @@
 import { UserService } from './user.service';
 import {
   ApiBearerAuth,
-  ApiConsumes,
+  ApiConsumes, ApiParam,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -28,7 +28,7 @@ import { OkDTO } from '../serverDTO/OkDTO';
 import { UtilsService } from '../utils/utils.service';
 import { AuthService } from '../auth/auth.service';
 import { Response } from 'express';
-import { extname } from 'path';
+import { extname, join } from 'path';
 import { GetUserProfileDTO } from './DTO/GetUserProfileDTO';
 import { GetUserDataDTO } from './DTO/GetUserDataDTO';
 import { AuthGuard } from '../auth/auth.guard';
@@ -51,7 +51,8 @@ export class UserController {
     public readonly authService: AuthService,
     public readonly utilsService: UtilsService,
     public readonly tagService: TagService,
-  ) {}
+  ) {
+  }
 
   @ApiResponse({
     type: OkDTO,
@@ -253,6 +254,45 @@ export class UserController {
 
     return new OkDTO(true, 'Profile Picture Upload successful');
   }
+
+
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully fetched the profile picture',
+    content: {
+      'image/png': {
+        example: 'Profile picture image file',
+      },
+      'image/jpeg': {
+        example: 'Profile picture image file',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Profile picture not found',
+  })
+  @ApiParam({
+    name: 'image',
+    description: 'The filename of the profile picture to fetch',
+    example: 'profile123.png',
+  })
+  @Get('profilePicture/:image')
+  async getImage(@Param('image') image: string, @Res() res: Response) {
+    const imgPath: string = join(
+      process.cwd(),
+      'uploads',
+      'profilePictures',
+      image,
+    );
+    if (!fs.existsSync(imgPath)) {
+      return res.status(404).json({
+        message: 'Profile picture not found',
+      });
+    }
+    res.sendFile(imgPath);
+  }
+
 
   @ApiResponse({
     type: OkDTO,
