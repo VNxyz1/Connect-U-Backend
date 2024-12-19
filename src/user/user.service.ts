@@ -199,7 +199,7 @@ export class UserService {
   }
 
   /**
-   * Updates a user's password.
+   * Updates a user's profile picture.
    *
    * @param {string} id - The unique ID of the user to update.
    * @param profilePic - new profile picture path

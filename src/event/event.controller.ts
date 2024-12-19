@@ -1,14 +1,26 @@
-import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
   Param,
+  ParseFilePipeBuilder,
+  Patch,
   Post,
+  Res,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { OkDTO } from '../serverDTO/OkDTO';
 import { UtilsService } from '../utils/utils.service';
@@ -25,6 +37,11 @@ import { EventtypeEnum } from '../database/enums/EventtypeEnum';
 import { CreateEventResDTO } from './DTO/CreateEventResDTO';
 import { GetEventDetailsDTO } from './DTO/GetEventDetailsDTO';
 import { TagService } from '../tag/tag.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname, join } from 'path';
+import fs from 'node:fs';
+import { Response } from 'express';
 
 @ApiTags('event')
 @Controller('event')
@@ -216,5 +233,142 @@ export class EventController {
   ): Promise<OkDTO> {
     await this.eventService.removeUserFromEvent(user, eventId);
     return new OkDTO(true, 'User was removed from participant list');
+  }
+
+  @ApiResponse({
+    type: OkDTO,
+    description: 'Uploads a picture for a specific event',
+  })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard)
+  @Patch('eventPicture/:eventId')
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads/eventPictures',
+        filename: (_req: any, file, callback) => {
+          const randomName = Array(32)
+            .fill(null)
+            .map(() => Math.round(Math.random() * 16).toString(16))
+            .join('');
+          callback(null, `${randomName}${extname(file.originalname)}`);
+        },
+      }),
+      limits: {
+        fileSize: 5242880,
+      },
+      fileFilter: (req, file, callback) => {
+        if (!file.mimetype.startsWith('image/')) {
+          return callback(new Error('Invalid file type'), false);
+        }
+        callback(null, true);
+      },
+    }),
+  )
+  async uploadEventPicture(
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addFileTypeValidator({
+          fileType: /^image/,
+        })
+        .addMaxSizeValidator({
+          maxSize: 5242880,
+        })
+        .build({
+          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+        }),
+    )
+    file: Express.Multer.File,
+    @Param('eventId') eventId: string,
+    @User() user: UserDB,
+  ) {
+    const event = await this.eventService.getEventById(eventId);
+
+    if (event.host.id !== user.id) {
+      throw new BadRequestException('You are not the host of this event.');
+    }
+
+    const currentEventPic = event.picture;
+
+    await this.eventService.updatePicture(event.id, file.filename);
+
+    if (currentEventPic && currentEventPic !== 'empty.png') {
+      const oldFilePath = `./uploads/eventPictures/${currentEventPic}`;
+      await fs.promises.unlink(oldFilePath);
+    }
+
+    return new OkDTO(true, 'Event picture upload successful');
+  }
+
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully fetched the event picture',
+    content: {
+      'image/png': {
+        example: 'Event picture image file',
+      },
+      'image/jpeg': {
+        example: 'Event picture image file',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Event picture not found',
+  })
+  @ApiParam({
+    name: 'image',
+    description: 'The filename of the event picture to fetch',
+    example: 'eventPicture123.png',
+  })
+  @Get('eventPicture/:image')
+  async getEventPicture(@Param('image') image: string, @Res() res: Response) {
+    const imgPath: string = join(
+      process.cwd(),
+      'uploads',
+      'eventPictures',
+      image,
+    );
+
+    if (!fs.existsSync(imgPath)) {
+      return res.status(404).json({
+        message: 'Event picture not found',
+      });
+    }
+
+    res.sendFile(imgPath);
+  }
+
+  @ApiResponse({
+    type: OkDTO,
+    description: 'Deletes an event picture',
+    status: HttpStatus.OK,
+  })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @Delete('/eventPicture/:eventId')
+  async deleteEventPicture(
+    @Param('eventId') eventId: string,
+    @User() user: UserDB,
+  ) {
+    const event = await this.eventService.getEventById(eventId);
+
+    if (event.host.id !== user.id) {
+      throw new BadRequestException('You are not the host of this event.');
+    }
+
+    const currentEventPic = event.picture;
+
+    const defaultFileName = 'empty.png';
+    await this.eventService.updatePicture(event.id, defaultFileName);
+
+    if (currentEventPic && currentEventPic !== 'empty.png') {
+      const oldFilePath = `./uploads/eventPictures/${currentEventPic}`;
+      await fs.promises.unlink(oldFilePath);
+    }
+
+    return new OkDTO(true, 'Event picture deletion successful');
   }
 }
