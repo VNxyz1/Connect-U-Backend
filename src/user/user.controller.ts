@@ -1,7 +1,8 @@
 import { UserService } from './user.service';
 import {
   ApiBearerAuth,
-  ApiConsumes, ApiParam,
+  ApiConsumes,
+  ApiParam,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -51,8 +52,7 @@ export class UserController {
     public readonly authService: AuthService,
     public readonly utilsService: UtilsService,
     public readonly tagService: TagService,
-  ) {
-  }
+  ) {}
 
   @ApiResponse({
     type: OkDTO,
@@ -255,7 +255,6 @@ export class UserController {
     return new OkDTO(true, 'Profile Picture Upload successful');
   }
 
-
   @ApiResponse({
     status: 200,
     description: 'Successfully fetched the profile picture',
@@ -292,7 +291,6 @@ export class UserController {
     }
     res.sendFile(imgPath);
   }
-
 
   @ApiResponse({
     type: OkDTO,
