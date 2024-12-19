@@ -9,7 +9,6 @@ import {
   BadRequestException,
   Body,
   Controller,
-  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -338,37 +337,5 @@ export class EventController {
     }
 
     res.sendFile(imgPath);
-  }
-
-  @ApiResponse({
-    type: OkDTO,
-    description: 'Deletes an event picture',
-    status: HttpStatus.OK,
-  })
-  @ApiBearerAuth('access-token')
-  @UseGuards(AuthGuard)
-  @HttpCode(HttpStatus.OK)
-  @Delete('/eventPicture/:eventId')
-  async deleteEventPicture(
-    @Param('eventId') eventId: string,
-    @User() user: UserDB,
-  ) {
-    const event = await this.eventService.getEventById(eventId);
-
-    if (event.host.id !== user.id) {
-      throw new BadRequestException('You are not the host of this event.');
-    }
-
-    const currentEventPic = event.picture;
-
-    const defaultFileName = 'empty.png';
-    await this.eventService.updatePicture(event.id, defaultFileName);
-
-    if (currentEventPic && currentEventPic !== 'empty.png') {
-      const oldFilePath = `./uploads/eventPictures/${currentEventPic}`;
-      await fs.promises.unlink(oldFilePath);
-    }
-
-    return new OkDTO(true, 'Event picture deletion successful');
   }
 }
