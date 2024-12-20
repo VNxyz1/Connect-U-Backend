@@ -21,7 +21,7 @@ export class MessageService {
    *
    * @param user - The user posting the message (nullable for system messages).
    * @param eventId - The ID of the event to which the message belongs.
-   * @param text - The content of the message.
+   * @param content
    * @returns {Promise<MessageDB>} - The newly created message.
    *
    * @throws {NotFoundException} If the event does not exist.
@@ -48,7 +48,6 @@ export class MessageService {
     const newMessage: MessageDB = this.messageRepository.create();
     newMessage.event = event;
 
-    // If content is an object (system message), store it as JSON
     if (typeof content === 'object') {
       newMessage.text = JSON.stringify(content);
     } else {
