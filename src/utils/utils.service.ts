@@ -517,13 +517,13 @@ export class UtilsService {
       id: message.id,
       text: message.text,
       timestamp: message.timestamp,
-      isHost: message.writer.id === eventHostId,
+      isHost: message.writer ? message.writer.id === eventHostId : false, // Safely check writer
       writer: message.writer
         ? this.transformUserDBtoGetUserProfileDTO(
-            message.writer,
-            message.writer.id === currentUserId,
-          )
-        : null,
+          message.writer,
+          message.writer.id === currentUserId,
+        )
+        : null, // Handle null writer case
     };
   }
 

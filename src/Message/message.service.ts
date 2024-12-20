@@ -29,7 +29,7 @@ export class MessageService {
   async createMessage(
     user: UserDB | null,
     eventId: string,
-    text: string,
+    content: string | { key: string; params: Record<string, string> },
   ): Promise<MessageDB> {
     const event = await this.eventRepository.findOne({
       where: { id: eventId },
@@ -47,7 +47,14 @@ export class MessageService {
 
     const newMessage: MessageDB = this.messageRepository.create();
     newMessage.event = event;
-    newMessage.text = text;
+
+    // If content is an object (system message), store it as JSON
+    if (typeof content === 'object') {
+      newMessage.text = JSON.stringify(content);
+    } else {
+      newMessage.text = content;
+    }
+
     newMessage.writer = user;
     newMessage.unreadUsers = unreadUsers;
 
