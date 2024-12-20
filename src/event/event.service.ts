@@ -11,6 +11,8 @@ import { ListEntryDB } from '../database/ListEntryDB';
 import { SurveyEntryDB } from '../database/SurveyEntryDB';
 import { TagDB } from '../database/TagDB';
 import { SchedulerService } from '../scheduler/scheduler.service';
+import { FilterDTO } from './DTO/FilterDTO';
+import { EventtypeEnum } from '../database/enums/EventtypeEnum';
 
 export class EventService {
   constructor(
@@ -91,18 +93,65 @@ export class EventService {
   }
 
   /**
-   * Gets all events from the database.
+   * Gets all events from the database with optional filters.
    *
-   * @returns {Promise<EventDB[]>} - The events.
+   * @param {FilterDTO} filters - The filters to apply.
+   * @returns {Promise<EventDB[]>} - The filtered events.
    * @throws {NotFoundException} - If there are no events found.
    */
-  async getAllEvents(): Promise<EventDB[]> {
-    const events = await this.eventRepository.find({
-      relations: ['categories', 'participants', 'tags'],
-      order: {
-        timestamp: 'DESC',
-      },
-    });
+  async getAllEvents(filters: FilterDTO): Promise<EventDB[]> {
+    const {
+      title,
+      minAge,
+      maxAge,
+      genders,
+      isPublic,
+      isHalfPublic,
+      isOnline,
+      isInPlace,
+    } = filters;
+
+    const queryBuilder = this.eventRepository.createQueryBuilder('event');
+
+    queryBuilder.leftJoinAndSelect('event.categories', 'categories');
+    queryBuilder.leftJoinAndSelect('event.participants', 'participants');
+    queryBuilder.leftJoinAndSelect('event.tags', 'tags');
+
+    if (title) {
+      queryBuilder.andWhere('event.title LIKE :title', { title: `%${title}%` });
+    }
+
+    if (minAge) {
+      queryBuilder.andWhere('event.startAge >= :minAge', { minAge });
+    }
+
+    if (maxAge) {
+      queryBuilder.andWhere('event.endAge <= :maxAge', { maxAge });
+    }
+
+    if (genders && genders.length > 0) {
+      queryBuilder.andWhere('gender.name IN (:...genders)', { genders });
+    }
+
+    if (isPublic == false) {
+      queryBuilder.andWhere('event.type != :eventType', { eventType: EventtypeEnum.public });
+    }
+
+    if (isHalfPublic == false) {
+      queryBuilder.andWhere('event.type != :eventType', { eventType: EventtypeEnum.halfPrivate });
+    }
+
+    if (isOnline === false) {
+      queryBuilder.andWhere('event.isOnline = :isOnline', { isOnline: false });
+    }
+
+    if (isInPlace === false) {
+      queryBuilder.andWhere('event.isOnline = :isOnline', { isOnline: true });
+    }
+
+    queryBuilder.orderBy('event.timestamp', 'DESC');
+
+    const events = await queryBuilder.getMany();
 
     if (!events || events.length === 0) {
       throw new NotFoundException('Events not found');

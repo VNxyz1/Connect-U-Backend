@@ -7,7 +7,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
-  Post,
+  Post, Query,
   UseGuards,
 } from '@nestjs/common';
 import { OkDTO } from '../serverDTO/OkDTO';
@@ -25,6 +25,7 @@ import { EventtypeEnum } from '../database/enums/EventtypeEnum';
 import { CreateEventResDTO } from './DTO/CreateEventResDTO';
 import { GetEventDetailsDTO } from './DTO/GetEventDetailsDTO';
 import { TagService } from '../tag/tag.service';
+import { FilterDTO } from './DTO/FilterDTO';
 
 @ApiTags('event')
 @Controller('event')
@@ -117,8 +118,10 @@ export class EventController {
     description: 'gets all events',
   })
   @Get('/allEvents')
-  async getAllEvents(): Promise<GetEventCardDTO[]> {
-    const events = await this.eventService.getAllEvents();
+  async getAllEvents(
+    @Query() query: FilterDTO,
+  ): Promise<GetEventCardDTO[]> {
+    const events = await this.eventService.getAllEvents(query);
     return await Promise.all(
       events.map(async (event) => {
         return this.utilsService.transformEventDBtoGetEventCardDTO(event);

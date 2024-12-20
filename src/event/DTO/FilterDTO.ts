@@ -4,11 +4,13 @@ import {
   IsString,
   IsNumber,
   Min,
-  Max
+  Max,
 } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
-export class FilterEventDTO {
+
+
+export class FilterDTO {
   @ApiPropertyOptional({
     description: 'Search for events by title',
     example: 'Music Festival',
@@ -36,7 +38,7 @@ export class FilterEventDTO {
   maxAge?: number;
 
   @ApiPropertyOptional({
-    description: 'Allowed genders for the event (e.g., male, female, diverse',
+    description: 'Allowed genders for the event (e.g., male, female, diverse)',
     example: ['male', 'female'],
   })
   @IsOptional()
