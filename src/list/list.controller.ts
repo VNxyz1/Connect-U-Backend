@@ -22,6 +22,7 @@ import { UtilsService } from '../utils/utils.service';
 import { GetListDetailsDTO } from './DTO/GetListDetailsDTO';
 import { GetListDTO } from './DTO/GetListDTO';
 import { SocketGateway } from '../socket/socket.gateway';
+import { MessageService } from '../Message/message.service';
 
 @ApiTags('list')
 @Controller('list')
@@ -30,6 +31,7 @@ export class ListController {
     private readonly listService: ListService,
     private readonly utilsService: UtilsService,
     private readonly socketService: SocketGateway,
+    private readonly messageService: MessageService,
   ) {}
 
   @ApiResponse({
@@ -56,6 +58,15 @@ export class ListController {
     );
 
     this.socketService.emitNewList(eventId);
+
+    const systemMessageText = {
+      key: 'eventChatPage.server-messages.new-list',
+      params: { title: body.title },
+    };
+
+    // Pass the translation key and parameters to the message creation function
+    await this.messageService.createMessage(null, eventId, systemMessageText);
+    this.socketService.emitUpdateChat(eventId);
 
     return new CreateListResDTO(
       true,

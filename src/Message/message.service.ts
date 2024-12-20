@@ -21,7 +21,7 @@ export class MessageService {
    *
    * @param user - The user posting the message (nullable for system messages).
    * @param eventId - The ID of the event to which the message belongs.
-   * @param text - The content of the message.
+   * @param content
    * @returns {Promise<MessageDB>} - The newly created message.
    *
    * @throws {NotFoundException} If the event does not exist.
@@ -29,7 +29,7 @@ export class MessageService {
   async createMessage(
     user: UserDB | null,
     eventId: string,
-    text: string,
+    content: string | { key: string; params: Record<string, string> },
   ): Promise<MessageDB> {
     const event = await this.eventRepository.findOne({
       where: { id: eventId },
@@ -47,7 +47,13 @@ export class MessageService {
 
     const newMessage: MessageDB = this.messageRepository.create();
     newMessage.event = event;
-    newMessage.text = text;
+
+    if (typeof content === 'object') {
+      newMessage.text = JSON.stringify(content);
+    } else {
+      newMessage.text = content;
+    }
+
     newMessage.writer = user;
     newMessage.unreadUsers = unreadUsers;
 
