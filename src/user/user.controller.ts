@@ -19,6 +19,7 @@ import {
   ParseFilePipeBuilder,
   Patch,
   Post,
+  Req,
   Res,
   UploadedFile,
   UseGuards,
@@ -28,7 +29,7 @@ import { CreateUserDTO } from './DTO/CreateUserDTO';
 import { OkDTO } from '../serverDTO/OkDTO';
 import { UtilsService } from '../utils/utils.service';
 import { AuthService } from '../auth/auth.service';
-import { Response } from 'express';
+import { Response, Request } from 'express';
 import { extname, join } from 'path';
 import { GetUserProfileDTO } from './DTO/GetUserProfileDTO';
 import { GetUserDataDTO } from './DTO/GetUserDataDTO';
@@ -42,6 +43,8 @@ import { TagService } from '../tag/tag.service';
 import * as fs from 'node:fs';
 import { diskStorage } from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { GetInviteLinkDTO } from './DTO/GetInviteLinkDTO';
+import { FriendService } from '../friend/friend.service';
 
 @ApiTags('user')
 @Controller('user')
@@ -52,6 +55,7 @@ export class UserController {
     public readonly authService: AuthService,
     public readonly utilsService: UtilsService,
     public readonly tagService: TagService,
+    public readonly friendService: FriendService,
   ) {}
 
   @ApiResponse({
@@ -314,5 +318,36 @@ export class UserController {
     }
 
     return new OkDTO(true, 'Deleting profile picture was successful');
+  }
+
+  @ApiResponse({
+    type: GetInviteLinkDTO,
+    description:
+      'returns an invite link, that can be used to add the user to some other users friends list. the link is valid for 5 minutes.',
+    status: HttpStatus.OK,
+  })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @Get('inviteLink')
+  async getInviteLink(@Req() req: Request, @User() user: UserDB) {
+    const uuid = crypto.randomUUID();
+    const host: string = process.env.FRONTEND_URL || req.get('host');
+    const link = this.friendService.createInviteLink(
+      req.protocol,
+      host,
+      user.username,
+      uuid,
+    );
+
+    const ttl = 5 * 60 * 1000;
+
+    this.friendService.setInviteLink(user.username, link, ttl);
+
+    const res = new GetInviteLinkDTO();
+    res.inviteLink = link;
+    res.ttl = ttl;
+
+    return res;
   }
 }
