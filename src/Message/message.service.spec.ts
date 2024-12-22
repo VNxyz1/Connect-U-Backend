@@ -172,3 +172,9 @@ describe('MessageService', () => {
     });
   });
 });
+
+export const mockMessageService = {
+  createMessage: jest.fn(),
+  getEventChat: jest.fn(),
+  markMessagesAsRead: jest.fn(),
+};

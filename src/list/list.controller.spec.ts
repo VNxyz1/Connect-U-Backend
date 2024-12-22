@@ -23,6 +23,8 @@ import { mockListService } from './list.service.spec';
 import { mockUtilsService } from '../utils/utils.service.spec';
 import { mockUserList, mockUserService } from '../user/user.service.spec';
 import { SocketGateway } from '../socket/socket.gateway';
+import { MessageService } from '../Message/message.service';
+import { mockMessageService } from '../Message/message.service.spec';
 
 describe('ListController', () => {
   let app: INestApplication;
@@ -61,6 +63,10 @@ describe('ListController', () => {
         {
           provide: UtilsService,
           useValue: mockUtilsService,
+        },
+        {
+          provide: MessageService,
+          useValue: mockMessageService,
         },
       ],
     }).compile();

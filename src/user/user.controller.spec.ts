@@ -7,7 +7,7 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { mockUserService } from './user.service.spec';
+import { mockUserList, mockUserService } from './user.service.spec';
 import { CreateUserDTO } from './DTO/CreateUserDTO';
 import { GenderEnum } from '../database/enums/GenderEnum';
 import { UserController } from './user.controller';
@@ -22,6 +22,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { EventDB } from '../database/EventDB';
 import { mockEventRepository } from '../event/event.service.spec';
 import { mockProviders } from '../../test/mock-services';
+import { FriendService } from '../friend/friend.service';
 
 describe('UserController', () => {
   let app: INestApplication;
@@ -32,6 +33,7 @@ describe('UserController', () => {
       imports: [],
       providers: [
         ...mockProviders,
+        FriendService,
         UserService,
         UtilsService,
         {
@@ -253,6 +255,19 @@ describe('UserController', () => {
       message: 'Old password does not match',
       error: 'Not Found',
     });
+  });
+
+  it('/GET inviteLink - should return a valid inviteLink', async () => {
+    return request(app.getHttpServer())
+      .get('/user/inviteLink')
+      .set('Authorization', 'Bearer valid-token')
+      .expect('Content-Type', /json/)
+      .expect(HttpStatus.OK)
+      .then((response) => {
+        expect(response.body.ttl).toEqual(300000);
+        expect(response.body.inviteLink).toContain('add-friend');
+        expect(response.body.inviteLink).toContain(mockUserList[2].username);
+      });
   });
 
   afterAll(async () => {

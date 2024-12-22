@@ -17,6 +17,7 @@ import { UtilsService } from '../utils/utils.service';
 import { OkDTO } from '../serverDTO/OkDTO';
 import { GetEventChatDTO } from './DTO/GetEventChatDTO';
 import { CreateMessageDTO } from './DTO/CreateMessageDTO';
+import { SocketGateway } from '../socket/socket.gateway';
 
 @ApiTags('message')
 @Controller('message')
@@ -24,6 +25,7 @@ export class MessageController {
   constructor(
     private readonly messageService: MessageService,
     private readonly utilsService: UtilsService,
+    private readonly socketService: SocketGateway,
   ) {}
 
   @ApiResponse({
@@ -43,6 +45,7 @@ export class MessageController {
     await this.utilsService.isHostOrParticipant(user, eventId);
 
     await this.messageService.createMessage(user, eventId, body.content);
+    this.socketService.emitUpdateChat(eventId);
 
     return new OkDTO(true, 'Message was posted successfully');
   }

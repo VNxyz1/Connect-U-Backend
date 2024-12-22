@@ -1,24 +1,36 @@
 import { UserService } from './user.service';
-import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
   NotFoundException,
   Param,
+  ParseFilePipeBuilder,
   Patch,
   Post,
+  Req,
   Res,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { CreateUserDTO } from './DTO/CreateUserDTO';
 import { OkDTO } from '../serverDTO/OkDTO';
 import { UtilsService } from '../utils/utils.service';
 import { AuthService } from '../auth/auth.service';
-import { Response } from 'express';
+import { Response, Request } from 'express';
+import { extname, join } from 'path';
 import { GetUserProfileDTO } from './DTO/GetUserProfileDTO';
 import { GetUserDataDTO } from './DTO/GetUserDataDTO';
 import { AuthGuard } from '../auth/auth.guard';
@@ -28,6 +40,11 @@ import { UpdateUserDataDTO } from './DTO/UpdateUserDataDTO';
 import { UpdateProfileDTO } from './DTO/UpdateProfileDTO';
 import { UpdatePasswordDTO } from './DTO/UpdatePasswordDTO';
 import { TagService } from '../tag/tag.service';
+import * as fs from 'node:fs';
+import { diskStorage } from 'multer';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { GetInviteLinkDTO } from './DTO/GetInviteLinkDTO';
+import { FriendService } from '../friend/friend.service';
 
 @ApiTags('user')
 @Controller('user')
@@ -38,6 +55,7 @@ export class UserController {
     public readonly authService: AuthService,
     public readonly utilsService: UtilsService,
     public readonly tagService: TagService,
+    public readonly friendService: FriendService,
   ) {}
 
   @ApiResponse({
@@ -180,5 +198,156 @@ export class UserController {
 
     await this.userService.updatePassword(user.id, body.newPassword);
     return new OkDTO(true, 'password was updated successfully');
+  }
+
+  @ApiResponse({
+    type: OkDTO,
+    description: 'posts a profile picture for a specific user',
+  })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard)
+  @Patch('profilePicture')
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads/profilePictures',
+        filename: (_req: any, file, callback) => {
+          const randomName = Array(32)
+            .fill(null)
+            .map(() => Math.round(Math.random() * 16).toString(16))
+            .join('');
+          callback(null, `${randomName}${extname(file.originalname)}`);
+        },
+      }),
+      limits: {
+        fileSize: 5242880,
+      },
+      fileFilter: (req, file, callback) => {
+        if (!file.mimetype.startsWith('image/')) {
+          return callback(new Error('Invalid file type'), false);
+        }
+        callback(null, true);
+      },
+    }),
+  )
+  async uploadProfilePicture(
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addFileTypeValidator({
+          fileType: /^image/,
+        })
+        .addMaxSizeValidator({
+          maxSize: 5242880,
+        })
+        .build({
+          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+        }),
+    )
+    file: Express.Multer.File,
+    @User() user: UserDB,
+  ) {
+    const currentProfilePic = user.profilePicture;
+
+    await this.userService.updateProfilePic(user.id, file.filename);
+
+    if (currentProfilePic && currentProfilePic !== 'empty.png') {
+      const oldFilePath = `./uploads/profilePictures/${currentProfilePic}`;
+      await fs.promises.unlink(oldFilePath);
+    }
+
+    return new OkDTO(true, 'Profile Picture Upload successful');
+  }
+
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully fetched the profile picture',
+    content: {
+      'image/png': {
+        example: 'Profile picture image file',
+      },
+      'image/jpeg': {
+        example: 'Profile picture image file',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Profile picture not found',
+  })
+  @ApiParam({
+    name: 'image',
+    description: 'The filename of the profile picture to fetch',
+    example: 'profile123.png',
+  })
+  @Get('profilePicture/:image')
+  async getImage(@Param('image') image: string, @Res() res: Response) {
+    const imgPath: string = join(
+      process.cwd(),
+      'uploads',
+      'profilePictures',
+      image,
+    );
+    if (!fs.existsSync(imgPath)) {
+      return res.status(404).json({
+        message: 'Profile picture not found',
+      });
+    }
+    res.sendFile(imgPath);
+  }
+
+  @ApiResponse({
+    type: OkDTO,
+    description: 'Deletes a users profile picture',
+    status: HttpStatus.OK,
+  })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @Delete('/profilePicture')
+  async deleteProfilePicture(@User() user: UserDB) {
+    const currentProfilePic = user.profilePicture;
+
+    const fileName = 'empty.png';
+
+    await this.userService.updateProfilePic(user.id, fileName);
+
+    if (currentProfilePic && currentProfilePic !== 'empty.png') {
+      const oldFilePath = `./uploads/profilePictures/${currentProfilePic}`;
+      await fs.promises.unlink(oldFilePath);
+    }
+
+    return new OkDTO(true, 'Deleting profile picture was successful');
+  }
+
+  @ApiResponse({
+    type: GetInviteLinkDTO,
+    description:
+      'returns an invite link, that can be used to add the user to some other users friends list. the link is valid for 5 minutes.',
+    status: HttpStatus.OK,
+  })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @Get('inviteLink')
+  async getInviteLink(@Req() req: Request, @User() user: UserDB) {
+    const uuid = crypto.randomUUID();
+    const host: string = process.env.FRONTEND_URL || req.get('host');
+    const link = this.friendService.createInviteLink(
+      req.protocol,
+      host,
+      user.username,
+      uuid,
+    );
+
+    const ttl = 5 * 60 * 1000;
+
+    this.friendService.setInviteLink(user.username, link, ttl);
+
+    const res = new GetInviteLinkDTO();
+    res.inviteLink = link;
+    res.ttl = ttl;
+
+    return res;
   }
 }

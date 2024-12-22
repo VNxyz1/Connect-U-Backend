@@ -37,6 +37,7 @@ import { SchedulerService } from './scheduler/scheduler.service';
 import { TagController } from './tag/tag.controller';
 import { MessageController } from './Message/message.controller';
 import { MessageService } from './Message/message.service';
+import { FriendService } from './friend/friend.service';
 
 @Module({
   imports: [
@@ -89,6 +90,7 @@ import { MessageService } from './Message/message.service';
     TagService,
     SchedulerService,
     MessageService,
+    FriendService,
   ],
 })
 export class AppModule implements NestModule {

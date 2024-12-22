@@ -16,6 +16,8 @@ import { mockUtilsService } from '../utils/utils.service.spec';
 import { CreateMessageDTO } from './DTO/CreateMessageDTO';
 import { JwtService } from '@nestjs/jwt';
 import { mockProviders } from '../../test/mock-services';
+import { SocketGateway } from '../socket/socket.gateway';
+import { mockMessageService } from './message.service.spec';
 
 describe('MessageController', () => {
   let app: INestApplication;
@@ -25,6 +27,7 @@ describe('MessageController', () => {
     const moduleRef = await Test.createTestingModule({
       controllers: [MessageController],
       providers: [
+        SocketGateway,
         ...mockProviders,
         {
           provide: MessageService,
@@ -155,9 +158,3 @@ describe('MessageController', () => {
     });
   });
 });
-
-export const mockMessageService = {
-  createMessage: jest.fn(),
-  getEventChat: jest.fn(),
-  markMessagesAsRead: jest.fn(),
-};
