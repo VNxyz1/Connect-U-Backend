@@ -1,8 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { UserDB } from '../database/UserDB';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class FriendService {
-  private activeInviteLinkUUIDs = new Map<
+  constructor(
+    @InjectRepository(UserDB)
+    private readonly userRepository: Repository<UserDB>,
+  ) {}
+
+  private readonly activeInviteLinkUUIDs = new Map<
     string,
     { value: string; timeout: NodeJS.Timeout }
   >();
@@ -51,4 +59,30 @@ export class FriendService {
   hasActiveUUID(key: string): boolean {
     return this.activeInviteLinkUUIDs.has(key);
   }
+
+  async createFriend(user: UserDB, friendId: string): Promise<UserDB> {
+    const friend = await this.userRepository.findOne({
+      where: { id: friendId },
+      relations: ['friendOf'],
+    });
+
+    if (!friend) {
+      throw new NotFoundException('Friend not found');
+    }
+
+    const existingFriend = (await user.friends).find((f) => f.id === friendId);
+    if (existingFriend) {
+      throw new Error('Friend already exists in the user\'s friend list');
+    }
+
+    (await user.friends).push(friend);
+
+    (await friend.friendOf).push(user);
+
+    await this.userRepository.save(user);
+    await this.userRepository.save(friend);
+
+    return user;
+  }
+
 }

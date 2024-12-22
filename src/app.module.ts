@@ -38,6 +38,7 @@ import { TagController } from './tag/tag.controller';
 import { MessageController } from './Message/message.controller';
 import { MessageService } from './Message/message.service';
 import { FriendService } from './friend/friend.service';
+import { FriendsController } from './friend/friend.controller';
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { FriendService } from './friend/friend.service';
     SurveyController,
     TagController,
     MessageController,
+    FriendsController
   ],
   providers: [
     AppService,
