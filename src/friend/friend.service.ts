@@ -70,19 +70,41 @@ export class FriendService {
       throw new NotFoundException('Friend not found');
     }
 
-    const existingFriend = (await user.friends).find((f) => f.id === friendId);
+    const existingFriend = (user.friends).find((f) => f.id === friendId);
     if (existingFriend) {
       throw new Error('Friend already exists in the user\'s friend list');
     }
 
-    (await user.friends).push(friend);
+    (user.friends).push(friend);
 
-    (await friend.friendOf).push(user);
+    (friend.friendOf).push(user);
 
     await this.userRepository.save(user);
     await this.userRepository.save(friend);
 
     return user;
+  }
+
+  /**
+   * Retrieves all friends of a given user.
+   * @param userId The ID of the user whose friends should be retrieved.
+   * @returns An array of friends.
+   */
+  async getFriends(userId: string): Promise<UserDB[]> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['friends', 'friendOf'],
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const allFriends = [...user.friends, ...user.friendOf];
+
+    return Array.from(
+      new Map(allFriends.map((friend) => [friend.id, friend])).values(),
+    );
   }
 
 }
