@@ -70,20 +70,28 @@ export class FriendService {
       throw new NotFoundException('Friend not found');
     }
 
-    const existingFriend = (user.friends).find((f) => f.id === friendId);
+    user.friends = user.friends || [];
+    user.friendOf = user.friendOf || [];
+
+    const existingFriend = user.friends.find((f) => f.id === friendId);
     if (existingFriend) {
-      throw new Error('Friend already exists in the user\'s friend list');
+      throw new Error('Friend already exists in the users friend list');
+    }
+    const existingFriendOf = user.friendOf.find((f) => f.id === friend.id);
+    if (existingFriendOf) {
+      throw new Error('Friend already exists in the users friendOf list');
     }
 
-    (user.friends).push(friend);
-
-    (friend.friendOf).push(user);
+    user.friends.push(friend);
+    friend.friendOf = friend.friendOf || [];
+    friend.friendOf.push(user);
 
     await this.userRepository.save(user);
     await this.userRepository.save(friend);
 
     return user;
   }
+
 
   /**
    * Retrieves all friends of a given user.
