@@ -64,7 +64,6 @@ export class ListController {
       params: { title: body.title },
     };
 
-    // Pass the translation key and parameters to the message creation function
     await this.messageService.createMessage(null, eventId, systemMessageText);
     this.socketService.emitUpdateChat(eventId);
 

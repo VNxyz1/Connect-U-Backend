@@ -1,5 +1,12 @@
 import { FriendService } from './friend.service';
-import { BadRequestException, Controller, Get, Param, Put, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Controller,
+  Get,
+  Param,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { OkDTO } from '../serverDTO/OkDTO';
 import { AuthGuard } from '../auth/auth.guard';
@@ -14,8 +21,7 @@ export class FriendsController {
   constructor(
     private readonly friendService: FriendService,
     private readonly utilsService: UtilsService,
-  ) {
-  }
+  ) {}
 
   @ApiResponse({
     type: OkDTO,
@@ -46,5 +52,6 @@ export class FriendsController {
     const friends = await this.friendService.getFriends(user.id);
     return friends.map((friend) =>
       this.utilsService.transformUserDBtoGetUserProfileDTO(friend, false),
-    );  }
+    );
+  }
 }

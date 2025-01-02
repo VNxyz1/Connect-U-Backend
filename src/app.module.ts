@@ -73,7 +73,7 @@ import { FriendsController } from './friend/friend.controller';
     SurveyController,
     TagController,
     MessageController,
-    FriendsController
+    FriendsController,
   ],
   providers: [
     AppService,

@@ -22,7 +22,6 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { EventDB } from '../database/EventDB';
 import { mockEventRepository } from '../event/event.service.spec';
 import { mockProviders } from '../../test/mock-services';
-import { FriendService } from '../friend/friend.service';
 
 describe('UserController', () => {
   let app: INestApplication;
@@ -33,7 +32,6 @@ describe('UserController', () => {
       imports: [],
       providers: [
         ...mockProviders,
-        FriendService,
         UserService,
         UtilsService,
         {

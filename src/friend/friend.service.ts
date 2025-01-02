@@ -92,7 +92,6 @@ export class FriendService {
     return user;
   }
 
-
   /**
    * Retrieves all friends of a given user.
    * @param userId The ID of the user whose friends should be retrieved.
@@ -114,5 +113,4 @@ export class FriendService {
       new Map(allFriends.map((friend) => [friend.id, friend])).values(),
     );
   }
-
 }

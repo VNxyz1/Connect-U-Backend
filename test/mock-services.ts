@@ -26,6 +26,8 @@ import { mockSurveyService } from '../src/survey/survey.service.spec';
 import { TagService } from '../src/tag/tag.service';
 import { mockTagService } from '../src/tag/tag.service.spec';
 import { SchedulerService } from '../src/scheduler/scheduler.service';
+import { FriendService } from '../src/friend/friend.service';
+import { mockFriendService } from '../src/friend/friend.service.spec';
 
 export const mockProviders = [
   {
@@ -87,6 +89,10 @@ export const mockProviders = [
   {
     provide: SchedulerService,
     useValue: mockSchedulerService,
+  },
+  {
+    provide: FriendService,
+    useValue: mockFriendService,
   },
   { provide: SurveyService, useValue: mockSurveyService },
 ];
