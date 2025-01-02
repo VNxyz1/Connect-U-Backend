@@ -22,15 +22,22 @@ export const eventFactory = async (
     return faker.datatype.boolean() && catCount++ < 3;
   });
 
-  event.participantsNumber = faker.number.int({ min: 0, max: 30 });
-  let count = 0;
-  event.participants = userList.filter((user) => {
-    if (count >= event.participantsNumber) {
-      return false;
+  event.participantsNumber = faker.number.int({ min: 2, max: 30 });
+  const participants: UserDB[] = [];
+  for (
+    let i = 0;
+    i < faker.number.int({ min: 0, max: event.participantsNumber });
+    i++
+  ) {
+    const user =
+      userList[faker.number.int({ min: 0, max: userList.length - 1 })];
+    if (participants.find((u) => u.id === user.id)) {
+      continue;
     }
-    count++;
-    return user !== event.host && faker.datatype.boolean();
-  });
+    participants.push(user);
+  }
+
+  event.participants = participants;
 
   event.description = faker.lorem.paragraph();
   event.timestamp = faker.date.recent({ days: 50 }).toISOString();
