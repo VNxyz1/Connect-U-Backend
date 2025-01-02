@@ -14,13 +14,14 @@ import {
   Min,
   ValidateIf,
   IsInt,
+  IsUUID,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { EventtypeEnum } from '../../database/enums/EventtypeEnum';
 
 export class CreateEventDTO {
   @ApiProperty({
-    description: 'Die IDs der für das Event gewählten Kategorien',
+    description: 'The IDs of the selected categories for the event',
     type: [Number],
     example: [1, 3, 5],
   })
@@ -31,7 +32,7 @@ export class CreateEventDTO {
   categories: number[];
 
   @ApiProperty({
-    description: 'Datum und Uhrzeit des Events',
+    description: 'Date and time of the event',
     example: '2025-06-15T18:00:00',
   })
   @IsISO8601()
@@ -39,8 +40,8 @@ export class CreateEventDTO {
   dateAndTime: string;
 
   @ApiProperty({
-    description: 'Der Titel des Events',
-    example: 'Java-Programmierung',
+    description: 'Title of the event',
+    example: 'Java Programming',
   })
   @IsString()
   @IsNotEmpty()
@@ -49,37 +50,37 @@ export class CreateEventDTO {
   title: string;
 
   @ApiProperty({
-    description: 'Die Beschreibung des Events',
+    description: 'Description of the event',
     example:
-      'Kommen Sie zu unserem spannenden und interaktiven Coding-Workshop!',
+      'Join our exciting and interactive coding workshop!',
   })
   @IsString()
   @IsOptional()
   description: string;
 
   @ApiProperty({
-    description: 'Der Typ des Events',
+    description: 'Type of the event',
     example: 2,
   })
   @IsNotEmpty()
   type: EventtypeEnum;
 
   @ApiProperty({
-    description: 'Ob das Event online stattfindet',
+    description: 'Whether the event is online',
     example: true,
   })
   @IsBoolean()
   isOnline: boolean;
 
   @ApiProperty({
-    description: 'Ob der Benutzer seine Adresse teilen möchte',
+    description: 'Whether the user wants to share their address',
     example: true,
   })
   @IsBoolean()
   showAddress: boolean;
 
   @ApiProperty({
-    description: 'Hausnummer des Veranstaltungsortes',
+    description: 'House number of the event location',
     required: false,
     example: '123',
   })
@@ -90,9 +91,9 @@ export class CreateEventDTO {
   streetNumber?: string;
 
   @ApiProperty({
-    description: 'Straßenname des Veranstaltungsortes',
+    description: 'Street name of the event location',
     required: false,
-    example: 'Hauptstraße',
+    example: 'Main Street',
   })
   @ValidateIf((o) => !o.isOnline)
   @IsString()
@@ -101,7 +102,7 @@ export class CreateEventDTO {
   street?: string;
 
   @ApiProperty({
-    description: 'Postleitzahl des Veranstaltungsortes',
+    description: 'Postal code of the event location',
     required: false,
     example: '12345',
   })
@@ -112,7 +113,7 @@ export class CreateEventDTO {
   zipCode?: string;
 
   @ApiProperty({
-    description: 'Stadt des Veranstaltungsortes',
+    description: 'City of the event location',
     required: false,
     example: 'Berlin',
   })
@@ -123,7 +124,7 @@ export class CreateEventDTO {
   city?: string;
 
   @ApiProperty({
-    description: 'Anzahl der erlaubten Teilnehmer',
+    description: 'Number of allowed participants',
     example: 50,
   })
   @IsInt({ message: 'Participants number must be an integer' })
@@ -132,7 +133,7 @@ export class CreateEventDTO {
   participantsNumber: number;
 
   @ApiProperty({
-    description: 'Die bevorzugten Geschlechter für das Event',
+    description: 'Preferred genders for the event',
     type: [Number],
     example: [1, 2],
   })
@@ -142,7 +143,7 @@ export class CreateEventDTO {
   preferredGenders: number[] = [];
 
   @ApiProperty({
-    description: 'Mindestalter für die Teilnehmer',
+    description: 'Minimum age for participants',
     required: false,
     example: 18,
   })
@@ -153,7 +154,7 @@ export class CreateEventDTO {
   startAge?: number;
 
   @ApiProperty({
-    description: 'Höchstalter für die Teilnehmer',
+    description: 'Maximum age for participants',
     required: false,
     example: 40,
   })
@@ -178,4 +179,15 @@ export class CreateEventDTO {
   })
   @Matches(/^\S*$/, { each: true, message: 'Tags cannot contain spaces' })
   tags?: string[];
+
+  @ApiProperty({
+    description: 'An array of UUIDs representing users invited to the event',
+    example: ['a4f34c7b-7e6a-45b6-96ab-7a01e98d420b', 'b5f43b3d-d1e9-4d56-a5d1-5179ac3e233e'],
+    type: [String],
+  })
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(100, { message: 'A maximum of 100 users can be invited' })
+  @IsUUID('all', { each: true, message: 'Each invite must be a valid UUID' })
+  invitations: string[];
 }

@@ -237,4 +237,59 @@ export class RequestService {
 
     await this.requestRepository.delete({ event });
   }
+
+  /**
+   * Creates an invitation for a user to join an event.
+   *
+   * @param eventId - the ID of the event the host is inviting the user to
+   * @param userId - the ID of the user being invited
+   * @param hostId - the ID of the event host (currently logged-in user)
+   * @throws NotFoundException If the event or user does not exist.
+   * @throws ForbiddenException If the user is not the host of the event.
+   * @throws BadRequestException If the user is already invited or is the host.
+   */
+  async createInvitation(eventId: string, userId: string, hostId: string) {
+    const event = await this.eventRepository.findOne({
+      where: { id: eventId },
+      relations: ['host'],
+    });
+
+    if (!event) {
+      throw new NotFoundException('Event not found');
+    }
+
+    if (event.host.id !== hostId) {
+      throw new ForbiddenException('You are not the host of this event');
+    }
+
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (event.host.id === userId) {
+      throw new ForbiddenException('You cannot invite yourself to your own event');
+    }
+
+    const existingInvite = await this.requestRepository.findOne({
+      where: { user: { id: userId }, event: { id: eventId }, type: 2 },
+    });
+
+    if (existingInvite) {
+      throw new BadRequestException('User is already invited to this event');
+    }
+
+    const invite = this.requestRepository.create();
+    invite.user = user;
+    invite.event = event;
+    invite.type = 2;
+
+    await this.requestRepository.save(invite);
+
+    return { message: 'Invite successfully created', invite };
+  }
+
 }
