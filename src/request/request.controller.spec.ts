@@ -88,7 +88,7 @@ describe('RequestController', () => {
     it('should fetch all requests sent by a specific user', async () => {
       const tokens = await mockAuthService.signIn();
 
-      mockRequestService.getRequestsByUser.mockResolvedValue([
+      mockRequestService.getJoinRequestsByUser.mockResolvedValue([
         {
           id: 1,
           denied: false,
@@ -120,7 +120,7 @@ describe('RequestController', () => {
       const tokens = await mockAuthService.signIn();
       const eventId = '123';
 
-      mockRequestService.getRequestsForEvent.mockResolvedValue([
+      mockRequestService.getJoinRequestsForEvent.mockResolvedValue([
         {
           id: 1,
           denied: false,
@@ -187,6 +187,53 @@ describe('RequestController', () => {
         .expect('Content-Type', /json/)
         .expect(HttpStatus.OK)
         .expect({ ok: true, message: 'Request successfully deleted' });
+    });
+  });
+
+  describe('RequestController - fetch all invitations for a specific event', () => {
+    it('should fetch all invitations for a specific event', async () => {
+      const tokens = await mockAuthService.signIn();
+      const eventId = '123';
+
+      mockRequestService.getInvitationsForEvent.mockResolvedValue([
+        {
+          id: 1,
+          denied: false,
+          user: { id: 'user123', username: 'userTest' },
+        },
+      ]);
+
+      return agent
+        .get(`/request/invite/event/${eventId}`)
+        .set('Authorization', `Bearer ${tokens.access_token}`)
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.OK)
+        .expect([
+          {
+            id: 1,
+            denied: false,
+            user: {
+              id: 'user123',
+              isUser: false,
+              username: 'userTest',
+              age: null,
+            },
+          },
+        ]);
+    });
+  });
+
+  describe('RequestController - delete an invitation sent by the user', () => {
+    it('should delete an invitation sent by the user', async () => {
+      const tokens = await mockAuthService.signIn();
+      const requestId = 1;
+
+      return agent
+        .delete(`/request/invite/${requestId}`)
+        .set('Authorization', `Bearer ${tokens.access_token}`)
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.OK)
+        .expect({ ok: true, message: 'Invitation successfully deleted' });
     });
   });
 

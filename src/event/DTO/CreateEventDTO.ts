@@ -50,8 +50,7 @@ export class CreateEventDTO {
 
   @ApiProperty({
     description: 'Description of the event',
-    example:
-      'Join our exciting and interactive coding workshop!',
+    example: 'Join our exciting and interactive coding workshop!',
   })
   @IsString()
   @IsOptional()

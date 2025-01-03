@@ -40,7 +40,6 @@ export class EventService {
     preferredGenders: GenderDB[],
     body: CreateEventDTO,
   ): Promise<EventDB> {
-
     const newEvent: EventDB = this.eventRepository.create();
     newEvent.host = user;
     newEvent.dateAndTime = body.dateAndTime;

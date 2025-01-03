@@ -262,9 +262,10 @@ export class RequestService {
       throw new ForbiddenException('You are not the host of this event');
     }
 
-
     if (event.host.id === user.id) {
-      throw new ForbiddenException('You cannot invite yourself to your own event');
+      throw new ForbiddenException(
+        'You cannot invite yourself to your own event',
+      );
     }
 
     const existingInvite = await this.requestRepository.findOne({
@@ -306,9 +307,7 @@ export class RequestService {
       );
     }
 
-    return event.requests.filter(
-      (request) => request.type === 2,
-    );
+    return event.requests.filter((request) => request.type === 2);
   }
 
   /**
