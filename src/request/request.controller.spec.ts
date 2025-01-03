@@ -240,4 +240,33 @@ describe('RequestController', () => {
   afterAll(async () => {
     await app.close();
   });
+
+  describe('RequestController - accept an invitation', () => {
+    it('should accept an invitation and add the user to the event', async () => {
+      const tokens = await mockAuthService.signIn();
+      const invitationId = 1;
+
+      return agent
+        .patch(`/request/acceptInvite/${invitationId}`)
+        .set('Authorization', `Bearer ${tokens.access_token}`)
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.OK)
+        .expect({ ok: true, message: 'Invitation successfully accepted' });
+    });
+  });
+
+  describe('RequestController - deny an invitation', () => {
+    it('should deny an invitation', async () => {
+      const tokens = await mockAuthService.signIn();
+      const invitationId = 1;
+
+      return agent
+        .patch(`/request/denyInvite/${invitationId}`)
+        .set('Authorization', `Bearer ${tokens.access_token}`)
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.OK)
+        .expect({ ok: true, message: 'Invitation successfully denied' });
+    });
+  });
+
 });

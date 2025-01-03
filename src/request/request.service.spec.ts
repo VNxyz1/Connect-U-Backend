@@ -500,6 +500,117 @@ describe('RequestService', () => {
       expect(requestRepository.remove).toHaveBeenCalledWith(mockRequest);
     });
   });
+
+  describe('RequestService - acceptInvitation', () => {
+    it('should throw NotFoundException if the invitation is not found', async () => {
+      requestRepository.findOne.mockResolvedValue(null);
+
+      await expect(
+        service.acceptInvitation(1, 'user123'),
+      ).rejects.toThrowError(NotFoundException);
+    });
+
+    it('should throw ForbiddenException if the user is not the invitee', async () => {
+      const mockRequest = {
+        id: 1,
+        user: { id: 'user456' },
+        event: { id: 'event123' },
+      } as RequestDB;
+      requestRepository.findOne.mockResolvedValue(mockRequest);
+
+      await expect(
+        service.acceptInvitation(1, 'wrongUser'),
+      ).rejects.toThrowError(ForbiddenException);
+    });
+
+    it('should accept an invitation and add the user to the event participants', async () => {
+      const mockEvent = {
+        id: 'event123',
+        participants: [],
+        participantsNumber: 5,
+      } as EventDB;
+      const mockRequest = {
+        id: 1,
+        user: { id: 'user123' },
+        event: mockEvent,
+      } as RequestDB;
+
+      requestRepository.findOne.mockResolvedValue(mockRequest);
+      eventRepository.findOne.mockResolvedValue(mockEvent);
+      requestRepository.remove.mockResolvedValue(mockRequest);
+
+      await service.acceptInvitation(1, 'user123');
+
+      expect(mockEvent.participants).toContain(mockRequest.user);
+      expect(requestRepository.remove).toHaveBeenCalledWith(mockRequest);
+    });
+
+    it('should throw BadRequestException if the event has reached the maximum number of participants', async () => {
+      const mockEvent = {
+        id: 'event123',
+        participants: [{ id: 'user1' }, { id: 'user2' }],
+        participantsNumber: 2,
+      } as EventDB;
+      const mockRequest = {
+        id: 1,
+        user: { id: 'user123' },
+        event: mockEvent,
+      } as RequestDB;
+
+      requestRepository.findOne.mockResolvedValue(mockRequest);
+      eventRepository.findOne.mockResolvedValue(mockEvent);
+
+      await expect(
+        service.acceptInvitation(1, 'user123'),
+      ).rejects.toThrowError(BadRequestException);
+    });
+  });
+
+  describe('RequestService - denyInvitation', () => {
+    it('should throw NotFoundException if the invitation is not found', async () => {
+      requestRepository.findOne.mockResolvedValue(null);
+
+      await expect(
+        service.denyInvitation(1, 'user123'),
+      ).rejects.toThrowError(NotFoundException);
+    });
+
+    it('should throw ForbiddenException if the user is not the invitee', async () => {
+      const mockRequest = {
+        id: 1,
+        user: { id: 'user456' },
+        event: { id: 'event123' },
+      } as RequestDB;
+      requestRepository.findOne.mockResolvedValue(mockRequest);
+
+      await expect(
+        service.denyInvitation(1, 'wrongUser'),
+      ).rejects.toThrowError(ForbiddenException);
+    });
+
+    it('should mark the invitation as denied', async () => {
+      const mockRequest = {
+        id: 1,
+        user: { id: 'user123' },
+        event: { id: 'event123' },
+        denied: false,
+      } as RequestDB;
+
+      requestRepository.findOne.mockResolvedValue(mockRequest);
+      requestRepository.save.mockResolvedValue({
+        ...mockRequest,
+        denied: true,
+      });
+
+      await service.denyInvitation(1, 'user123');
+
+      expect(requestRepository.save).toHaveBeenCalledWith({
+        ...mockRequest,
+        denied: true,
+      });
+    });
+  });
+
 });
 
 export const mockRequestService = {
@@ -533,6 +644,8 @@ export const mockRequestService = {
       user: { id: 'user123', username: 'userTest' },
     },
   ]),
+  acceptInvitation: jest.fn().mockResolvedValue(undefined),
+  denyInvitation: jest.fn().mockResolvedValue(undefined),
   deleteInvitation: jest.fn().mockResolvedValue(undefined),
 };
 
