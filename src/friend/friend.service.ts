@@ -15,6 +15,14 @@ export class FriendService {
     { value: string; timeout: NodeJS.Timeout }
   >();
 
+  /**
+   * Creates an invitation link for adding a friend.
+   * @param protocol The protocol to use (e.g., 'http' or 'https').
+   * @param host The host or domain name of the server.
+   * @param username The username of the user creating the invite link.
+   * @param uuid A unique identifier for the invite link.
+   * @returns A formatted invite link as a string.
+   */
   createInviteLink(
     protocol: string,
     host: string,
@@ -24,11 +32,12 @@ export class FriendService {
     return `${protocol}://${host}/add-friend/${username}/${uuid}`;
   }
 
+
   /**
-   *
-   * @param key a username
-   * @param uuid the uuid of the active link
-   * @param ttl the `time to live` for the invite link. Defaults to 5 minutes `(5 * 60 * 1000)`
+   * Sets an active invite link for a user with a specified time-to-live (TTL).
+   * @param key The username associated with the invite link.
+   * @param uuid The unique identifier for the invite link.
+   * @param ttl The time-to-live for the invite link in milliseconds. Defaults to 5 minutes (300000 ms).
    */
   setInviteLink(key: string, uuid: string, ttl: number = 5 * 60 * 1000): void {
     if (this.activeInviteLinkUUIDs.has(key)) {
@@ -43,9 +52,9 @@ export class FriendService {
   }
 
   /**
-   *
-   * @param key a username
-   * @return the uuid of the active link if there is one available
+   * Retrieves the UUID of an active invite link for a user.
+   * @param key The username associated with the invite link.
+   * @returns The UUID of the active invite link, or undefined if no active link exists.
    */
   getActiveUUID(key: string): string | undefined {
     const entry = this.activeInviteLinkUUIDs.get(key);
@@ -53,13 +62,22 @@ export class FriendService {
   }
 
   /**
-   *
-   * @param key a username
+   * Checks if there is an active invite link for a user.
+   * @param key The username associated with the invite link.
+   * @returns True if an active invite link exists, otherwise false.
    */
   hasActiveUUID(key: string): boolean {
     return this.activeInviteLinkUUIDs.has(key);
   }
 
+  /**
+   * Creates a friendship between two users.
+   * @param user The user who is initiating the friend request.
+   * @param friendId The ID of the user to be added as a friend.
+   * @returns The updated user with the new friend added.
+   * @throws NotFoundException if the friend with the given ID is not found.
+   * @throws Error if the friend already exists in the user's friend list or friendOf list.
+   */
   async createFriend(user: UserDB, friendId: string): Promise<UserDB> {
     const friend = await this.userRepository.findOne({
       where: { id: friendId },
