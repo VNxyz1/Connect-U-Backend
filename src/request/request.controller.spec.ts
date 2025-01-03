@@ -241,6 +241,37 @@ describe('RequestController', () => {
     await app.close();
   });
 
+  describe('RequestController - fetch all invitations for a specific user', () => {
+    it('should fetch all invitations for a specific user', async () => {
+      const tokens = await mockAuthService.signIn();
+
+      mockRequestService.getInvitationsByUser.mockResolvedValue([
+        {
+          id: 1,
+          denied: false,
+          event: {
+            id: '123',
+            name: 'Sample Event',
+            host: { id: 'host123', username: 'hostUser' },
+          },
+        },
+      ]);
+
+      return agent
+        .get('/request/invite/user')
+        .set('Authorization', `Bearer ${tokens.access_token}`)
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.OK)
+        .expect([
+          {
+            id: 1,
+            event: { id: '123' },
+            denied: false,
+          },
+        ]);
+    });
+  });
+
   describe('RequestController - accept an invitation', () => {
     it('should accept an invitation and add the user to the event', async () => {
       const tokens = await mockAuthService.signIn();
@@ -268,5 +299,4 @@ describe('RequestController', () => {
         .expect({ ok: true, message: 'Invitation successfully denied' });
     });
   });
-
 });
