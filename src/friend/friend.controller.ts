@@ -27,17 +27,29 @@ export class FriendsController {
     type: OkDTO,
     description: 'adds a friend to the users friendlist',
   })
-  @Put('/:friendId')
+  @Put('/:username/:inviteId')
   @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard)
   async createFriend(
     @User() user: UserDB,
-    @Param('friendId') friendId: string,
+    @Param('inviteId') inviteId: string,
+    @Param('username') username: string,
   ): Promise<OkDTO> {
-    if (user.id == friendId) {
+    if (this.friendService.hasActiveUUID(username) == false) {
+      throw new BadRequestException('Invitation link doesnt exist');
+    }
+
+    const activeLink = this.friendService.getActiveUUID(username);
+    if (inviteId != activeLink) {
+      throw new BadRequestException(
+        'Your invite link is not correct or expired',
+      );
+    }
+
+    if (user.username == username) {
       throw new BadRequestException('You cannot befriend yourself');
     }
-    await this.friendService.createFriend(user, friendId);
+    await this.friendService.createFriend(user, username);
     return new OkDTO(true, 'Friend was added');
   }
 
