@@ -1,4 +1,4 @@
-import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   BadRequestException,
   Body,
@@ -25,6 +25,11 @@ import { EventtypeEnum } from '../database/enums/EventtypeEnum';
 import { CreateEventResDTO } from './DTO/CreateEventResDTO';
 import { GetEventDetailsDTO } from './DTO/GetEventDetailsDTO';
 import { TagService } from '../tag/tag.service';
+import {
+  paginate,
+  Pagination,
+  PaginationParams,
+} from '../utils/PaginationParams';
 
 @ApiTags('event')
 @Controller('event')
@@ -223,14 +228,25 @@ export class EventController {
     description: 'Returns the current fy page of the logged in user',
     status: HttpStatus.OK,
   })
+  @ApiQuery({
+    type: Pagination,
+  })
   @HttpCode(HttpStatus.OK)
   @Get('fy-page/:userId')
   async getHomePage(
     @Param('userId') userId: string,
+    @PaginationParams() paginationParams: Pagination,
   ): Promise<GetEventCardDTO[]> {
     const events = await this.eventService.fyPageAlgo(userId);
+
+    const paginatedEvents = paginate(
+      events,
+      paginationParams.size,
+      paginationParams.page,
+    );
+
     return await Promise.all(
-      events.map(async (event) => {
+      paginatedEvents.map(async (event) => {
         return this.utilsService.transformEventDBtoGetEventCardDTO(event);
       }),
     );
