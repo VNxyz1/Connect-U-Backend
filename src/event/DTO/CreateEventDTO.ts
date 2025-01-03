@@ -14,7 +14,6 @@ import {
   Min,
   ValidateIf,
   IsInt,
-  IsUUID,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { EventtypeEnum } from '../../database/enums/EventtypeEnum';
@@ -179,15 +178,4 @@ export class CreateEventDTO {
   })
   @Matches(/^\S*$/, { each: true, message: 'Tags cannot contain spaces' })
   tags?: string[];
-
-  @ApiProperty({
-    description: 'An array of UUIDs representing users invited to the event',
-    example: ['a4f34c7b-7e6a-45b6-96ab-7a01e98d420b', 'b5f43b3d-d1e9-4d56-a5d1-5179ac3e233e'],
-    type: [String],
-  })
-  @IsOptional()
-  @IsArray()
-  @ArrayMaxSize(100, { message: 'A maximum of 100 users can be invited' })
-  @IsUUID('all', { each: true, message: 'Each invite must be a valid UUID' })
-  invitations: string[];
 }

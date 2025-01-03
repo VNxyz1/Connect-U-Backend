@@ -65,12 +65,6 @@ export class EventController {
       throw new BadRequestException('Event Date must be in the future');
     }
 
-    if (body.invitations.length > body.participantsNumber) {
-      throw new BadRequestException(
-        `The number of invites cannot exceed the participants number (${body.participantsNumber})`,
-      );
-    }
-
     let eventTags = [];
     if (body.tags) {
       eventTags = await this.tagService.findOrCreateTags(body.tags);

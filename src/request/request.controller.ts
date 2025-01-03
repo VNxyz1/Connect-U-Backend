@@ -7,7 +7,7 @@ import {
   HttpStatus,
   Get,
   Patch,
-  Delete,
+  Delete, NotFoundException,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RequestService } from './request.service';
@@ -19,6 +19,7 @@ import { EventService } from '../event/event.service';
 import { UtilsService } from '../utils/utils.service';
 import { GetEventJoinRequestDTO } from './DTO/GetEventJoinRequestDTO';
 import { GetUserJoinRequestDTO } from './DTO/GetUserJoinRequestDTO';
+import { UserService } from '../user/user.service';
 
 @ApiTags('request')
 @Controller('request')
@@ -27,6 +28,7 @@ export class RequestController {
     private readonly requestService: RequestService,
     private readonly utilsService: UtilsService,
     private readonly eventService: EventService,
+    private readonly userService: UserService,
   ) {}
 
   @ApiResponse({
@@ -146,5 +148,34 @@ export class RequestController {
   ): Promise<OkDTO> {
     await this.requestService.deleteJoinRequest(requestId, currentUser.id);
     return new OkDTO(true, 'Request successfully deleted');
+  }
+
+  @ApiResponse({
+    type: OkDTO,
+    description: 'Creates an invite for a user to join an event',
+    status: HttpStatus.CREATED,
+  })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard)
+  @Post('/invite/:eventId/:userId')
+  @HttpCode(HttpStatus.CREATED)
+  async createInvitation(
+    @Param('eventId') eventId: string,
+    @Param('userId') userId: string,
+    @User() host: UserDB,
+  ) {
+    const event = await this.eventService.getEventById(eventId);
+    if (!event) {
+      throw new NotFoundException('Event not found');
+    }
+    const user = await this.userService.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    await this.utilsService.isUserAllowedToJoinEvent(user, event);
+
+    await this.requestService.createInvitation(eventId, user, host.id);
+    return new OkDTO(true, 'Invitation was sent');
   }
 }
