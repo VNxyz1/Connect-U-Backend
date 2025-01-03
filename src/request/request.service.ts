@@ -268,12 +268,18 @@ export class RequestService {
       );
     }
 
-    const existingInvite = await this.requestRepository.findOne({
+    const existingRequest = await this.requestRepository.findOne({
       where: { user: { id: user.id }, event: { id: eventId }, type: 2 },
     });
 
-    if (existingInvite) {
-      throw new BadRequestException('User is already invited to this event');
+    if (existingRequest) {
+      if (existingRequest.denied) {
+        existingRequest.denied = false;
+        await this.requestRepository.save(existingRequest);
+        return;
+      } else {
+        throw new BadRequestException('Request already exists');
+      }
     }
 
     const invite = this.requestRepository.create();
@@ -311,6 +317,23 @@ export class RequestService {
   }
 
   /**
+   * Retrieves all invitations sent to a specific user.
+   *
+   * @param userId - the ID of the user
+   * @returns An array of invitations
+   * @throws NotFoundException If the user does not exist.
+   */
+  async getInvitationsByUser(userId: string) {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['requests', 'requests.event'],
+    });
+    if (!user) throw new NotFoundException('User not found');
+
+    return user.requests.filter((request) => request.type === 2);
+  }
+
+  /**
    * Deletes an invitation.
    *
    * @param requestId - the ID of the request to be deleted
@@ -332,5 +355,78 @@ export class RequestService {
       );
     }
     await this.requestRepository.remove(request);
+  }
+
+  /**
+   * Accepts an invitation, adds the user to the event's participant list, and deletes the request.
+   *
+   * @param requestId - the ID of the invitation
+   * @param userId - the ID of currently logged-in user
+   * @throws NotFoundException If the request or event does not exist.
+   * @throws ForbiddenException If the user is not the host of the event.
+   * @throws BadRequestException If the event is already full or the request is already denied.
+   */
+  async acceptInvitation(requestId: number, userId: string) {
+    const request = await this.requestRepository.findOne({
+      where: { id: requestId },
+      relations: ['event', 'user', 'event.participants'],
+    });
+    if (!request) {
+      throw new NotFoundException('Request not found');
+    }
+
+    const event = request.event;
+
+    if (!event) {
+      throw new NotFoundException('Event not found');
+    }
+    if (request.user.id !== userId) {
+      throw new ForbiddenException(
+        'You are not authorized to accept this request',
+      );
+    }
+    if (request.denied) {
+      throw new BadRequestException('This request has already been denied');
+    }
+
+    if (event.participants.length >= event.participantsNumber) {
+      throw new BadRequestException(
+        'The event has reached the maximum number of participants',
+      );
+    }
+
+    event.participants.push(request.user);
+
+    await this.eventRepository.save(event);
+
+    await this.requestRepository.remove(request);
+  }
+
+  /**
+   * Denies an invitation by setting its `denied` property to true.
+   *
+   * @param requestId - the ID of the invitation to be denied
+   * @param userId - the ID of the currently logged-in user (event host)
+   * @throws NotFoundException If the request or event does not exist.
+   * @throws ForbiddenException If the logged-in user is not the user from the invitation.
+   */
+  async denyInvitation(requestId: number, userId: string) {
+    const request = await this.requestRepository.findOne({
+      where: { id: requestId },
+      relations: ['user'],
+    });
+
+    if (!request) {
+      throw new NotFoundException('Request not found');
+    }
+
+    if (request.user.id !== userId) {
+      throw new ForbiddenException(
+        'You are not authorized to deny this invitation',
+      );
+    }
+    request.denied = true;
+
+    await this.requestRepository.save(request);
   }
 }

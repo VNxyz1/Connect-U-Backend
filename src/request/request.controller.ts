@@ -98,16 +98,17 @@ export class RequestController {
       ),
     );
   }
-  @Patch('/accept/:requestId')
-  @HttpCode(HttpStatus.OK)
-  @UseGuards(AuthGuard)
-  @ApiBearerAuth('access-token')
+
   @ApiResponse({
     type: OkDTO,
     description:
       'Accepts a join request, adds the user to the event, and deletes the request',
     status: HttpStatus.OK,
   })
+  @Patch('/accept/:requestId')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth('access-token')
   async acceptRequest(
     @Param('requestId') requestId: number,
     @User() currentUser: UserDB,
@@ -202,6 +203,62 @@ export class RequestController {
         this.utilsService.transformRequestDBtoGetUserJoinRequestDTO(request),
       ),
     );
+  }
+
+  @ApiResponse({
+    type: [GetEventJoinRequestDTO],
+    description: 'Fetches all invitations sent to a specific user',
+    status: HttpStatus.OK,
+  })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard)
+  @Get('invite/user')
+  @HttpCode(HttpStatus.OK)
+  async getInvitationsByUser(
+    @User() user: UserDB,
+  ): Promise<GetEventJoinRequestDTO[]> {
+    const requests = await this.requestService.getInvitationsByUser(user.id);
+
+    return Promise.all(
+      requests.map((request) =>
+        this.utilsService.transformRequestDBtoGetEventJoinRequestDTO(request),
+      ),
+    );
+  }
+
+  @ApiResponse({
+    type: OkDTO,
+    description:
+      'Accepts an invitation, adds the user to the event, and deletes the request',
+    status: HttpStatus.OK,
+  })
+  @Patch('/acceptInvite/:requestId')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth('access-token')
+  async acceptInvitation(
+    @Param('requestId') requestId: number,
+    @User() currentUser: UserDB,
+  ): Promise<OkDTO> {
+    await this.requestService.acceptInvitation(requestId, currentUser.id);
+    return new OkDTO(true, 'Invitation successfully accepted');
+  }
+
+  @ApiResponse({
+    type: OkDTO,
+    description: 'denies an invitation for an event',
+    status: HttpStatus.CREATED,
+  })
+  @Patch('/denyInvite/:requestId')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth('access-token')
+  async denyInvitation(
+    @Param('requestId') requestId: number,
+    @User() currentUser: UserDB,
+  ): Promise<OkDTO> {
+    await this.requestService.denyInvitation(requestId, currentUser.id);
+    return new OkDTO(true, 'Invitation successfully denied');
   }
 
   @Delete('/invite/:requestId')
