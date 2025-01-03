@@ -310,4 +310,28 @@ export class RequestService {
       (request) => request.type === 2,
     );
   }
+
+  /**
+   * Deletes an invitation.
+   *
+   * @param requestId - the ID of the request to be deleted
+   * @param userId - the ID of the currently logged-in user
+   * @throws NotFoundException If the invitation does not exist.
+   * @throws ForbiddenException If the invitation was not sent by the currently logged-in user.
+   */
+  async deleteInvitation(requestId: number, userId: string) {
+    const request = await this.requestRepository.findOne({
+      where: { id: requestId },
+      relations: ['event', 'event.host'],
+    });
+    if (!request) {
+      throw new NotFoundException('Request not found');
+    }
+    if (request.event.host.id !== userId) {
+      throw new ForbiddenException(
+        'You are not the host and cant delete invitations',
+      );
+    }
+    await this.requestRepository.remove(request);
+  }
 }

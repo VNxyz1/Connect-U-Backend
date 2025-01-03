@@ -97,7 +97,6 @@ export class RequestController {
       ),
     );
   }
-
   @Patch('/accept/:requestId')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard)
@@ -202,5 +201,22 @@ export class RequestController {
         this.utilsService.transformRequestDBtoGetUserJoinRequestDTO(request),
       ),
     );
+  }
+
+  @Delete('/invite/:requestId')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth('access-token')
+  @ApiResponse({
+    type: OkDTO,
+    description: 'Deletes an invitation sent by the user',
+    status: HttpStatus.OK,
+  })
+  async deleteInvitation(
+    @Param('requestId') requestId: number,
+    @User() currentUser: UserDB,
+  ): Promise<OkDTO> {
+    await this.requestService.deleteInvitation(requestId, currentUser.id);
+    return new OkDTO(true, 'Invitation successfully deleted');
   }
 }
