@@ -79,7 +79,7 @@ export class RequestService {
    * @returns An array of requests sent by the user
    * @throws NotFoundException If the user does not exist.
    */
-  async getRequestsByUser(userId: string) {
+  async getJoinRequestsByUser(userId: string) {
     const user = await this.userRepository.findOne({
       where: { id: userId },
       relations: ['requests', 'requests.event'],
@@ -97,7 +97,7 @@ export class RequestService {
    * @returns An array of requests for the event
    * @throws NotFoundException If the event does not exist.
    */
-  async getRequestsForEvent(eventId: string, userId: string) {
+  async getJoinRequestsForEvent(eventId: string, userId: string) {
     const event = await this.eventRepository.findOne({
       where: { id: eventId },
       relations: ['requests', 'requests.user', 'host'],
@@ -169,7 +169,7 @@ export class RequestService {
    * @throws NotFoundException If the request or event does not exist.
    * @throws ForbiddenException If the logged-in user is not the host of the event.
    */
-  async denyRequest(requestId: number, userId: string) {
+  async denyJoinRequest(requestId: number, userId: string) {
     const request = await this.requestRepository.findOne({
       where: { id: requestId },
       relations: ['event', 'event.host'],
@@ -283,5 +283,31 @@ export class RequestService {
     await this.requestRepository.save(invite);
 
     return { message: 'Invite successfully created', invite };
+  }
+
+  /**
+   * Retrieves all invitations for a specific event that have not been denied.
+   *
+   * @param eventId - the ID of the event
+   * @param userId - currently logged-in user
+   * @returns An array of invitations for the event
+   * @throws NotFoundException If the event does not exist.
+   */
+  async getInvitationsForEvent(eventId: string, userId: string) {
+    const event = await this.eventRepository.findOne({
+      where: { id: eventId },
+      relations: ['requests', 'requests.user', 'host'],
+    });
+    if (!event) throw new NotFoundException('Event not found');
+
+    if (event.host.id !== userId) {
+      throw new ForbiddenException(
+        'You are not the host and cant view the events invitations',
+      );
+    }
+
+    return event.requests.filter(
+      (request) => request.type === 2,
+    );
   }
 }

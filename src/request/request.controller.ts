@@ -64,7 +64,7 @@ export class RequestController {
   async getRequestsByUser(
     @User() user: UserDB,
   ): Promise<GetEventJoinRequestDTO[]> {
-    const requests = await this.requestService.getRequestsByUser(user.id);
+    const requests = await this.requestService.getJoinRequestsByUser(user.id);
 
     return Promise.all(
       requests.map((request) =>
@@ -86,7 +86,7 @@ export class RequestController {
     @Param('eventId') eventId: string,
     @User() user: UserDB,
   ): Promise<GetUserJoinRequestDTO[]> {
-    const requests = await this.requestService.getRequestsForEvent(
+    const requests = await this.requestService.getJoinRequestsForEvent(
       eventId,
       user.id,
     );
@@ -129,7 +129,7 @@ export class RequestController {
     @Param('requestId') requestId: number,
     @User() currentUser: UserDB,
   ): Promise<OkDTO> {
-    await this.requestService.denyRequest(requestId, currentUser.id);
+    await this.requestService.denyJoinRequest(requestId, currentUser.id);
     return new OkDTO(true, 'Request successfully denied');
   }
 
@@ -177,5 +177,30 @@ export class RequestController {
 
     await this.requestService.createInvitation(eventId, user, host.id);
     return new OkDTO(true, 'Invitation was sent');
+  }
+
+  @ApiResponse({
+    type: [GetUserJoinRequestDTO],
+    description: 'Fetches all invitations for a specific event',
+    status: HttpStatus.OK,
+  })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard)
+  @Get('invite/event/:eventId')
+  @HttpCode(HttpStatus.OK)
+  async getInvitationsForEvent(
+    @Param('eventId') eventId: string,
+    @User() user: UserDB,
+  ): Promise<GetUserJoinRequestDTO[]> {
+    const requests = await this.requestService.getInvitationsForEvent(
+      eventId,
+      user.id,
+    );
+
+    return Promise.all(
+      requests.map((request) =>
+        this.utilsService.transformRequestDBtoGetUserJoinRequestDTO(request),
+      ),
+    );
   }
 }

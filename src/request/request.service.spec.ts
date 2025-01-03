@@ -145,7 +145,7 @@ describe('RequestService', () => {
         ...mockUserList[2],
         requests: [mockRequest],
       });
-      const result = await service.getRequestsByUser('3');
+      const result = await service.getJoinRequestsByUser('3');
 
       expect(result).toContainEqual(mockRequest);
     });
@@ -155,7 +155,7 @@ describe('RequestService', () => {
 
       userRepository.findOne.mockResolvedValue(mockUser);
 
-      const result = await service.getRequestsByUser(mockUser.id);
+      const result = await service.getJoinRequestsByUser(mockUser.id);
 
       expect(result).toEqual([]);
     });
@@ -165,7 +165,7 @@ describe('RequestService', () => {
     it('should retrieve all non-denied requests for an event', async () => {
       eventRepository.findOne.mockResolvedValue(mockEventList[0]);
 
-      const result = await service.getRequestsForEvent('1', '2');
+      const result = await service.getJoinRequestsForEvent('1', '2');
       expect(result).toEqual(mockEventList[0].requests);
     });
 
@@ -173,7 +173,7 @@ describe('RequestService', () => {
       eventRepository.findOne.mockResolvedValue(null);
 
       await expect(
-        service.getRequestsForEvent('event123', 'host123'),
+        service.getJoinRequestsForEvent('event123', 'host123'),
       ).rejects.toThrowError(NotFoundException);
     });
 
@@ -191,7 +191,7 @@ describe('RequestService', () => {
       requestRepository.findOne.mockResolvedValue(mockRequest);
 
       await expect(
-        service.getRequestsForEvent(mockEvent.id, 'differentUser'),
+        service.getJoinRequestsForEvent(mockEvent.id, 'differentUser'),
       ).rejects.toThrowError(ForbiddenException);
     });
   });
@@ -299,7 +299,7 @@ describe('RequestService', () => {
         denied: true,
       });
 
-      await service.denyRequest(1, 'host123');
+      await service.denyJoinRequest(1, 'host123');
 
       expect(requestRepository.save).toHaveBeenCalledWith({
         ...mockRequest,
@@ -310,7 +310,7 @@ describe('RequestService', () => {
     it('should throw NotFoundException if the request does not exist', async () => {
       requestRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.denyRequest(999, 'host123')).rejects.toThrowError(
+      await expect(service.denyJoinRequest(999, 'host123')).rejects.toThrowError(
         NotFoundException,
       );
     });
@@ -322,7 +322,7 @@ describe('RequestService', () => {
       eventRepository.findOne.mockResolvedValue(null);
 
       await expect(
-        service.denyRequest(mockRequest.id, 'host123'),
+        service.denyJoinRequest(mockRequest.id, 'host123'),
       ).rejects.toThrowError(NotFoundException);
     });
   });
