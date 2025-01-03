@@ -32,7 +32,6 @@ export class FriendService {
     return `${protocol}://${host}/add-friend/${username}/${uuid}`;
   }
 
-
   /**
    * Sets an active invite link for a user with a specified time-to-live (TTL).
    * @param key The username associated with the invite link.
