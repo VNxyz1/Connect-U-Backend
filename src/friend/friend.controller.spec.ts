@@ -1,11 +1,6 @@
 import * as request from 'supertest';
 import { Agent } from 'supertest';
-import {
-  HttpException,
-  HttpStatus,
-  INestApplication,
-  ValidationPipe,
-} from '@nestjs/common';
+import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import * as cookieParser from 'cookie-parser';
 import { JwtService } from '@nestjs/jwt';
@@ -63,19 +58,22 @@ describe('FriendsController', () => {
     agent = request.agent(app.getHttpServer());
     await app.init();
   });
-
-  describe('PUT /:friendId - createFriend', () => {
+  describe('PUT /:username/:inviteId - createFriend', () => {
     it('should add a friend successfully', async () => {
       const tokens = await mockAuthService.signIn();
+      const username = 'testUser';
+      const inviteId = 'valid-invite-id';
 
+      jest.spyOn(mockFriendService, 'hasActiveUUID').mockReturnValue(true);
+      jest.spyOn(mockFriendService, 'getActiveUUID').mockReturnValue(inviteId);
       jest.spyOn(mockFriendService, 'createFriend').mockResolvedValue({
         success: true,
         message: 'Friend was added',
       });
 
       return agent
-        .put('/friends/2')
-        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+        .put(`/friends/${username}/${inviteId}`)
+        .set('Authorization', `Bearer ${tokens.access_token}`)
         .expect(HttpStatus.OK)
         .expect((response) => {
           expect(response.body).toEqual({
@@ -85,22 +83,40 @@ describe('FriendsController', () => {
         });
     });
 
-    it('should return 400 if user tries to befriend themselves', async () => {
+    it('should return 400 if invitation link does not exist', async () => {
       const tokens = await mockAuthService.signIn();
+      const username = 'testUser';
+      const inviteId = 'invalid-invite-id';
 
-      jest.spyOn(mockFriendService, 'createFriend').mockImplementation(() => {
-        throw new HttpException(
-          'You cannot befriend yourself',
-          HttpStatus.BAD_REQUEST,
-        );
-      });
+      jest.spyOn(mockFriendService, 'hasActiveUUID').mockReturnValue(false);
 
       return agent
-        .put('/friends/uuIdMock')
-        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+        .put(`/friends/${username}/${inviteId}`)
+        .set('Authorization', `Bearer ${tokens.access_token}`)
         .expect(HttpStatus.BAD_REQUEST)
         .expect((response) => {
-          expect(response.body.message).toBe('You cannot befriend yourself');
+          expect(response.body.message).toBe('Invitation link doesnt exist');
+        });
+    });
+
+    it('should return 400 if invite link is incorrect or expired', async () => {
+      const tokens = await mockAuthService.signIn();
+      const username = 'testUser';
+      const inviteId = 'incorrect-invite-id';
+
+      jest.spyOn(mockFriendService, 'hasActiveUUID').mockReturnValue(true);
+      jest
+        .spyOn(mockFriendService, 'getActiveUUID')
+        .mockReturnValue('valid-invite-id');
+
+      return agent
+        .put(`/friends/${username}/${inviteId}`)
+        .set('Authorization', `Bearer ${tokens.access_token}`)
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((response) => {
+          expect(response.body.message).toBe(
+            'Your invite link is not correct or expired',
+          );
         });
     });
   });

@@ -342,7 +342,7 @@ export class UserController {
 
     const ttl = 5 * 60 * 1000;
 
-    this.friendService.setInviteLink(user.username, link, ttl);
+    this.friendService.setInviteLink(user.username, uuid, ttl);
 
     const res = new GetInviteLinkDTO();
     res.inviteLink = link;

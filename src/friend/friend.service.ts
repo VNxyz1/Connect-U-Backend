@@ -72,14 +72,14 @@ export class FriendService {
   /**
    * Creates a friendship between two users.
    * @param user The user who is initiating the friend request.
-   * @param friendId The ID of the user to be added as a friend.
+   * @param username the username of the user to be added as a friend.
    * @returns The updated user with the new friend added.
    * @throws NotFoundException if the friend with the given ID is not found.
    * @throws Error if the friend already exists in the user's friend list or friendOf list.
    */
-  async createFriend(user: UserDB, friendId: string): Promise<UserDB> {
+  async createFriend(user: UserDB, username: string): Promise<UserDB> {
     const friend = await this.userRepository.findOne({
-      where: { id: friendId },
+      where: { username: username },
       relations: ['friendOf'],
     });
 
@@ -90,7 +90,7 @@ export class FriendService {
     user.friends = user.friends || [];
     user.friendOf = user.friendOf || [];
 
-    const existingFriend = user.friends.find((f) => f.id === friendId);
+    const existingFriend = user.friends.find((f) => f.id === friend.id);
     if (existingFriend) {
       throw new Error('Friend already exists in the users friend list');
     }

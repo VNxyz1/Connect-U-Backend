@@ -30,7 +30,7 @@ describe('UserService', () => {
   });
 
   it('should throw BadRequestException if email is already taken', async () => {
-    userRepository.findOne.mockResolvedValueOnce({ id: '1' } as UserDB); // Email conflict
+    userRepository.findOne.mockResolvedValueOnce({ id: '1' } as UserDB);
     const mockData = {
       email: 'existing.email@example.com',
       username: 'newUsername',

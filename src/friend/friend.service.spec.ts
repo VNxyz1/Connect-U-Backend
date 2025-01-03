@@ -191,6 +191,8 @@ describe('FriendService', () => {
 });
 
 export const mockFriendService = {
+  hasActiveUUID: jest.fn(),
+  getActiveUUID: jest.fn().mockResolvedValue('valid-invite-id'),
   createFriend: jest.fn().mockResolvedValue({
     success: true,
     message: 'Friend was added',
