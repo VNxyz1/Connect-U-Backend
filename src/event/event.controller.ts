@@ -217,4 +217,22 @@ export class EventController {
     await this.eventService.removeUserFromEvent(user, eventId);
     return new OkDTO(true, 'User was removed from participant list');
   }
+
+  @ApiResponse({
+    type: [GetEventCardDTO],
+    description: 'Returns the current fy page of the logged in user',
+    status: HttpStatus.OK,
+  })
+  @HttpCode(HttpStatus.OK)
+  @Get('fy-page/:userId')
+  async getHomePage(
+    @Param('userId') userId: string,
+  ): Promise<GetEventCardDTO[]> {
+    const events = await this.eventService.fyPageAlgo(userId);
+    return await Promise.all(
+      events.map(async (event) => {
+        return this.utilsService.transformEventDBtoGetEventCardDTO(event);
+      }),
+    );
+  }
 }

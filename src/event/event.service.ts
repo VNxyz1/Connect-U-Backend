@@ -20,6 +20,8 @@ export class EventService {
     private readonly listEntryRepository: Repository<ListEntryDB>,
     @InjectRepository(SurveyEntryDB)
     private readonly surveyEntryRepository: Repository<SurveyEntryDB>,
+    @InjectRepository(UserDB)
+    private readonly userRepository: Repository<UserDB>,
     private readonly schedulerService: SchedulerService,
   ) {}
 
@@ -286,5 +288,113 @@ export class EventService {
     }
 
     return await this.eventRepository.save(event);
+  }
+
+  async fyPageAlgo(userId: string): Promise<EventDB[]> {
+    // Hole Hosting- und Teilnahme-Events mit Kategorien und Tags in einer Abfrage
+    const hostingEvents = await this.getHostingEvents(userId);
+    const participatingEvents = await this.getParticipatingEvents(userId);
+
+    const hostAndParticipant = [...hostingEvents, ...participatingEvents];
+
+    // Frequenzkarten erstellen
+    const [hpCategories, hpTags, hpCities] =
+      this.calculateFrequencyMaps(hostAndParticipant);
+
+    // Datenbankabfrage: Nur relevante Events holen und direkt sortieren
+    const res = await this.eventRepository
+      .createQueryBuilder('event')
+      .leftJoinAndSelect('event.categories', 'categories')
+      .leftJoinAndSelect('event.tags', 'tags')
+      .where('categories.id IN (:...categoryIds)', {
+        categoryIds: Array.from(hpCategories.keys()),
+      })
+      .orWhere('tags.id IN (:...tagIds)', { tagIds: Array.from(hpTags.keys()) })
+      .getMany();
+
+    // Relevanzberechnung parallelisieren
+    const sortedWithRelevance = res
+      .map((event) => ({
+        event,
+        relevance: this.calculateRelevance(
+          event,
+          hpCategories,
+          hpTags,
+          hpCities,
+        ),
+      }))
+      .sort((a, b) => b.relevance - a.relevance);
+
+    return sortedWithRelevance.map((item) => item.event);
+  }
+
+  private calculateFrequencyMaps(
+    events: EventDB[],
+  ): [Map<number, number>, Map<number, number>, Map<string, number>] {
+    const categoryFrequencyMap: Map<number, number> = new Map();
+    const tagFrequencyMap: Map<number, number> = new Map();
+    const cityFrequencyMap: Map<string, number> = new Map();
+
+    for (const event of events) {
+      for (const category of event.categories) {
+        categoryFrequencyMap.set(
+          category.id,
+          (categoryFrequencyMap.get(category.id) || 0) + 1,
+        );
+      }
+      for (const tag of event.tags) {
+        tagFrequencyMap.set(tag.id, (tagFrequencyMap.get(tag.id) || 0) + 1);
+      }
+      cityFrequencyMap.set(
+        event.city,
+        (cityFrequencyMap.get(event.city) || 0) + 1,
+      );
+    }
+
+    return [categoryFrequencyMap, tagFrequencyMap, cityFrequencyMap];
+  }
+
+  private calculateRelevance(
+    event: EventDB,
+    hpCategories: Map<number, number>,
+    hpTags: Map<number, number>,
+    hpCities: Map<string, number>,
+  ): number {
+    // Berechnung der maximal möglichen Relevanz für Normalisierung
+    const maxCategoryRelevance =
+      Array.from(hpCategories.values()).reduce(
+        (sum, value) => sum + value,
+        0,
+      ) || 1;
+    const maxTagRelevance =
+      Array.from(hpTags.values()).reduce((sum, value) => sum + value, 0) || 1;
+    const maxCityRelevance =
+      Array.from(hpCities.values()).reduce((sum, value) => sum + value, 0) || 1;
+
+    // Relevanzwerte für das Event berechnen
+    const categoryRelevance =
+      event.categories.reduce(
+        (sum, category) => sum + (hpCategories.get(category.id) || 0),
+        0,
+      ) / maxCategoryRelevance;
+
+    const tagRelevance =
+      event.tags.reduce((sum, tag) => sum + (hpTags.get(tag.id) || 0), 0) /
+      maxTagRelevance;
+
+    const cityRelevance = (hpCities.get(event.city) || 0) / maxCityRelevance;
+
+    // Prozentuale Gewichtung der Faktoren
+    const categoryWeight = 0.32;
+    const tagWeight = 0.08;
+    const cityWeight = 0.4;
+
+    // Berechnung der Gesamtrelevanz
+    const totalRelevance =
+      categoryRelevance * categoryWeight * 100 +
+      tagRelevance * tagWeight * 100 +
+      cityRelevance * cityWeight * 100;
+
+    return totalRelevance;
   }
 }

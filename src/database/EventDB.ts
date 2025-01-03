@@ -18,6 +18,7 @@ import { TagDB } from './TagDB';
 import { CategoryDB } from './CategoryDB';
 import { MessageDB } from './MessageDB';
 import { SurveyDB } from './SurveyDB';
+import ViewedEventsDB from './ViewedEventsDB';
 
 @Entity()
 export class EventDB {
@@ -107,4 +108,7 @@ export class EventDB {
   @ManyToMany(() => CategoryDB, (category) => category.events)
   @JoinTable({ name: 'EventCategories' })
   categories: CategoryDB[];
+
+  @OneToMany(() => ViewedEventsDB, (viewEvents) => viewEvents.event)
+  viewEvents: ViewedEventsDB[];
 }

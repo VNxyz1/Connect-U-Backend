@@ -21,6 +21,7 @@ import { TagDB } from './TagDB';
 import { ListDB } from './ListDB';
 import { SurveyDB } from './SurveyDB';
 import * as bcrypt from 'bcryptjs';
+import ViewedEventsDB from './ViewedEventsDB';
 
 @Entity()
 export class UserDB {
@@ -135,4 +136,7 @@ export class UserDB {
 
   @ManyToMany(() => MessageDB, (message) => message.unreadUsers)
   unreadMessages: MessageDB[];
+
+  @OneToMany(() => ViewedEventsDB, (viewEvents) => viewEvents.user)
+  viewEvents: ViewedEventsDB[];
 }

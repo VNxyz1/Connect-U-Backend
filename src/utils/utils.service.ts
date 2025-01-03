@@ -258,7 +258,7 @@ export class UtilsService {
     dto.isOnline = event.isOnline;
     dto.city = event.city;
     const participants = event.participants;
-    dto.participantsNumber = participants.length;
+    dto.participantsNumber = participants?.length || 0;
     dto.maxParticipantsNumber = event.participantsNumber;
     if (event.tags && event.tags.length > 0) {
       dto.tags = event.tags.map((tag) => tag.title);
