@@ -5,6 +5,7 @@ import {
   OneToMany,
   JoinTable,
   ManyToMany,
+  BeforeInsert,
 } from 'typeorm';
 import { IsEmail, IsPhoneNumber } from 'class-validator';
 import { GenderEnum } from './enums/GenderEnum';
@@ -19,9 +20,16 @@ import { ReactionDB } from './ReactionDB';
 import { TagDB } from './TagDB';
 import { ListDB } from './ListDB';
 import { SurveyDB } from './SurveyDB';
+import * as bcrypt from 'bcryptjs';
 
 @Entity()
 export class UserDB {
+  @BeforeInsert()
+  async setPassword?(password: string) {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(password || this.password, salt);
+  }
+
   @PrimaryGeneratedColumn('uuid')
   id: string;
 

@@ -39,15 +39,12 @@ export class UserService {
       throw new BadRequestException('username is already taken');
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(body.password, salt);
-
     const newUser: UserDB = this.userRepository.create();
     newUser.firstName = body.firstName;
     newUser.lastName = body.lastName;
     newUser.email = body.email;
     newUser.username = body.username;
-    newUser.password = hashedPassword;
+    newUser.password = body.password;
     newUser.birthday = body.birthday;
     newUser.gender = body.gender;
     return await this.userRepository.save(newUser);
@@ -194,6 +191,21 @@ export class UserService {
 
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(password, salt);
+
+    return await this.userRepository.save(user);
+  }
+
+  /**
+   * Updates a user's password.
+   *
+   * @param {string} id - The unique ID of the user to update.
+   * @param profilePic - new profile picture path
+   * @returns {Promise<UserDB>} - The updated user.
+   */
+  async updateProfilePic(id: string, profilePic: string): Promise<UserDB> {
+    const user = await this.findById(id);
+
+    user.profilePicture = profilePic;
 
     return await this.userRepository.save(user);
   }
