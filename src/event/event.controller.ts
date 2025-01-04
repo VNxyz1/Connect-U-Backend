@@ -113,11 +113,26 @@ export class EventController {
     );
   }
 
+  @ApiResponse({
+    type: [GetEventCardDTO],
+    description: 'gets all events',
+  })
+  @Get('/allEvents')
+  async getAllEvents(): Promise<GetEventCardDTO[]> {
+    const events = await this.eventService.getAllEvents();
+    return await Promise.all(
+      events.map(async (event) => {
+        return this.utilsService.transformEventDBtoGetEventCardDTO(event);
+      }),
+    );
+  }
 
   @ApiResponse({
     type: [GetEventCardDTO],
     description: 'gets events using the preferred filters',
   })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard)
   @Get('/filteredEvents')
   async getFilteredEvents(
     @Query() query: FilterDTO,
