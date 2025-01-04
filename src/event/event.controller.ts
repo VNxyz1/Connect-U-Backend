@@ -113,12 +113,13 @@ export class EventController {
     );
   }
 
+
   @ApiResponse({
     type: [GetEventCardDTO],
-    description: 'gets all events using the preferred filters',
+    description: 'gets events using the preferred filters',
   })
-  @Get('/allEvents')
-  async getAllEvents(
+  @Get('/filteredEvents')
+  async getFilteredEvents(
     @Query() query: FilterDTO,
   ): Promise<GetEventCardDTO[]> {
 
@@ -129,7 +130,7 @@ export class EventController {
       throw new BadRequestException('An event must be either public or half public.');
     }
 
-    let events = await this.eventService.getAllEvents(query);
+    let events = await this.eventService.getFilteredEvents(query);
 
     switch (query.sortOrder) {
       case SortOrder.NEWEST_FIRST:

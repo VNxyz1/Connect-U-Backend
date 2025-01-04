@@ -93,13 +93,34 @@ export class EventService {
   }
 
   /**
+   * Gets all events from the database.
+   *
+   * @returns {Promise<EventDB[]>} - The events.
+   * @throws {NotFoundException} - If there are no events found.
+   */
+  async getAllEvents(): Promise<EventDB[]> {
+    const events = await this.eventRepository.find({
+      relations: ['categories', 'participants', 'tags'],
+      order: {
+        timestamp: 'DESC',
+      },
+    });
+
+    if (!events || events.length === 0) {
+      throw new NotFoundException('Events not found');
+    }
+
+    return events;
+  }
+
+  /**
    * Gets all events from the database with optional filters.
    *
    * @param {FilterDTO} filters - The filters to apply.
    * @returns {Promise<EventDB[]>} - The filtered events.
    * @throws {NotFoundException} - If there are no events found.
    */
-  async getAllEvents(filters: FilterDTO): Promise<EventDB[]> {
+  async getFilteredEvents(filters: FilterDTO): Promise<EventDB[]> {
     const {
       title,
       minAge,
