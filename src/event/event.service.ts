@@ -117,6 +117,8 @@ export class EventService {
     queryBuilder.leftJoinAndSelect('event.participants', 'participants');
     queryBuilder.leftJoinAndSelect('event.tags', 'tags');
 
+    queryBuilder.andWhere('event.status = :status', { status: StatusEnum.upcoming });
+
     if (title) {
       queryBuilder.andWhere('event.title LIKE :title', { title: `%${title}%` });
     }
@@ -130,7 +132,9 @@ export class EventService {
     }
 
     if (genders && genders.length > 0) {
-      queryBuilder.andWhere('gender.name IN (:...genders)', { genders });
+      queryBuilder
+        .leftJoin('event.preferredGenders', 'preferredGender')
+        .andWhere('preferredGender.gender IN (:...genders)', { genders });
     }
 
     if (isPublic == false) {

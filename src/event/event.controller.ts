@@ -25,7 +25,7 @@ import { EventtypeEnum } from '../database/enums/EventtypeEnum';
 import { CreateEventResDTO } from './DTO/CreateEventResDTO';
 import { GetEventDetailsDTO } from './DTO/GetEventDetailsDTO';
 import { TagService } from '../tag/tag.service';
-import { FilterDTO } from './DTO/FilterDTO';
+import { FilterDTO, SortOrder } from './DTO/FilterDTO';
 
 @ApiTags('event')
 @Controller('event')
@@ -115,13 +115,39 @@ export class EventController {
 
   @ApiResponse({
     type: [GetEventCardDTO],
-    description: 'gets all events',
+    description: 'gets all events using the preferred filters',
   })
   @Get('/allEvents')
   async getAllEvents(
     @Query() query: FilterDTO,
   ): Promise<GetEventCardDTO[]> {
-    const events = await this.eventService.getAllEvents(query);
+
+    if (query.isOnline === false && query.isInPlace === false) {
+      throw new BadRequestException('An event must be either online or in place.');
+    }
+    if (query.isPublic === false && query.isHalfPublic === false) {
+      throw new BadRequestException('An event must be either public or half public.');
+    }
+
+    let events = await this.eventService.getAllEvents(query);
+
+    switch (query.sortOrder) {
+      case SortOrder.NEWEST_FIRST:
+        events = events.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+        break;
+      case SortOrder.OLDEST_FIRST:
+        events = events.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+        break;
+      case SortOrder.UPCOMING_NEXT:
+        events = events.sort((a, b) => new Date(a.dateAndTime).getTime() - new Date(b.dateAndTime).getTime());
+        break;
+      case SortOrder.UPCOMING_LAST:
+        events = events.sort((a, b) => new Date(b.dateAndTime).getTime() - new Date(a.dateAndTime).getTime());
+        break;
+      default:
+        break;
+    }
+
     return await Promise.all(
       events.map(async (event) => {
         return this.utilsService.transformEventDBtoGetEventCardDTO(event);
