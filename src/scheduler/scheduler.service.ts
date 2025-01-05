@@ -68,16 +68,36 @@ export class SchedulerService implements OnModuleInit {
   }
 
   async rescheduleAllEvents(): Promise<void> {
-    const events = await this.eventRepository.find({
-      where: [{ status: StatusEnum.upcoming }, { status: StatusEnum.live }],
-    });
+    const events = await this.eventRepository.find();
 
-    events.forEach((event) => {
+    const now = new Date();
+
+    for (const event of events) {
+      const eventTime = new Date(event.dateAndTime);
+      const finishedTime = new Date(event.dateAndTime);
+      finishedTime.setHours(finishedTime.getHours() + 24);
+
       if (event.status === StatusEnum.upcoming) {
-        this.scheduleEventStatusUpdate(event);
+        if (eventTime <= now && finishedTime > now) {
+          event.status = StatusEnum.live;
+          await this.eventRepository.save(event);
+          await this.scheduleFinishedStatusUpdate(event);
+        } else if (finishedTime <= now) {
+          event.status = StatusEnum.finished;
+          await this.eventRepository.save(event);
+          await this.deleteEventRequests(event.id);
+        } else {
+          await this.scheduleEventStatusUpdate(event);
+        }
       } else if (event.status === StatusEnum.live) {
-        this.scheduleFinishedStatusUpdate(event);
+        if (finishedTime <= now) {
+          event.status = StatusEnum.finished;
+          await this.eventRepository.save(event);
+          await this.deleteEventRequests(event.id);
+        } else {
+          await this.scheduleFinishedStatusUpdate(event);
+        }
       }
-    });
+    }
   }
 }
