@@ -5,7 +5,7 @@ import {
   IsNumber,
   Min,
   Max,
-  IsEnum,
+  IsEnum, IsArray,
 } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
@@ -36,6 +36,16 @@ export class FilterDTO {
   @IsOptional()
   @IsString()
   title?: string;
+
+  @ApiPropertyOptional({
+    description: 'Filter events by category IDs',
+    example: [1, 2, 3],
+  })
+  @IsOptional()
+  @IsArray()
+  @Transform(({ value }) => (Array.isArray(value) ? value.map(Number) : []))
+  @IsNumber({}, { each: true })
+  categories?: number[];
 
   @ApiPropertyOptional({
     description: 'The minimum age allowed for the event',

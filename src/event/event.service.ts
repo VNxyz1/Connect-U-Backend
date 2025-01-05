@@ -131,6 +131,7 @@ export class EventService {
       isOnline,
       isInPlace,
       sortOrder,
+      categories
     } = filters;
 
     const queryBuilder = this.eventRepository.createQueryBuilder('event');
@@ -145,6 +146,14 @@ export class EventService {
 
     if (title) {
       queryBuilder.andWhere('event.title LIKE :title', { title: `%${title}%` });
+    }
+
+    if (categories && categories.length > 0) {
+      queryBuilder
+        .leftJoin('event.categories', 'categories')
+        .andWhere('categories.id IN (:...categories)', {
+        categories: categories,
+      });
     }
 
     if (minAge) {
