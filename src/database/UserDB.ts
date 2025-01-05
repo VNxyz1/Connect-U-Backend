@@ -102,10 +102,10 @@ export class UserDB {
 
   @ManyToMany(() => UserDB, (user) => user.friendOf)
   @JoinTable({ name: 'FriendshipDB' })
-  friends: Promise<UserDB[]>;
+  friends: UserDB[];
 
   @ManyToMany(() => UserDB, (user) => user.friends)
-  friendOf: Promise<UserDB[]>;
+  friendOf: UserDB[];
 
   @OneToMany(() => ListDB, (list) => list.creator)
   lists: ListDB[];
