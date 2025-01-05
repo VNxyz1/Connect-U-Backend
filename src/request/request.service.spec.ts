@@ -13,9 +13,11 @@ import {
 } from '@nestjs/common';
 import { GenderEnum } from '../database/enums/GenderEnum';
 import { StatusEnum } from '../database/enums/StatusEnum';
+import { FriendService } from '../friend/friend.service';
 
 describe('RequestService', () => {
   let service: RequestService;
+  let friendService: FriendService;
   let requestRepository: jest.Mocked<Repository<RequestDB>>;
   let eventRepository: jest.Mocked<Repository<EventDB>>;
   let userRepository: jest.Mocked<Repository<UserDB>>;
@@ -23,6 +25,7 @@ describe('RequestService', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
+        FriendService,
         RequestService,
         { provide: getRepositoryToken(RequestDB), useValue: jest.fn() },
         { provide: getRepositoryToken(EventDB), useValue: jest.fn() },
@@ -34,6 +37,7 @@ describe('RequestService', () => {
     requestRepository = module.get(getRepositoryToken(RequestDB));
     eventRepository = module.get(getRepositoryToken(EventDB));
     userRepository = module.get(getRepositoryToken(UserDB));
+    friendService = module.get(FriendService);
 
     requestRepository.findOne = jest.fn();
     eventRepository.save = jest.fn();
@@ -42,6 +46,9 @@ describe('RequestService', () => {
     requestRepository.save = jest.fn();
     eventRepository.findOne = jest.fn();
     userRepository.findOne = jest.fn();
+    friendService.areUsersFriends = jest.fn();
+
+    jest.spyOn(friendService, 'areUsersFriends').mockResolvedValue(true);
   });
 
   describe('RequestService - postJoinRequest', () => {
@@ -709,8 +716,8 @@ const mockUserList: UserDB[] = [
     participatedEvents: [],
     favoritedEvents: [],
     memories: [],
-    friends: Promise.resolve([]),
-    friendOf: Promise.resolve([]),
+    friends: [],
+    friendOf: [],
     listEntries: [],
     achievements: Promise.resolve([]),
     surveyEntries: [],
@@ -744,8 +751,8 @@ const mockUserList: UserDB[] = [
     participatedEvents: [],
     favoritedEvents: [],
     memories: [],
-    friends: Promise.resolve([]),
-    friendOf: Promise.resolve([]),
+    friends: [],
+    friendOf: [],
     listEntries: [],
     surveys: [],
     lists: [],
@@ -781,8 +788,8 @@ const mockUserList: UserDB[] = [
     participatedEvents: [],
     favoritedEvents: [],
     memories: [],
-    friends: Promise.resolve([]),
-    friendOf: Promise.resolve([]),
+    friends: [],
+    friendOf: [],
     listEntries: [],
     achievements: Promise.resolve([]),
     surveyEntries: [],

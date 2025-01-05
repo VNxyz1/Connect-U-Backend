@@ -10,10 +10,12 @@ import { RequestDB } from '../database/RequestDB';
 import { UserDB } from '../database/UserDB';
 import { EventDB } from '../database/EventDB';
 import { EventtypeEnum } from '../database/enums/EventtypeEnum';
+import { FriendService } from '../friend/friend.service';
 
 @Injectable()
 export class RequestService {
   constructor(
+    private readonly friendService: FriendService,
     @InjectRepository(RequestDB)
     private readonly requestRepository: Repository<RequestDB>,
     @InjectRepository(EventDB)
@@ -280,6 +282,10 @@ export class RequestService {
       } else {
         throw new BadRequestException('Request already exists');
       }
+    }
+
+    if ((await this.friendService.areUsersFriends(hostId, user.id)) === false) {
+      throw new BadRequestException('You can only invite friends');
     }
 
     const invite = this.requestRepository.create();
