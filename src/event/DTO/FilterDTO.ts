@@ -43,7 +43,7 @@ export class FilterDTO {
   })
   @IsOptional()
   @IsArray()
-  @Transform(({ value }) => (Array.isArray(value) ? value.map(Number) : []))
+  @Transform(({ value }) => (Array.isArray(value) ? value.map(Number) : Number.isNaN(value)? undefined : [Number(value)]))
   @IsNumber({}, { each: true })
   categories?: number[];
 
@@ -71,15 +71,11 @@ export class FilterDTO {
     description: 'Allowed genders for the event (e.g., male, female, diverse)',
     example: ['male', 'female'],
   })
-  @Transform(({ value }) =>
-    typeof value === 'string'
-      ? [value]
-      : Array.isArray(value)
-        ? value
-        : undefined,
-  )
+  @Transform(({ value }) => (Array.isArray(value) ? value.map(Number) : Number.isNaN(value)? undefined : [Number(value)]))
   @IsOptional()
-  genders?: string[];
+  @IsArray()
+  @IsNumber({}, { each: true })
+  genders?: number[];
 
   @ApiPropertyOptional({
     description: 'Whether the event is public',

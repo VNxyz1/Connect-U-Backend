@@ -150,7 +150,6 @@ export class EventService {
 
     if (categories && categories.length > 0) {
       queryBuilder
-        .leftJoin('event.categories', 'categories')
         .andWhere('categories.id IN (:...categories)', {
         categories: categories,
       });
@@ -167,7 +166,7 @@ export class EventService {
     if (genders && genders.length > 0) {
       queryBuilder
         .leftJoin('event.preferredGenders', 'preferredGender')
-        .andWhere('preferredGender.gender IN (:...genders)', { genders });
+        .andWhere('preferredGender.gender IN (:...genders)', { genders: genders });
     }
 
     if (isPublic == false) {

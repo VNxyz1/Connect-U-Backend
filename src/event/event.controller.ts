@@ -132,8 +132,8 @@ export class EventController {
     type: [GetEventCardDTO],
     description: 'gets events using the preferred filters',
   })
-  @ApiBearerAuth('access-token')
-  @UseGuards(AuthGuard)
+  // @ApiBearerAuth('access-token')
+  // @UseGuards(AuthGuard)
   @Get('/filteredEvents')
   async getFilteredEvents(
     @Query() query: FilterDTO,
