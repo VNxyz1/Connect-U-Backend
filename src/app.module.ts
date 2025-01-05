@@ -38,6 +38,7 @@ import { TagController } from './tag/tag.controller';
 import { MessageController } from './Message/message.controller';
 import { MessageService } from './Message/message.service';
 import { FriendService } from './friend/friend.service';
+import { FriendsController } from './friend/friend.controller';
 import { PushNotificationService } from './push-notification/push-notification.service';
 import { InitSeeder } from './database/seeding/init.seeder';
 
@@ -74,6 +75,7 @@ import { InitSeeder } from './database/seeding/init.seeder';
     SurveyController,
     TagController,
     MessageController,
+    FriendsController,
   ],
   providers: [
     AppService,
