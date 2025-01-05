@@ -130,4 +130,36 @@ export class FriendService {
       new Map(allFriends.map((friend) => [friend.id, friend])).values(),
     );
   }
+
+  /**
+   * Checks if two users are friends.
+   * @param userId1 The ID of the first user.
+   * @param userId2 The ID of the second user.
+   * @returns True if the users are friends, otherwise false.
+   * @throws NotFoundException if either user is not found.
+   */
+  async areUsersFriends(userId1: string, userId2: string): Promise<boolean> {
+    const user1 = await this.userRepository.findOne({
+      where: { id: userId1 },
+      relations: ['friends', 'friendOf'],
+    });
+
+    const user2 = await this.userRepository.findOne({
+      where: { id: userId2 },
+      relations: ['friends', 'friendOf'],
+    });
+
+    if (!user1) {
+      throw new NotFoundException('User 1 not found');
+    }
+
+    if (!user2) {
+      throw new NotFoundException('User 2 not found');
+    }
+
+    return (
+      user1.friends.some((friend) => friend.id === user2.id) ||
+      user2.friends.some((friend) => friend.id === user1.id)
+    );
+  }
 }
