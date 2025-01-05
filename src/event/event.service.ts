@@ -11,7 +11,7 @@ import { ListEntryDB } from '../database/ListEntryDB';
 import { SurveyEntryDB } from '../database/SurveyEntryDB';
 import { TagDB } from '../database/TagDB';
 import { SchedulerService } from '../scheduler/scheduler.service';
-import { FilterDTO } from './DTO/FilterDTO';
+import { FilterDTO, SortOrder } from './DTO/FilterDTO';
 import { EventtypeEnum } from '../database/enums/EventtypeEnum';
 
 export class EventService {
@@ -23,7 +23,8 @@ export class EventService {
     @InjectRepository(SurveyEntryDB)
     private readonly surveyEntryRepository: Repository<SurveyEntryDB>,
     private readonly schedulerService: SchedulerService,
-  ) {}
+  ) {
+  }
 
   /**
    * Creates a new event in the database.
@@ -130,6 +131,7 @@ export class EventService {
       isHalfPublic,
       isOnline,
       isInPlace,
+      sortOrder,
     } = filters;
 
     const queryBuilder = this.eventRepository.createQueryBuilder('event');
@@ -174,7 +176,32 @@ export class EventService {
       queryBuilder.andWhere('event.isOnline = :isOnline', { isOnline: true });
     }
 
-    queryBuilder.orderBy('event.timestamp', 'DESC');
+    if (sortOrder) {
+      switch (sortOrder) {
+        case SortOrder.NEWEST_FIRST:
+          queryBuilder.orderBy('event.timestamp', 'DESC');
+          break;
+        case SortOrder.OLDEST_FIRST:
+          queryBuilder.orderBy('event.timestamp', 'ASC');
+          break;
+        case SortOrder.UPCOMING_NEXT:
+          queryBuilder.orderBy('event.dateAndTime', 'ASC');
+          break;
+        case SortOrder.UPCOMING_LAST:
+          queryBuilder.orderBy('event.dateAndTime', 'DESC');
+          break;
+        case SortOrder.ALPHABETICAL_ASC:
+          queryBuilder.orderBy('event.title', 'ASC');
+          break;
+        case SortOrder.ALPHABETICAL_DESC:
+          queryBuilder.orderBy('event.title', 'DESC');
+          break;
+      }
+    } else {
+      queryBuilder.orderBy('event.dateAndTime', 'ASC');
+    }
+
+
 
     const events = await queryBuilder.getMany();
 

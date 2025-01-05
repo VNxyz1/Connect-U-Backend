@@ -25,7 +25,7 @@ import { EventtypeEnum } from '../database/enums/EventtypeEnum';
 import { CreateEventResDTO } from './DTO/CreateEventResDTO';
 import { GetEventDetailsDTO } from './DTO/GetEventDetailsDTO';
 import { TagService } from '../tag/tag.service';
-import { FilterDTO, SortOrder } from './DTO/FilterDTO';
+import { FilterDTO} from './DTO/FilterDTO';
 
 @ApiTags('event')
 @Controller('event')
@@ -145,24 +145,7 @@ export class EventController {
       throw new BadRequestException('An event must be either public or half public.');
     }
 
-    let events = await this.eventService.getFilteredEvents(query);
-
-    switch (query.sortOrder) {
-      case SortOrder.NEWEST_FIRST:
-        events = events.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-        break;
-      case SortOrder.OLDEST_FIRST:
-        events = events.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
-        break;
-      case SortOrder.UPCOMING_NEXT:
-        events = events.sort((a, b) => new Date(a.dateAndTime).getTime() - new Date(b.dateAndTime).getTime());
-        break;
-      case SortOrder.UPCOMING_LAST:
-        events = events.sort((a, b) => new Date(b.dateAndTime).getTime() - new Date(a.dateAndTime).getTime());
-        break;
-      default:
-        break;
-    }
+    const events = await this.eventService.getFilteredEvents(query);
 
     return await Promise.all(
       events.map(async (event) => {

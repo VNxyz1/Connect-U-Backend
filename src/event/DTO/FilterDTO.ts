@@ -14,6 +14,8 @@ export enum SortOrder {
   OLDEST_FIRST = 'oldestFirst',
   UPCOMING_NEXT = 'upcomingNext',
   UPCOMING_LAST = 'upcomingLast',
+  ALPHABETICAL_ASC = 'alphabetical_asc',
+  ALPHABETICAL_DESC = 'alphabetical_desc',
 }
 
 export class FilterDTO {
