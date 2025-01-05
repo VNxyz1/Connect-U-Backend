@@ -4,7 +4,8 @@ import {
   IsString,
   IsNumber,
   Min,
-  Max, IsEnum,
+  Max,
+  IsEnum,
 } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
@@ -27,7 +28,6 @@ export class FilterDTO {
   @IsOptional()
   @IsEnum(SortOrder)
   sortOrder?: SortOrder;
-
 
   @ApiPropertyOptional({
     description: 'Search for events by title',
@@ -62,7 +62,11 @@ export class FilterDTO {
     example: ['male', 'female'],
   })
   @Transform(({ value }) =>
-    typeof value === 'string' ? [value] : Array.isArray(value) ? value : undefined,
+    typeof value === 'string'
+      ? [value]
+      : Array.isArray(value)
+        ? value
+        : undefined,
   )
   @IsOptional()
   genders?: string[];

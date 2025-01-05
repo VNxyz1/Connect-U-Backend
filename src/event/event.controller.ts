@@ -7,7 +7,8 @@ import {
   HttpCode,
   HttpStatus,
   Param,
-  Post, Query,
+  Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { OkDTO } from '../serverDTO/OkDTO';
@@ -25,7 +26,7 @@ import { EventtypeEnum } from '../database/enums/EventtypeEnum';
 import { CreateEventResDTO } from './DTO/CreateEventResDTO';
 import { GetEventDetailsDTO } from './DTO/GetEventDetailsDTO';
 import { TagService } from '../tag/tag.service';
-import { FilterDTO} from './DTO/FilterDTO';
+import { FilterDTO } from './DTO/FilterDTO';
 
 @ApiTags('event')
 @Controller('event')
@@ -137,12 +138,15 @@ export class EventController {
   async getFilteredEvents(
     @Query() query: FilterDTO,
   ): Promise<GetEventCardDTO[]> {
-
     if (query.isOnline === false && query.isInPlace === false) {
-      throw new BadRequestException('An event must be either online or in place.');
+      throw new BadRequestException(
+        'An event must be either online or in place.',
+      );
     }
     if (query.isPublic === false && query.isHalfPublic === false) {
-      throw new BadRequestException('An event must be either public or half public.');
+      throw new BadRequestException(
+        'An event must be either public or half public.',
+      );
     }
 
     const events = await this.eventService.getFilteredEvents(query);

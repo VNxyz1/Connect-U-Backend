@@ -15,6 +15,7 @@ import { Repository } from 'typeorm';
 import { SurveyEntryDB } from '../database/SurveyEntryDB';
 import { ListEntryDB } from '../database/ListEntryDB';
 import { SchedulerService } from '../scheduler/scheduler.service';
+import { FilterDTO } from './DTO/FilterDTO';
 
 export const mockEventRepository = {
   create: jest.fn(),
@@ -531,6 +532,77 @@ describe('EventService', () => {
       ).rejects.toThrow(BadRequestException);
     });
   });
+
+  describe('EventService - getFilteredEvents', () => {
+    it('should return events with no filters', async () => {
+      const mockQueryBuilder = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue(mockEventList),
+      };
+
+      jest
+        .spyOn(mockEventRepository, 'createQueryBuilder')
+        .mockReturnValue(mockQueryBuilder as any);
+
+      const filters: FilterDTO = {};
+
+      const result = await service.getFilteredEvents(filters);
+
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'event.status = :status',
+        {
+          status: StatusEnum.upcoming,
+        },
+      );
+      expect(result).toEqual(mockEventList);
+    });
+
+    it('should filter events by title', async () => {
+      const mockQueryBuilder = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue(mockEventList),
+      };
+
+      jest
+        .spyOn(mockEventRepository, 'createQueryBuilder')
+        .mockReturnValue(mockQueryBuilder as any);
+
+      const filters: FilterDTO = { title: 'Tech Conference' };
+
+      const result = await service.getFilteredEvents(filters);
+
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'event.title LIKE :title',
+        {
+          title: '%Tech Conference%',
+        },
+      );
+      expect(result).toEqual(mockEventList);
+    });
+
+    it('should throw NotFoundException if no events match the filters', async () => {
+      const mockQueryBuilder = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue([]),
+      };
+
+      jest
+        .spyOn(mockEventRepository, 'createQueryBuilder')
+        .mockReturnValue(mockQueryBuilder as any);
+
+      const filters: FilterDTO = { title: 'Nonexistent Event' };
+
+      await expect(service.getFilteredEvents(filters)).rejects.toThrow(
+        new NotFoundException('Events not found'),
+      );
+    });
+  });
 });
 
 export const mockEventService = {
@@ -543,6 +615,7 @@ export const mockEventService = {
   addUserToEvent: jest.fn().mockResolvedValue(new EventDB()),
   getUpcomingAndLiveEvents: jest.fn().mockResolvedValue(mockEventList),
   removeUserFromEvent: jest.fn().mockResolvedValue(new EventDB()),
+  getFilteredEvents: jest.fn().mockResolvedValue(mockEventList),
 };
 
 export const mockSchedulerService = {

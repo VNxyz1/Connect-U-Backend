@@ -23,8 +23,7 @@ export class EventService {
     @InjectRepository(SurveyEntryDB)
     private readonly surveyEntryRepository: Repository<SurveyEntryDB>,
     private readonly schedulerService: SchedulerService,
-  ) {
-  }
+  ) {}
 
   /**
    * Creates a new event in the database.
@@ -140,7 +139,9 @@ export class EventService {
     queryBuilder.leftJoinAndSelect('event.participants', 'participants');
     queryBuilder.leftJoinAndSelect('event.tags', 'tags');
 
-    queryBuilder.andWhere('event.status = :status', { status: StatusEnum.upcoming });
+    queryBuilder.andWhere('event.status = :status', {
+      status: StatusEnum.upcoming,
+    });
 
     if (title) {
       queryBuilder.andWhere('event.title LIKE :title', { title: `%${title}%` });
@@ -161,11 +162,15 @@ export class EventService {
     }
 
     if (isPublic == false) {
-      queryBuilder.andWhere('event.type != :eventType', { eventType: EventtypeEnum.public });
+      queryBuilder.andWhere('event.type != :eventType', {
+        eventType: EventtypeEnum.public,
+      });
     }
 
     if (isHalfPublic == false) {
-      queryBuilder.andWhere('event.type != :eventType', { eventType: EventtypeEnum.halfPrivate });
+      queryBuilder.andWhere('event.type != :eventType', {
+        eventType: EventtypeEnum.halfPrivate,
+      });
     }
 
     if (isOnline === false) {
@@ -200,8 +205,6 @@ export class EventService {
     } else {
       queryBuilder.orderBy('event.dateAndTime', 'ASC');
     }
-
-
 
     const events = await queryBuilder.getMany();
 
