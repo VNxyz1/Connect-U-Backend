@@ -72,15 +72,20 @@ export class FriendsController {
 
   @ApiResponse({
     type: [GetUserProfileDTO],
-    description: 'Retrieves the list of friends that meet the event requirements',
+    description:
+      'Retrieves the list of friends that meet the event requirements',
   })
   @Get('/filteredFriends/:eventId')
   @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard)
-  async getFilteredFriends(@User() user: UserDB, @Param('eventId') eventId: string,
+  async getFilteredFriends(
+    @User() user: UserDB,
+    @Param('eventId') eventId: string,
   ): Promise<GetUserProfileDTO[]> {
     const event: EventDB = await this.eventService.getEventById(eventId);
-    const participantIds = new Set(event.participants.map((participant) => participant.id));
+    const participantIds = new Set(
+      event.participants.map((participant) => participant.id),
+    );
 
     const friends = await this.friendService.getFriends(user.id);
     const filteredFriends = [];
@@ -90,14 +95,16 @@ export class FriendsController {
           continue;
         }
 
-        const isAllowed = await this.utilsService.isUserAllowedToJoinEvent(friend, event);
+        const isAllowed = await this.utilsService.isUserAllowedToJoinEvent(
+          friend,
+          event,
+        );
         if (isAllowed) {
           filteredFriends.push(
             this.utilsService.transformUserDBtoGetUserProfileDTO(friend, false),
           );
         }
-      } catch {
-      }
+      } catch {}
     }
     return filteredFriends;
   }

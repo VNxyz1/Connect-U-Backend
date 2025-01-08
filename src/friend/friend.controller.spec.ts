@@ -12,6 +12,8 @@ import { mockProviders } from '../../test/mock-services';
 import { FriendsController } from './friend.controller';
 import { FriendService } from './friend.service';
 import { mockFriendService } from './friend.service.spec';
+import { EventService } from '../event/event.service';
+import { mockEventService } from '../event/event.service.spec';
 
 describe('FriendsController', () => {
   let app: INestApplication;
@@ -35,6 +37,10 @@ describe('FriendsController', () => {
         {
           provide: FriendService,
           useValue: mockFriendService,
+        },
+        {
+          provide: EventService,
+          useValue: mockEventService,
         },
         {
           provide: AuthService,
@@ -129,7 +135,7 @@ describe('FriendsController', () => {
         .mockResolvedValue(mockFriends);
 
       return agent
-        .get('/friends')
+        .get('/friends/allFriends')
         .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
         .expect(HttpStatus.OK)
         .expect((response) => {
@@ -143,7 +149,7 @@ describe('FriendsController', () => {
       jest.spyOn(mockFriendService, 'getFriends').mockResolvedValue([]);
 
       return agent
-        .get('/friends')
+        .get('/friends/allFriends')
         .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
         .expect(HttpStatus.OK)
         .expect((response) => {
