@@ -191,7 +191,7 @@ describe('FriendService', () => {
 
   afterAll(() => {
     jest.clearAllMocks();
-  })
+  });
 });
 
 export const mockFriendService = {
