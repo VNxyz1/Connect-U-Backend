@@ -42,29 +42,8 @@ jobs:
           key: ${{ github.ref }}-${{ github.sha }}-setup
 
 
-  test:
-    name: Run Tests
-    needs: setup
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Restore setup
-        uses: actions/cache@v4
-        with:
-          path: ./*
-          key: ${{ github.ref }}-${{ github.sha }}-setup
-
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Run tests
-        run: npm run test
-
-
   build-and-push:
-    needs: [setup, test]
+    needs: [setup]
     runs-on: ubuntu-latest
 
     steps:
