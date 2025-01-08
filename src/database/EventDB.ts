@@ -33,7 +33,7 @@ export class EventDB {
   @Column({ default: StatusEnum.upcoming })
   status: StatusEnum;
 
-  @Column({ type: 'datetime' })
+  @Column()
   dateAndTime: string;
 
   @Column()

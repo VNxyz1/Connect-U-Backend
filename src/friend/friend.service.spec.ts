@@ -188,6 +188,10 @@ describe('FriendService', () => {
       jest.useRealTimers();
     });
   });
+
+  afterAll(() => {
+    jest.clearAllMocks();
+  })
 });
 
 export const mockFriendService = {
