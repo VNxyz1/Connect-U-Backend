@@ -82,7 +82,6 @@ export class FriendsController {
     const event: EventDB = await this.eventService.getEventById(eventId);
     const participantIds = new Set(event.participants.map((participant) => participant.id));
 
-
     const friends = await this.friendService.getFriends(user.id);
     const filteredFriends = [];
     for (const friend of friends) {
