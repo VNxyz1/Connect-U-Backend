@@ -9,7 +9,6 @@ import {
 } from 'typeorm';
 import { UserDB } from './UserDB';
 import { StatusEnum } from './enums/StatusEnum';
-import { EventtypeEnum } from './enums/EventtypeEnum';
 import { MemoryDB } from './MemoryDB';
 import { GenderDB } from './GenderDB';
 import { RequestDB } from './RequestDB';
@@ -31,7 +30,7 @@ export class EventDB {
   host: UserDB;
 
   @Column({ default: StatusEnum.upcoming })
-  status: StatusEnum;
+  status: number;
 
   @Column()
   dateAndTime: string;
@@ -43,7 +42,7 @@ export class EventDB {
   description: string;
 
   @Column({ default: 0 })
-  type: EventtypeEnum;
+  type: number;
 
   @Column({ default: '' })
   picture: string;
