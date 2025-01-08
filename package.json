@@ -37,6 +37,7 @@
     "class-validator": "^0.14.1",
     "cookie-parser": "^1.4.7",
     "node-schedule": "^2.1.1",
+    "pg": "^8.13.1",
     "postgres": "^3.4.5",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
