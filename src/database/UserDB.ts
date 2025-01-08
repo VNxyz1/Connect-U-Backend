@@ -8,7 +8,6 @@ import {
   BeforeInsert,
 } from 'typeorm';
 import { IsEmail, IsPhoneNumber } from 'class-validator';
-import { GenderEnum } from './enums/GenderEnum';
 import { EventDB } from './EventDB';
 import { MemoryDB } from './MemoryDB';
 import { RequestDB } from './RequestDB';
@@ -81,7 +80,7 @@ export class UserDB {
   isVerified: boolean;
 
   @Column({ default: 0 })
-  gender: GenderEnum;
+  gender: number;
 
   @OneToMany(() => EventDB, (event) => event.host)
   hostedEvents: EventDB[];
