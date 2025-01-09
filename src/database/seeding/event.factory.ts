@@ -1,17 +1,23 @@
-import {fakerDE as faker} from '@faker-js/faker';
-import {EventDB} from '../EventDB';
-import {UserDB} from '../UserDB';
-import {CategoryDB} from '../CategoryDB';
-import {TagDB} from '../TagDB';
-
+import { fakerDE as faker } from '@faker-js/faker';
+import { EventDB } from '../EventDB';
+import { UserDB } from '../UserDB';
+import { CategoryDB } from '../CategoryDB';
+import { TagDB } from '../TagDB';
 
 export const eventFactory = async (
   userList: UserDB[],
   categorys: CategoryDB[],
   tags: TagDB[],
 ) => {
-
-  const _cities: string[] = ['Gießen', 'Berlin', 'Marburg', 'Bielefeld', 'Schotten', 'München', 'Daun'];
+  const _cities: string[] = [
+    'Gießen',
+    'Berlin',
+    'Marburg',
+    'Bielefeld',
+    'Schotten',
+    'München',
+    'Daun',
+  ];
 
   const event = new EventDB();
 

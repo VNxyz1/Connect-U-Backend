@@ -236,6 +236,7 @@ export const mockUserList: UserDB[] = [
     reactions: [],
     tags: [],
     unreadMessages: [],
+    viewEvents: [],
   },
   {
     id: '2',
@@ -271,6 +272,7 @@ export const mockUserList: UserDB[] = [
     reactions: [],
     tags: [],
     unreadMessages: [],
+    viewEvents: [],
   },
   {
     id: '3',
@@ -306,6 +308,7 @@ export const mockUserList: UserDB[] = [
     reactions: [],
     tags: [],
     unreadMessages: [],
+    viewEvents: [],
   },
 ];
 

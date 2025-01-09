@@ -76,7 +76,11 @@ export class InitSeeder {
       const viewedEvents: ViewedEventsDB[] = [];
       for (
         let i = 0;
-        i < faker.number.int({ min: 0, max: faker.number.int({ min: 0, max: userList.length - 1 }) });
+        i <
+        faker.number.int({
+          min: 0,
+          max: faker.number.int({ min: 0, max: userList.length - 1 }),
+        });
         i++
       ) {
         const user =
@@ -87,7 +91,9 @@ export class InitSeeder {
         const viewedEvent: ViewedEventsDB = new ViewedEventsDB();
         viewedEvent.user = user;
         viewedEvent.event = event;
-        viewedEvent.viewed = faker.datatype.boolean({probability:0.75})? ViewEventEnum.CLICKED_ON : ViewEventEnum.VIEWED;
+        viewedEvent.viewed = faker.datatype.boolean({ probability: 0.75 })
+          ? ViewEventEnum.CLICKED_ON
+          : ViewEventEnum.VIEWED;
         await this.veRepository.save(viewedEvent);
       }
     }

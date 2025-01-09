@@ -15,6 +15,7 @@ import { Repository } from 'typeorm';
 import { SurveyEntryDB } from '../database/SurveyEntryDB';
 import { ListEntryDB } from '../database/ListEntryDB';
 import { SchedulerService } from '../scheduler/scheduler.service';
+import ViewedEventsDB from '../database/ViewedEventsDB';
 
 export const mockEventRepository = {
   create: jest.fn(),
@@ -73,6 +74,7 @@ const mockUser: UserDB = {
   reactions: [],
   tags: [],
   unreadMessages: [],
+  viewEvents: [],
 };
 
 const participantUser: UserDB = {
@@ -109,6 +111,7 @@ const participantUser: UserDB = {
   reactions: [],
   tags: [],
   unreadMessages: [],
+  viewEvents: [],
 };
 
 const mockCreateEventDTO: CreateEventDTO = {
@@ -159,6 +162,7 @@ const mockEventList: EventDB[] = [
     memories: [],
     tags: [],
     messages: [],
+    viewEvents: [],
   },
   {
     id: '2',
@@ -189,6 +193,7 @@ const mockEventList: EventDB[] = [
     memories: [],
     tags: [],
     messages: [],
+    viewEvents: [],
   },
 ];
 
@@ -224,6 +229,10 @@ describe('EventService', () => {
         },
         {
           provide: getRepositoryToken(SurveyEntryDB),
+          useClass: Repository,
+        },
+        {
+          provide: getRepositoryToken(ViewedEventsDB),
           useClass: Repository,
         },
         {

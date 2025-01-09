@@ -564,6 +564,7 @@ const mockUser: UserDB = {
   reactions: [],
   tags: [],
   unreadMessages: [],
+  viewEvents: [],
 };
 export const MockPublicEvent: EventDB = {
   id: '1',
@@ -596,6 +597,7 @@ export const MockPublicEvent: EventDB = {
   memories: [],
   tags: [],
   messages: [],
+  viewEvents: [],
 };
 
 const MockPrivateEvent: EventDB = {
@@ -627,6 +629,7 @@ const MockPrivateEvent: EventDB = {
   memories: [],
   tags: [],
   messages: [],
+  viewEvents: [],
 };
 
 const MockEventDetailsDTO: GetEventDetailsDTO = {

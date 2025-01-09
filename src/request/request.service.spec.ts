@@ -408,6 +408,7 @@ const mockUserList: UserDB[] = [
     lists: [],
     tags: [],
     unreadMessages: [],
+    viewEvents: [],
   },
   {
     id: '2',
@@ -443,6 +444,7 @@ const mockUserList: UserDB[] = [
     reactions: [],
     tags: [],
     unreadMessages: [],
+    viewEvents: [],
   },
   {
     id: '3',
@@ -478,6 +480,7 @@ const mockUserList: UserDB[] = [
     reactions: [],
     tags: [],
     unreadMessages: [],
+    viewEvents: [],
   },
 ];
 
@@ -511,6 +514,7 @@ const mockEventList: EventDB[] = [
     memories: [],
     tags: [],
     messages: [],
+    viewEvents: [],
   },
   {
     id: '2',
@@ -541,5 +545,6 @@ const mockEventList: EventDB[] = [
     memories: [],
     tags: [],
     messages: [],
+    viewEvents: [],
   },
 ];

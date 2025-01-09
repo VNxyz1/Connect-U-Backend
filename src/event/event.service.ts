@@ -1,16 +1,16 @@
-import {InjectRepository} from '@nestjs/typeorm';
-import {In, Not, Repository} from 'typeorm';
-import {EventDB} from '../database/EventDB';
-import {CreateEventDTO} from './DTO/CreateEventDTO';
-import {UserDB} from '../database/UserDB';
-import {CategoryDB} from '../database/CategoryDB';
-import {GenderDB} from '../database/GenderDB';
-import {BadRequestException, NotFoundException} from '@nestjs/common';
-import {StatusEnum} from '../database/enums/StatusEnum';
-import {ListEntryDB} from '../database/ListEntryDB';
-import {SurveyEntryDB} from '../database/SurveyEntryDB';
-import {TagDB} from '../database/TagDB';
-import {SchedulerService} from '../scheduler/scheduler.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { In, Not, Repository } from 'typeorm';
+import { EventDB } from '../database/EventDB';
+import { CreateEventDTO } from './DTO/CreateEventDTO';
+import { UserDB } from '../database/UserDB';
+import { CategoryDB } from '../database/CategoryDB';
+import { GenderDB } from '../database/GenderDB';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { StatusEnum } from '../database/enums/StatusEnum';
+import { ListEntryDB } from '../database/ListEntryDB';
+import { SurveyEntryDB } from '../database/SurveyEntryDB';
+import { TagDB } from '../database/TagDB';
+import { SchedulerService } from '../scheduler/scheduler.service';
 import ViewEventEnum from '../database/enums/ViewEventEnum';
 import ViewedEventsDB from '../database/ViewedEventsDB';
 
@@ -22,8 +22,6 @@ export class EventService {
     private readonly listEntryRepository: Repository<ListEntryDB>,
     @InjectRepository(SurveyEntryDB)
     private readonly surveyEntryRepository: Repository<SurveyEntryDB>,
-    @InjectRepository(UserDB)
-    private readonly userRepository: Repository<UserDB>,
     @InjectRepository(ViewedEventsDB)
     private readonly veRepository: Repository<ViewedEventsDB>,
     private readonly schedulerService: SchedulerService,
@@ -296,32 +294,74 @@ export class EventService {
 
   async fyPageAlgo(userId: string): Promise<EventDB[]> {
     // Parallelisiere Datenbankabfragen
-    const [hostingEvents, participatingEvents, clickedEvents, activeEvents] = await Promise.all([
-      this.getHostingEvents(userId),
-      this.getParticipatingEvents(userId),
-      this.eventRepository.find({
-        where: { viewEvents: { user: { id: userId }, viewed: ViewEventEnum.CLICKED_ON } },
-        select: ["id", "categories", "tags", "city"], // Nur relevante Felder abfragen
-        relations: { categories: true, tags: true },
-      }),
-      this.eventRepository.find({
-        where: { status: Not(In([StatusEnum.finished, StatusEnum.cancelled])) },
-        relations: { categories: true, tags: true },
-      }),
-    ]);
+    const [hostingEvents, participatingEvents, clickedEvents, activeEvents] =
+      await Promise.all([
+        this.getHostingEvents(userId),
+        this.getParticipatingEvents(userId),
+        this.eventRepository.find({
+          where: {
+            viewEvents: {
+              user: { id: userId },
+              viewed: ViewEventEnum.CLICKED_ON,
+            },
+          },
+          select: ['id', 'categories', 'tags', 'city'], // Nur relevante Felder abfragen
+          relations: { categories: true, tags: true },
+        }),
+        this.eventRepository.find({
+          where: {
+            status: Not(In([StatusEnum.finished, StatusEnum.cancelled])),
+            host: { id: Not(userId) },
+            participants: { id: Not(userId) },
+          },
+          select: {
+            participantsNumber: true,
+            participants: true,
+            id: true,
+            isOnline: true,
+            city: true,
+            categories: true,
+            dateAndTime: true,
+            title: true,
+            picture: true,
+            status: true,
+            type: true,
+            tags: true,
+          },
+          relations: { categories: true, tags: true },
+        }),
+      ]);
 
     // Kombiniere Hosting- und Teilnahme-Events
     const hostAndParticipant = [...hostingEvents, ...participatingEvents];
 
     // Frequenzkarten erstellen
-    const [hpCategories, hpTags, hpCities] = this.calculateFrequencyMaps(hostAndParticipant);
-    const [clickedCategories, clickedTags, clickedCities] = this.calculateFrequencyMaps(clickedEvents);
+    const [hpCategories, hpTags, hpCities] =
+      this.calculateFrequencyMaps(hostAndParticipant);
+    const [clickedCategories, clickedTags, clickedCities] =
+      this.calculateFrequencyMaps(clickedEvents);
 
     // Relevanzberechnung parallelisieren
     const relevanceScores = activeEvents.map((event) => {
       const relevance =
-        this.calculateRelevance(event, hpCategories, hpTags, hpCities, 0.32, 0.08, 0.4) +
-        this.calculateRelevance(event, clickedCategories, clickedTags, clickedCities, 0.08, 0.02, 0.1);
+        this.calculateRelevance(
+          event,
+          hpCategories,
+          hpTags,
+          hpCities,
+          0.32,
+          0.08,
+          0.4,
+        ) +
+        this.calculateRelevance(
+          event,
+          clickedCategories,
+          clickedTags,
+          clickedCities,
+          0.08,
+          0.02,
+          0.1,
+        );
       return { event, relevance };
     });
 
@@ -341,12 +381,18 @@ export class EventService {
     // Frequenzen direkt berechnen
     events.forEach((event) => {
       event.categories.forEach((category) =>
-        categoryFrequencyMap.set(category.id, (categoryFrequencyMap.get(category.id) || 0) + 1),
+        categoryFrequencyMap.set(
+          category.id,
+          (categoryFrequencyMap.get(category.id) || 0) + 1,
+        ),
       );
       event.tags.forEach((tag) =>
         tagFrequencyMap.set(tag.id, (tagFrequencyMap.get(tag.id) || 0) + 1),
       );
-      cityFrequencyMap.set(event.city, (cityFrequencyMap.get(event.city) || 0) + 1);
+      cityFrequencyMap.set(
+        event.city,
+        (cityFrequencyMap.get(event.city) || 0) + 1,
+      );
     });
 
     return [categoryFrequencyMap, tagFrequencyMap, cityFrequencyMap];
@@ -363,8 +409,14 @@ export class EventService {
   ): number {
     // Relevanz direkt berechnen
     const categoryRelevance =
-      event.categories.reduce((sum, category) => sum + (hpCategories.get(category.id) || 0), 0) /
-      (Array.from(hpCategories.values()).reduce((sum, value) => sum + value, 0) || 1);
+      event.categories.reduce(
+        (sum, category) => sum + (hpCategories.get(category.id) || 0),
+        0,
+      ) /
+      (Array.from(hpCategories.values()).reduce(
+        (sum, value) => sum + value,
+        0,
+      ) || 1);
 
     const tagRelevance =
       event.tags.reduce((sum, tag) => sum + (hpTags.get(tag.id) || 0), 0) /
@@ -372,7 +424,8 @@ export class EventService {
 
     const cityRelevance =
       (hpCities.get(event.city) || 0) /
-      (Array.from(hpCities.values()).reduce((sum, value) => sum + value, 0) || 1);
+      (Array.from(hpCities.values()).reduce((sum, value) => sum + value, 0) ||
+        1);
 
     // Gesamtrelevanz berechnen
     return (
@@ -382,13 +435,11 @@ export class EventService {
     );
   }
 
-
   async setEventAsClicked(event: EventDB, user: UserDB) {
-
     const ve = await this.veRepository.findOne({
-      where: {event: {id: event.id}, user: {id: user.id}},
-      relations: {event: true, user: true},
-    })
+      where: { event: { id: event.id }, user: { id: user.id } },
+      relations: { event: true, user: true },
+    });
 
     if (ve) {
       ve.viewed = ViewEventEnum.CLICKED_ON;
@@ -403,5 +454,4 @@ export class EventService {
 
     await this.veRepository.save(newVe);
   }
-
 }
