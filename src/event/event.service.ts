@@ -295,80 +295,60 @@ export class EventService {
   }
 
   async fyPageAlgo(userId: string): Promise<EventDB[]> {
-    // Hole Hosting- und Teilnahme-Events mit Kategorien und Tags in einer Abfrage
-    const hostingEvents = await this.getHostingEvents(userId);
-    const participatingEvents = await this.getParticipatingEvents(userId);
+    // Parallelisiere Datenbankabfragen
+    const [hostingEvents, participatingEvents, clickedEvents, activeEvents] = await Promise.all([
+      this.getHostingEvents(userId),
+      this.getParticipatingEvents(userId),
+      this.eventRepository.find({
+        where: { viewEvents: { user: { id: userId }, viewed: ViewEventEnum.CLICKED_ON } },
+        select: ["id", "categories", "tags", "city"], // Nur relevante Felder abfragen
+        relations: { categories: true, tags: true },
+      }),
+      this.eventRepository.find({
+        where: { status: Not(In([StatusEnum.finished, StatusEnum.cancelled])) },
+        select: ["id", "categories", "tags", "city"], // Nur relevante Felder abfragen
+        relations: { categories: true, tags: true },
+      }),
+    ]);
 
+    // Kombiniere Hosting- und Teilnahme-Events
     const hostAndParticipant = [...hostingEvents, ...participatingEvents];
 
-    // Frequenzkarten für hosted und participating erstellen
-    const [hpCategories, hpTags, hpCities] =
-      this.calculateFrequencyMaps(hostAndParticipant);
-
-    const clickedEvents = await this.eventRepository.find({
-      where: { viewEvents: {user: {id: userId}, viewed: ViewEventEnum.CLICKED_ON} },
-      relations: {viewEvents: { user: true }, categories: true, tags: true, host: true, participants: true},
-    })
-
-    // Frequenzkarten für hosted and participating erstellen
-    const [clickedCategories, clickedTags, clickedCities] =
-      this.calculateFrequencyMaps(clickedEvents);
-
-
-    const res = await this.eventRepository.find({
-      where: { status: Not(In([StatusEnum.finished, StatusEnum.cancelled])) },
-      relations: {viewEvents: { user: true }, categories: true, tags: true, host: true, participants: true},
-    })
+    // Frequenzkarten erstellen
+    const [hpCategories, hpTags, hpCities] = this.calculateFrequencyMaps(hostAndParticipant);
+    const [clickedCategories, clickedTags, clickedCities] = this.calculateFrequencyMaps(clickedEvents);
 
     // Relevanzberechnung parallelisieren
-    const sortedWithRelevance = res
-      .map((event) => ({
-        event,
-        relevance: this.calculateRelevance(
-          event,
-          hpCategories,
-          hpTags,
-          hpCities,
-          0.32,
-          0.08,
-          0.4
-        ) + this.calculateRelevance(
-          event,
-          clickedCategories,
-          clickedTags,
-          clickedCities,
-          0.08,
-          0.02,
-          0.1
-        ),
-      }))
-      .sort((a, b) => b.relevance - a.relevance);
+    const relevanceScores = activeEvents.map((event) => {
+      const relevance =
+        this.calculateRelevance(event, hpCategories, hpTags, hpCities, 0.32, 0.08, 0.4) +
+        this.calculateRelevance(event, clickedCategories, clickedTags, clickedCities, 0.08, 0.02, 0.1);
+      return { event, relevance };
+    });
 
-    return sortedWithRelevance.map((item) => item.event);
+    // Nur relevante Events sortieren und zurückgeben
+    return relevanceScores
+      .sort((a, b) => b.relevance - a.relevance)
+      .map((item) => item.event);
   }
 
   private calculateFrequencyMaps(
     events: EventDB[],
   ): [Map<number, number>, Map<number, number>, Map<string, number>] {
-    const categoryFrequencyMap: Map<number, number> = new Map();
-    const tagFrequencyMap: Map<number, number> = new Map();
-    const cityFrequencyMap: Map<string, number> = new Map();
+    const categoryFrequencyMap = new Map<number, number>();
+    const tagFrequencyMap = new Map<number, number>();
+    const cityFrequencyMap = new Map<string, number>();
 
-    for (const event of events) {
-      for (const category of event.categories) {
-        categoryFrequencyMap.set(
-          category.id,
-          (categoryFrequencyMap.get(category.id) || 0) + 1,
-        );
-      }
-      for (const tag of event.tags) {
-        tagFrequencyMap.set(tag.id, (tagFrequencyMap.get(tag.id) || 0) + 1);
-      }
-      cityFrequencyMap.set(
-        event.city,
-        (cityFrequencyMap.get(event.city) || 0) + 1,
+    // Frequenzen direkt berechnen
+    events.forEach((event) => {
+      event.categories.forEach((category) =>
+        categoryFrequencyMap.set(category.id, (categoryFrequencyMap.get(category.id) || 0) + 1),
       );
-    }
+      event.tags.forEach((tag) =>
+        tagFrequencyMap.set(tag.id, (tagFrequencyMap.get(tag.id) || 0) + 1),
+      );
+      cityFrequencyMap.set(event.city, (cityFrequencyMap.get(event.city) || 0) + 1);
+    });
 
     return [categoryFrequencyMap, tagFrequencyMap, cityFrequencyMap];
   }
@@ -382,38 +362,27 @@ export class EventService {
     tagWeight: number,
     cityWeight: number,
   ): number {
-    // Berechnung der maximal möglichen Relevanz für Normalisierung
-    const maxCategoryRelevance =
-      Array.from(hpCategories.values()).reduce(
-        (sum, value) => sum + value,
-        0,
-      ) || 1;
-    const maxTagRelevance =
-      Array.from(hpTags.values()).reduce((sum, value) => sum + value, 0) || 1;
-    const maxCityRelevance =
-      Array.from(hpCities.values()).reduce((sum, value) => sum + value, 0) || 1;
-
-    // Relevanzwerte für das Event berechnen
+    // Relevanz direkt berechnen
     const categoryRelevance =
-      event.categories.reduce(
-        (sum, category) => sum + (hpCategories.get(category.id) || 0),
-        0,
-      ) / maxCategoryRelevance;
+      event.categories.reduce((sum, category) => sum + (hpCategories.get(category.id) || 0), 0) /
+      (Array.from(hpCategories.values()).reduce((sum, value) => sum + value, 0) || 1);
 
     const tagRelevance =
       event.tags.reduce((sum, tag) => sum + (hpTags.get(tag.id) || 0), 0) /
-      maxTagRelevance;
+      (Array.from(hpTags.values()).reduce((sum, value) => sum + value, 0) || 1);
 
-    const cityRelevance = (hpCities.get(event.city) || 0) / maxCityRelevance;
+    const cityRelevance =
+      (hpCities.get(event.city) || 0) /
+      (Array.from(hpCities.values()).reduce((sum, value) => sum + value, 0) || 1);
 
-    // Berechnung der Gesamtrelevanz
-    const totalRelevance =
+    // Gesamtrelevanz berechnen
+    return (
       categoryRelevance * categoryWeight * 100 +
       tagRelevance * tagWeight * 100 +
-      cityRelevance * cityWeight * 100;
-
-    return totalRelevance;
+      cityRelevance * cityWeight * 100
+    );
   }
+
 
   async setEventAsClicked(event: EventDB, user: UserDB) {
 
@@ -433,7 +402,7 @@ export class EventService {
     newVe.user = user;
     newVe.viewed = ViewEventEnum.CLICKED_ON;
 
-    await this.veRepository.save(ve);
+    await this.veRepository.save(newVe);
   }
 
 }
