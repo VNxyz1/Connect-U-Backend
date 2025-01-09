@@ -147,6 +147,41 @@ describe('UserController', () => {
     expect(mockUserService.findById).toHaveBeenCalledWith(expectedUserDB.id);
   });
 
+  it('/GET getUserByName/:username - should return user profile by username', async () => {
+    const expectedUserDB: UserDB =
+      await mockUserService.findByUsername('johnDoe');
+    const mockUserProfile = {
+      id: expectedUserDB.id,
+      isUser: false,
+      firstName: expectedUserDB.firstName,
+      username: expectedUserDB.username,
+      city: expectedUserDB.city,
+      profilePicture: expectedUserDB.profilePicture,
+      pronouns: expectedUserDB.pronouns,
+      age: 39,
+      profileText: expectedUserDB.profileText,
+    };
+
+    jest
+      .spyOn(mockUserService, 'findByUsername')
+      .mockResolvedValueOnce(expectedUserDB);
+
+    jest
+      .spyOn(mockUtilsService, 'transformUserDBtoGetUserProfileDTO')
+      .mockReturnValueOnce(mockUserProfile);
+
+    const response = await request(app.getHttpServer())
+      .get(`/user/getUserByName/${expectedUserDB.username}`)
+      .expect('Content-Type', /json/)
+      .expect(HttpStatus.OK);
+
+    expect(response.body).toEqual(mockUserProfile);
+
+    expect(mockUserService.findByUsername).toHaveBeenCalledWith(
+      expectedUserDB.username,
+    );
+  });
+
   it('/PATCH userData - should update user data successfully', async () => {
     jest.spyOn(mockUserService, 'updateUser').mockResolvedValueOnce(undefined);
 

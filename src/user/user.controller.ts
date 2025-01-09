@@ -112,6 +112,23 @@ export class UserController {
   }
 
   @ApiResponse({
+    type: GetUserProfileDTO,
+    description: 'gets data for the profile',
+  })
+  @Get('/getUserByName/:username')
+  async getUserByName(
+    @Param('username') username: string,
+    @User() user: UserDB | null,
+  ): Promise<GetUserProfileDTO> {
+    const userProfile = await this.userService.findByUsername(username);
+    const isUser = user?.id === userProfile.id;
+    return this.utilsService.transformUserDBtoGetUserProfileDTO(
+      userProfile,
+      isUser,
+    );
+  }
+
+  @ApiResponse({
     type: GetUserDataDTO,
     description: 'gets user Data for editing the user',
   })
