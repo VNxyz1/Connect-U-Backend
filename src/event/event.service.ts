@@ -1,16 +1,16 @@
-import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
-import { EventDB } from '../database/EventDB';
-import { CreateEventDTO } from './DTO/CreateEventDTO';
-import { UserDB } from '../database/UserDB';
-import { CategoryDB } from '../database/CategoryDB';
-import { GenderDB } from '../database/GenderDB';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { StatusEnum } from '../database/enums/StatusEnum';
-import { ListEntryDB } from '../database/ListEntryDB';
-import { SurveyEntryDB } from '../database/SurveyEntryDB';
-import { TagDB } from '../database/TagDB';
-import { SchedulerService } from '../scheduler/scheduler.service';
+import {InjectRepository} from '@nestjs/typeorm';
+import {In, Not, Repository} from 'typeorm';
+import {EventDB} from '../database/EventDB';
+import {CreateEventDTO} from './DTO/CreateEventDTO';
+import {UserDB} from '../database/UserDB';
+import {CategoryDB} from '../database/CategoryDB';
+import {GenderDB} from '../database/GenderDB';
+import {BadRequestException, NotFoundException} from '@nestjs/common';
+import {StatusEnum} from '../database/enums/StatusEnum';
+import {ListEntryDB} from '../database/ListEntryDB';
+import {SurveyEntryDB} from '../database/SurveyEntryDB';
+import {TagDB} from '../database/TagDB';
+import {SchedulerService} from '../scheduler/scheduler.service';
 import ViewEventEnum from '../database/enums/ViewEventEnum';
 import ViewedEventsDB from '../database/ViewedEventsDB';
 
@@ -314,17 +314,11 @@ export class EventService {
     const [clickedCategories, clickedTags, clickedCities] =
       this.calculateFrequencyMaps(clickedEvents);
 
-    // Datenbankabfrage: Nur relevante Events holen und direkt sortieren
-    const res = await this.eventRepository
-      .createQueryBuilder('event')
-      .leftJoinAndSelect('event.categories', 'categories')
-      .leftJoinAndSelect('event.tags', 'tags')
-      .where('categories.id IN (:...categoryIds)', {
-        categoryIds: [...Array.from(hpCategories.keys()), ...Array.from(clickedCategories.keys())],
-      })
-      .orWhere('tags.id IN (:...tagIds)', { tagIds: [...Array.from(hpTags.keys()), ...Array.from(clickedTags.keys())] })
-      .orWhere('event.city IN (:...cities)', { cities: [...Array.from(hpCities.keys()), ...Array.from(clickedCities.keys())] })
-      .getMany();
+
+    const res = await this.eventRepository.find({
+      where: { status: Not(In([StatusEnum.finished, StatusEnum.cancelled])) },
+      relations: {viewEvents: { user: true }, categories: true, tags: true, host: true, participants: true},
+    })
 
     // Relevanzberechnung parallelisieren
     const sortedWithRelevance = res

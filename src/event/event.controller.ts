@@ -232,8 +232,6 @@ export class EventController {
   @ApiQuery({
     type: Pagination,
   })
-  @ApiBearerAuth('access-token')
-  @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
   @Get('fy-page')
   async getHomePage(
