@@ -30,7 +30,7 @@ describe('UserService', () => {
   });
 
   it('should throw BadRequestException if email is already taken', async () => {
-    userRepository.findOne.mockResolvedValueOnce({ id: '1' } as UserDB); // Email conflict
+    userRepository.findOne.mockResolvedValueOnce({ id: '1' } as UserDB);
     const mockData = {
       email: 'existing.email@example.com',
       username: 'newUsername',
@@ -225,8 +225,8 @@ export const mockUserList: UserDB[] = [
     participatedEvents: [],
     favoritedEvents: [],
     memories: [],
-    friends: Promise.resolve([]),
-    friendOf: Promise.resolve([]),
+    friends: [],
+    friendOf: [],
     listEntries: [],
     achievements: Promise.resolve([]),
     surveyEntries: [],
@@ -261,8 +261,8 @@ export const mockUserList: UserDB[] = [
     participatedEvents: [],
     favoritedEvents: [],
     memories: [],
-    friends: Promise.resolve([]),
-    friendOf: Promise.resolve([]),
+    friends: [],
+    friendOf: [],
     listEntries: [],
     lists: [],
     surveys: [],
@@ -299,8 +299,8 @@ export const mockUserList: UserDB[] = [
     participatedEvents: [],
     favoritedEvents: [],
     memories: [],
-    friends: Promise.resolve([]),
-    friendOf: Promise.resolve([]),
+    friends: [],
+    friendOf: [],
     listEntries: [],
     achievements: Promise.resolve([]),
     surveyEntries: [],

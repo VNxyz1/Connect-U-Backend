@@ -82,6 +82,7 @@ export class EventController {
       genders,
       body,
     );
+
     return new CreateEventResDTO(true, 'Event was created', newEvent.id);
   }
 

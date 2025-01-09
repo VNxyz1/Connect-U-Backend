@@ -7,7 +7,6 @@ import {
 } from 'typeorm';
 import { UserDB } from './UserDB';
 import { EventDB } from './EventDB';
-import { RequestEnum } from './enums/RequestEnum';
 
 @Entity()
 export class RequestDB {
@@ -24,7 +23,7 @@ export class RequestDB {
   event: EventDB;
 
   @Column()
-  type: RequestEnum;
+  type: number;
 
   @Column({ default: false })
   denied: boolean;
