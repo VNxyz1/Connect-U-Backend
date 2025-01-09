@@ -309,8 +309,13 @@ export class EventService {
     return await this.eventRepository.save(event);
   }
 
+  /**
+   * Fetches and sorts events based on user preferences, participation, and click frequency.
+   * @param {string} userId - The ID of the user for whom the events are fetched and ranked.
+   * @returns {Promise<EventDB[]>} - A sorted list of events based on relevance scores.
+   */
   async fyPageAlgo(userId: string): Promise<EventDB[]> {
-    // Parallelisiere Datenbankabfragen
+    // Parallelize database calls for hosting, participating, clicked, and active events
     const [hostingEvents, participatingEvents, clickedEvents, activeEvents] =
       await Promise.all([
         this.getHostingEvents(userId),
@@ -322,7 +327,7 @@ export class EventService {
               viewed: ViewEventEnum.CLICKED_ON,
             },
           },
-          select: ['id', 'categories', 'tags', 'city'], // Nur relevante Felder abfragen
+          select: ['id', 'categories', 'tags', 'city'],
           relations: { categories: true, tags: true },
         }),
         this.eventRepository.find({
@@ -350,16 +355,15 @@ export class EventService {
         }),
       ]);
 
-    // Kombiniere Hosting- und Teilnahme-Events
     const hostAndParticipant = [...hostingEvents, ...participatingEvents];
 
-    // Frequenzkarten erstellen
     const [hpCategories, hpTags, hpCities] =
       this.calculateFrequencyMaps(hostAndParticipant);
+
     const [clickedCategories, clickedTags, clickedCities] =
       this.calculateFrequencyMaps(clickedEvents);
 
-    // Relevanzberechnung parallelisieren
+    // Calculate relevance scores for all active events
     const relevanceScores = activeEvents.map((event) => {
       const relevance =
         this.calculateRelevance(
@@ -383,12 +387,17 @@ export class EventService {
       return { event, relevance };
     });
 
-    // Nur relevante Events sortieren und zurückgeben
     return relevanceScores
       .sort((a, b) => b.relevance - a.relevance)
       .map((item) => item.event);
   }
 
+  /**
+   * Calculates frequency maps for categories, tags, and cities from a list of events.
+   * @param {EventDB[]} events - The events from which frequency maps are generated.
+   * @returns {[Map<number, number>, Map<number, number>, Map<string, number>]} -
+   * Three maps containing the frequency of categories, tags, and cities.
+   */
   private calculateFrequencyMaps(
     events: EventDB[],
   ): [Map<number, number>, Map<number, number>, Map<string, number>] {
@@ -396,7 +405,6 @@ export class EventService {
     const tagFrequencyMap = new Map<number, number>();
     const cityFrequencyMap = new Map<string, number>();
 
-    // Frequenzen direkt berechnen
     events.forEach((event) => {
       event.categories.forEach((category) =>
         categoryFrequencyMap.set(
@@ -416,6 +424,17 @@ export class EventService {
     return [categoryFrequencyMap, tagFrequencyMap, cityFrequencyMap];
   }
 
+  /**
+   * Calculates a relevance score for a given event based on frequency maps and weights.
+   * @param {EventDB} event - The event for which the relevance score is calculated.
+   * @param {Map<number, number>} hpCategories - Frequency map for categories.
+   * @param {Map<number, number>} hpTags - Frequency map for tags.
+   * @param {Map<string, number>} hpCities - Frequency map for cities.
+   * @param {number} categoryWeight - Weight assigned to category relevance.
+   * @param {number} tagWeight - Weight assigned to tag relevance.
+   * @param {number} cityWeight - Weight assigned to city relevance.
+   * @returns {number} - The calculated relevance score for the event.
+   */
   private calculateRelevance(
     event: EventDB,
     hpCategories: Map<number, number>,
@@ -425,7 +444,6 @@ export class EventService {
     tagWeight: number,
     cityWeight: number,
   ): number {
-    // Relevanz direkt berechnen
     const categoryRelevance =
       event.categories.reduce(
         (sum, category) => sum + (hpCategories.get(category.id) || 0),
@@ -445,7 +463,6 @@ export class EventService {
       (Array.from(hpCities.values()).reduce((sum, value) => sum + value, 0) ||
         1);
 
-    // Gesamtrelevanz berechnen
     return (
       categoryRelevance * categoryWeight * 100 +
       tagRelevance * tagWeight * 100 +
