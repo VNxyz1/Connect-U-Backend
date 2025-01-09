@@ -120,11 +120,11 @@ export class EventController {
 
   @ApiResponse({
     type: [GetEventCardDTO],
-    description: 'gets all events',
+    description: 'gets all events sorted by popularity',
   })
   @Get('/allEvents')
   async getAllEvents(): Promise<GetEventCardDTO[]> {
-    const events = await this.eventService.getAllEvents();
+    const events = await this.eventService.getAllActiveEventsByPopularity();
     return await Promise.all(
       events.map(async (event) => {
         return this.utilsService.transformEventDBtoGetEventCardDTO(event);
@@ -233,6 +233,8 @@ export class EventController {
     type: Pagination,
   })
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard)
   @Get('fy-page')
   async getHomePage(
     @User() user: UserDB,

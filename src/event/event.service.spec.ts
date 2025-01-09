@@ -349,7 +349,7 @@ describe('EventService', () => {
   it('should get all events', async () => {
     mockEventRepository.find.mockResolvedValue(mockEventList);
 
-    const result = await service.getAllEvents();
+    const result = await service.getAllActiveEventsByPopularity();
 
     expect(mockEventRepository.find).toHaveBeenCalledWith({
       relations: ['categories', 'participants', 'tags'],
@@ -363,7 +363,9 @@ describe('EventService', () => {
   it('should throw a NotFoundException if no events are found', async () => {
     mockEventRepository.find.mockResolvedValue([]);
 
-    await expect(service.getAllEvents()).rejects.toThrow(NotFoundException);
+    await expect(service.getAllActiveEventsByPopularity()).rejects.toThrow(
+      NotFoundException,
+    );
   });
 
   describe('EventService - getHostingEvents', () => {

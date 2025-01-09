@@ -13,6 +13,7 @@ import { TagDB } from '../database/TagDB';
 import { SchedulerService } from '../scheduler/scheduler.service';
 import ViewEventEnum from '../database/enums/ViewEventEnum';
 import ViewedEventsDB from '../database/ViewedEventsDB';
+import { EventtypeEnum } from '../database/enums/EventtypeEnum';
 
 export class EventService {
   constructor(
@@ -100,12 +101,28 @@ export class EventService {
    * @returns {Promise<EventDB[]>} - The events.
    * @throws {NotFoundException} - If there are no events found.
    */
-  async getAllEvents(): Promise<EventDB[]> {
+  async getAllActiveEventsByPopularity(
+    page: number = 0,
+    size: number = 12,
+  ): Promise<EventDB[]> {
     const events = await this.eventRepository.find({
-      relations: ['categories', 'participants', 'tags'],
-      order: {
-        timestamp: 'DESC',
+      where: {
+        status: Not(In([StatusEnum.cancelled, StatusEnum.finished])),
+        type: Not(EventtypeEnum.private),
       },
+      relations: {
+        categories: true,
+        participants: true,
+        tags: true,
+        viewEvents: true,
+      },
+      order: {
+        viewEvents: {
+          viewed: 'DESC',
+        },
+      },
+      skip: page * size,
+      take: size,
     });
 
     if (!events || events.length === 0) {
@@ -311,6 +328,7 @@ export class EventService {
         this.eventRepository.find({
           where: {
             status: Not(In([StatusEnum.finished, StatusEnum.cancelled])),
+            type: Not(EventtypeEnum.private),
             host: { id: Not(userId) },
             participants: { id: Not(userId) },
           },
