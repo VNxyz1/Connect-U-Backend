@@ -108,6 +108,7 @@ export class EventController {
         (participant) => participant.id === user.id,
       );
       isLoggedIn = true;
+      await this.eventService.setEventAsClicked(event, user);
     }
     return await this.utilsService.transformEventDBtoGetEventDetailsDTO(
       event,
@@ -231,13 +232,15 @@ export class EventController {
   @ApiQuery({
     type: Pagination,
   })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
-  @Get('fy-page/:userId')
+  @Get('fy-page')
   async getHomePage(
-    @Param('userId') userId: string,
+    @User() user: UserDB,
     @PaginationParams() paginationParams: Pagination,
   ): Promise<GetEventCardDTO[]> {
-    const events = await this.eventService.fyPageAlgo(userId);
+    const events = await this.eventService.fyPageAlgo(user.id);
 
     const paginatedEvents = paginate(
       events,

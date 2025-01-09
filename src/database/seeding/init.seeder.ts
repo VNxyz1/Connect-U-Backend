@@ -8,6 +8,8 @@ import { CategoryDB } from '../CategoryDB';
 import { TagService } from '../../tag/tag.service';
 import { fakerDE as faker } from '@faker-js/faker';
 import * as process from 'node:process';
+import ViewedEventsDB from '../ViewedEventsDB';
+import ViewEventEnum from '../enums/ViewEventEnum';
 
 export class InitSeeder {
   constructor(
@@ -17,6 +19,8 @@ export class InitSeeder {
     private readonly userRepository: Repository<UserDB>,
     @InjectRepository(CategoryDB)
     private readonly categoryRepository: Repository<CategoryDB>,
+    @InjectRepository(ViewedEventsDB)
+    private readonly veRepository: Repository<ViewedEventsDB>,
     private readonly tagService: TagService,
   ) {}
 
@@ -66,6 +70,26 @@ export class InitSeeder {
       events.push(await eventFactory(userList, categorys, tags));
     }
 
-    return this.eventRepository.save(events);
+    await this.eventRepository.save(events);
+
+    for (const event of events) {
+      const viewedEvents: ViewedEventsDB[] = [];
+      for (
+        let i = 0;
+        i < faker.number.int({ min: 0, max: faker.number.int({ min: 0, max: userList.length - 1 }) });
+        i++
+      ) {
+        const user =
+          userList[faker.number.int({ min: 0, max: userList.length - 1 })];
+        if (viewedEvents.find((ve) => ve.user.id === user.id)) {
+          continue;
+        }
+        const viewedEvent: ViewedEventsDB = new ViewedEventsDB();
+        viewedEvent.user = user;
+        viewedEvent.event = event;
+        viewedEvent.viewed = faker.datatype.boolean({probability:0.75})? ViewEventEnum.CLICKED_ON : ViewEventEnum.VIEWED;
+        await this.veRepository.save(viewedEvent);
+      }
+    }
   }
 }

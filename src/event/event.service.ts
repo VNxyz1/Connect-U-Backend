@@ -11,6 +11,8 @@ import { ListEntryDB } from '../database/ListEntryDB';
 import { SurveyEntryDB } from '../database/SurveyEntryDB';
 import { TagDB } from '../database/TagDB';
 import { SchedulerService } from '../scheduler/scheduler.service';
+import ViewEventEnum from '../database/enums/ViewEventEnum';
+import ViewedEventsDB from '../database/ViewedEventsDB';
 
 export class EventService {
   constructor(
@@ -22,6 +24,8 @@ export class EventService {
     private readonly surveyEntryRepository: Repository<SurveyEntryDB>,
     @InjectRepository(UserDB)
     private readonly userRepository: Repository<UserDB>,
+    @InjectRepository(ViewedEventsDB)
+    private readonly veRepository: Repository<ViewedEventsDB>,
     private readonly schedulerService: SchedulerService,
   ) {}
 
@@ -297,9 +301,18 @@ export class EventService {
 
     const hostAndParticipant = [...hostingEvents, ...participatingEvents];
 
-    // Frequenzkarten erstellen
+    // Frequenzkarten für hosted und participating erstellen
     const [hpCategories, hpTags, hpCities] =
       this.calculateFrequencyMaps(hostAndParticipant);
+
+    const clickedEvents = await this.eventRepository.find({
+      where: { viewEvents: {user: {id: userId}, viewed: ViewEventEnum.CLICKED_ON} },
+      relations: {viewEvents: { user: true }, categories: true, tags: true, host: true, participants: true},
+    })
+
+    // Frequenzkarten für hosted and participating erstellen
+    const [clickedCategories, clickedTags, clickedCities] =
+      this.calculateFrequencyMaps(clickedEvents);
 
     // Datenbankabfrage: Nur relevante Events holen und direkt sortieren
     const res = await this.eventRepository
@@ -307,9 +320,10 @@ export class EventService {
       .leftJoinAndSelect('event.categories', 'categories')
       .leftJoinAndSelect('event.tags', 'tags')
       .where('categories.id IN (:...categoryIds)', {
-        categoryIds: Array.from(hpCategories.keys()),
+        categoryIds: [...Array.from(hpCategories.keys()), ...Array.from(clickedCategories.keys())],
       })
-      .orWhere('tags.id IN (:...tagIds)', { tagIds: Array.from(hpTags.keys()) })
+      .orWhere('tags.id IN (:...tagIds)', { tagIds: [...Array.from(hpTags.keys()), ...Array.from(clickedTags.keys())] })
+      .orWhere('event.city IN (:...cities)', { cities: [...Array.from(hpCities.keys()), ...Array.from(clickedCities.keys())] })
       .getMany();
 
     // Relevanzberechnung parallelisieren
@@ -321,6 +335,17 @@ export class EventService {
           hpCategories,
           hpTags,
           hpCities,
+          0.32,
+          0.08,
+          0.4
+        ) + this.calculateRelevance(
+          event,
+          clickedCategories,
+          clickedTags,
+          clickedCities,
+          0.08,
+          0.02,
+          0.1
         ),
       }))
       .sort((a, b) => b.relevance - a.relevance);
@@ -359,6 +384,9 @@ export class EventService {
     hpCategories: Map<number, number>,
     hpTags: Map<number, number>,
     hpCities: Map<string, number>,
+    categoryWeight: number,
+    tagWeight: number,
+    cityWeight: number,
   ): number {
     // Berechnung der maximal möglichen Relevanz für Normalisierung
     const maxCategoryRelevance =
@@ -384,11 +412,6 @@ export class EventService {
 
     const cityRelevance = (hpCities.get(event.city) || 0) / maxCityRelevance;
 
-    // Prozentuale Gewichtung der Faktoren
-    const categoryWeight = 0.32;
-    const tagWeight = 0.08;
-    const cityWeight = 0.4;
-
     // Berechnung der Gesamtrelevanz
     const totalRelevance =
       categoryRelevance * categoryWeight * 100 +
@@ -397,4 +420,26 @@ export class EventService {
 
     return totalRelevance;
   }
+
+  async setEventAsClicked(event: EventDB, user: UserDB) {
+
+    const ve = await this.veRepository.findOne({
+      where: {event: {id: event.id}, user: {id: user.id}},
+      relations: {event: true, user: true},
+    })
+
+    if (ve) {
+      ve.viewed = ViewEventEnum.CLICKED_ON;
+      await this.veRepository.save(ve);
+      return;
+    }
+
+    const newVe = new ViewedEventsDB();
+    newVe.event = event;
+    newVe.user = user;
+    newVe.viewed = ViewEventEnum.CLICKED_ON;
+
+    await this.veRepository.save(ve);
+  }
+
 }
