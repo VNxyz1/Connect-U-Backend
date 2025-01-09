@@ -306,7 +306,6 @@ export class EventService {
       }),
       this.eventRepository.find({
         where: { status: Not(In([StatusEnum.finished, StatusEnum.cancelled])) },
-        select: ["id", "categories", "tags", "city"], // Nur relevante Felder abfragen
         relations: { categories: true, tags: true },
       }),
     ]);
