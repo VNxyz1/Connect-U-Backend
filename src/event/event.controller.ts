@@ -1,4 +1,10 @@
-import { ApiBearerAuth, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import {
   BadRequestException,
   Body,
@@ -232,6 +238,59 @@ export class EventController {
   })
   @ApiQuery({
     type: Pagination,
+  })
+  @ApiOperation({
+    summary: 'Get personalized events for the logged-in user',
+    description: `This endpoint returns a personalized list of events (fy page) for the currently logged-in user.
+  The returned events are sorted based on relevance to the user, considering factors such as:
+  - Events the user is hosting or participating in
+  - Events the user has interacted with (e.g., clicked on)
+  - User preferences for categories, tags, and cities
+
+  The events can be paginated using the provided pagination parameters (page and size).`,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'A paginated list of personalized events',
+    type: [GetEventCardDTO],
+    example: {
+      example1: {
+        summary: 'Successful Response',
+        value: [
+          {
+            id: 1,
+            title: 'Music Festival',
+            city: 'New York',
+            dateAndTime: '2025-01-20T18:00:00Z',
+            categories: ['Music', 'Outdoor'],
+            tags: ['Concert', 'Festival'],
+            picture: 'https://example.com/event1.jpg',
+            participantsNumber: 100,
+            isOnline: false,
+          },
+          {
+            id: 2,
+            title: 'Tech Conference',
+            city: 'San Francisco',
+            dateAndTime: '2025-02-10T10:00:00Z',
+            categories: ['Technology'],
+            tags: ['Innovation', 'Networking'],
+            picture: 'https://example.com/event2.jpg',
+            participantsNumber: 200,
+            isOnline: true,
+          },
+        ],
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid pagination parameters provided.',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description:
+      'Unauthorized. The user must be logged in and provide a valid access token.',
   })
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth('access-token')
