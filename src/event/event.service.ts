@@ -188,7 +188,7 @@ export class EventService {
     if (genders && genders.length > 0) {
       queryBuilder
         .leftJoin('event.preferredGenders', 'preferredGender')
-        .andWhere('preferredGender.gender IN (:...genders)', { genders: genders });
+        .andWhere('preferredGender.id IN (:...genders)', { genders: genders });
     }
 
     if (isPublic == false) {

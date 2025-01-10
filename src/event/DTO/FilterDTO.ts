@@ -69,7 +69,7 @@ export class FilterDTO {
 
   @ApiPropertyOptional({
     description: 'Allowed genders for the event (e.g., male, female, diverse)',
-    example: ['male', 'female'],
+    example: [1, 3],
   })
   @Transform(({ value }) => (Array.isArray(value) ? value.map(Number) : Number.isNaN(value)? undefined : [Number(value)]))
   @IsOptional()
