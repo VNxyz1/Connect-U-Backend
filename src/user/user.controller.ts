@@ -45,6 +45,7 @@ import { diskStorage } from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { GetInviteLinkDTO } from './DTO/GetInviteLinkDTO';
 import { FriendService } from '../friend/friend.service';
+import { GetFriendProfileDTO } from './DTO/GetFriendProfileDTO';
 
 @ApiTags('user')
 @Controller('user')
@@ -112,19 +113,21 @@ export class UserController {
   }
 
   @ApiResponse({
-    type: GetUserProfileDTO,
-    description: 'gets data for the profile',
+    type: GetFriendProfileDTO,
+    description: 'gets data for the profile (for a friend request)',
   })
-  @Get('/getUserByName/:username')
+  @Get('/friendProfile/:username')
   async getUserByName(
     @Param('username') username: string,
-    @User() user: UserDB | null,
-  ): Promise<GetUserProfileDTO> {
+    @User() user: UserDB,
+  ): Promise<GetFriendProfileDTO> {
     const userProfile = await this.userService.findByUsername(username);
     const isUser = user?.id === userProfile.id;
-    return this.utilsService.transformUserDBtoGetUserProfileDTO(
+    const areFriends = await this.friendService.areUsersFriends(user.id, userProfile.id);
+    return this.utilsService.transformUserDBtoGetFriendProfileDTO(
       userProfile,
       isUser,
+      areFriends
     );
   }
 
