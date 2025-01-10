@@ -124,7 +124,6 @@ export class FriendService {
       where: { id: userId },
       relations: ['friends', 'friendOf'],
     });
-
     if (!user) {
       throw new NotFoundException('User not found');
     }
