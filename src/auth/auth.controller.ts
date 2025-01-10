@@ -55,14 +55,22 @@ export class AuthController {
   })
   @HttpCode(HttpStatus.OK)
   @Get('refresh')
-  async refresh(@Req() req: Request) {
+  async refresh(@Req() req: Request, @Res() res: Response) {
     const refreshToken = req.cookies['refresh_token'];
 
     if (!refreshToken) {
       throw new BadRequestException('Refresh token missing');
     }
 
-    return await this.authService.refreshAccessToken(refreshToken);
+    try {
+      const token = await this.authService.refreshAccessToken(refreshToken);
+      res.status(HttpStatus.OK).json(token);
+    } catch (error) {
+      res
+        .clearCookie('refresh_token')
+        .status(HttpStatus.BAD_REQUEST)
+        .json(error);
+    }
   }
 
   @ApiResponse({
