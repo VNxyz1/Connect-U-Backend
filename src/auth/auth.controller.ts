@@ -37,9 +37,8 @@ export class AuthController {
     const tokens = await this.authService.signIn(body.email, body.password);
     res.cookie('refresh_token', tokens.refresh_token, {
       httpOnly: true,
-      secure: !process.env.API_CORS || process.env.API_CORS != '1',
-      sameSite:
-        !process.env.API_CORS || process.env.API_CORS != '1' ? 'strict' : 'lax',
+      secure: !Boolean(process.env.API_CORS),
+      sameSite: Boolean(process.env.API_CORS) ? 'lax' : 'strict',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
     res.json(new AccessTokenResDTO(tokens.access_token));

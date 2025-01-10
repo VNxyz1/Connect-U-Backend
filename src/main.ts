@@ -10,11 +10,15 @@ const API_DEFAULT_PREFIX = '/api/';
 const SWAGGER_TITLE = 'ConnectU API';
 const SWAGGER_DESCRIPTION = 'API used for ConnectU application';
 const SWAGGER_PREFIX = '/docs';
+const SWAGGER_REQUEST_BASE_PATH = '';
 
 function createSwagger(app: INestApplication) {
   const config = new DocumentBuilder()
     .setTitle(SWAGGER_TITLE)
     .setDescription(SWAGGER_DESCRIPTION)
+    .setBasePath(
+      process.env.SWAGGER_REQUEST_BASE_PATH || SWAGGER_REQUEST_BASE_PATH,
+    )
     .addBearerAuth(
       {
         description:
@@ -57,7 +61,7 @@ async function bootstrap() {
     createSwagger(app);
   }
 
-  if (!process.env.API_CORS || process.env.API_CORS === '1') {
+  if (!Boolean(process.env.API_CORS)) {
     enableCors(app);
   }
 
