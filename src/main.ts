@@ -61,7 +61,7 @@ async function bootstrap() {
     createSwagger(app);
   }
 
-  if (!Boolean(process.env.API_CORS)) {
+  if (Boolean(process.env.API_CORS)) {
     enableCors(app);
   }
 
