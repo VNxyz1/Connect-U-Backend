@@ -14,6 +14,7 @@ import { MemoryDB } from './database/MemoryDB';
 import { RequestDB } from './database/RequestDB';
 import { SurveyDB } from './database/SurveyDB';
 import { SurveyEntryDB } from './database/SurveyEntryDB';
+import ViewedEventsDB from './database/ViewedEventsDB';
 
 export const typeOrmEntities: EntityClassOrSchema[] = [
   UserDB,
@@ -30,6 +31,7 @@ export const typeOrmEntities: EntityClassOrSchema[] = [
   RequestDB,
   SurveyDB,
   SurveyEntryDB,
+  ViewedEventsDB,
 ];
 
 export const databaseConfig = () =>

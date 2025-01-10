@@ -9,10 +9,20 @@ export const eventFactory = async (
   categorys: CategoryDB[],
   tags: TagDB[],
 ) => {
+  const _cities: string[] = [
+    'Gießen',
+    'Berlin',
+    'Marburg',
+    'Bielefeld',
+    'Schotten',
+    'München',
+    'Daun',
+  ];
+
   const event = new EventDB();
 
   event.host = userList[faker.number.int({ min: 0, max: userList.length - 1 })];
-  event.city = faker.location.city();
+  event.city = _cities[faker.number.int({ min: 0, max: _cities.length - 1 })];
   event.zipCode = faker.location.zipCode();
   event.street = faker.location.street();
   event.streetNumber = faker.location.buildingNumber();

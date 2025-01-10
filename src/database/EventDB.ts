@@ -16,6 +16,7 @@ import { TagDB } from './TagDB';
 import { CategoryDB } from './CategoryDB';
 import { MessageDB } from './MessageDB';
 import { SurveyDB } from './SurveyDB';
+import ViewedEventsDB from './ViewedEventsDB';
 import { StatusEnum } from './enums/StatusEnum';
 
 @Entity()
@@ -42,7 +43,7 @@ export class EventDB {
   description: string;
 
   /**
-   * type: EventtypeEnum
+   * type: {@link EventtypeEnum}
    */
   @Column({ default: 0 })
   type: number;
@@ -109,4 +110,7 @@ export class EventDB {
   @ManyToMany(() => CategoryDB, (category) => category.events)
   @JoinTable({ name: 'EventCategories' })
   categories: CategoryDB[];
+
+  @OneToMany(() => ViewedEventsDB, (viewEvents) => viewEvents.event)
+  viewEvents: ViewedEventsDB[];
 }

@@ -1,4 +1,10 @@
-import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import {
   BadRequestException,
   Body,
@@ -25,6 +31,11 @@ import { EventtypeEnum } from '../database/enums/EventtypeEnum';
 import { CreateEventResDTO } from './DTO/CreateEventResDTO';
 import { GetEventDetailsDTO } from './DTO/GetEventDetailsDTO';
 import { TagService } from '../tag/tag.service';
+import {
+  paginate,
+  Pagination,
+  PaginationParams,
+} from '../utils/PaginationParams';
 
 @ApiTags('event')
 @Controller('event')
@@ -104,6 +115,7 @@ export class EventController {
         (participant) => participant.id === user.id,
       );
       isLoggedIn = true;
+      await this.eventService.setEventAsClicked(event, user);
     }
     return await this.utilsService.transformEventDBtoGetEventDetailsDTO(
       event,
@@ -115,11 +127,11 @@ export class EventController {
 
   @ApiResponse({
     type: [GetEventCardDTO],
-    description: 'gets all events',
+    description: 'gets all events sorted by popularity',
   })
   @Get('/allEvents')
   async getAllEvents(): Promise<GetEventCardDTO[]> {
-    const events = await this.eventService.getAllEvents();
+    const events = await this.eventService.getAllActiveEventsByPopularity();
     return await Promise.all(
       events.map(async (event) => {
         return this.utilsService.transformEventDBtoGetEventCardDTO(event);
@@ -217,5 +229,94 @@ export class EventController {
   ): Promise<OkDTO> {
     await this.eventService.removeUserFromEvent(user, eventId);
     return new OkDTO(true, 'User was removed from participant list');
+  }
+
+  @ApiResponse({
+    type: [GetEventCardDTO],
+    description: 'Returns the current fy page of the logged in user',
+    status: HttpStatus.OK,
+  })
+  @ApiQuery({
+    type: Pagination,
+  })
+  @ApiOperation({
+    summary: 'Get personalized events for the logged-in user',
+    description: `This endpoint returns a personalized list of events (fy page) for the currently logged-in user.
+  The returned events are sorted based on relevance to the user, considering factors such as:
+  - Events the user is hosting or participating in
+  - Events the user has interacted with (e.g., clicked on)
+  - User preferences for categories, tags, and cities
+
+  The events can be paginated using the provided pagination parameters (page and size).`,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'A paginated list of personalized events',
+    type: [GetEventCardDTO],
+    example: {
+      example1: {
+        summary: 'Successful Response',
+        value: [
+          {
+            id: 1,
+            title: 'Music Festival',
+            city: 'New York',
+            dateAndTime: '2025-01-20T18:00:00Z',
+            categories: ['Music', 'Outdoor'],
+            tags: ['Concert', 'Festival'],
+            picture: 'https://example.com/event1.jpg',
+            participantsNumber: 100,
+            isOnline: false,
+          },
+          {
+            id: 2,
+            title: 'Tech Conference',
+            city: 'San Francisco',
+            dateAndTime: '2025-02-10T10:00:00Z',
+            categories: ['Technology'],
+            tags: ['Innovation', 'Networking'],
+            picture: 'https://example.com/event2.jpg',
+            participantsNumber: 200,
+            isOnline: true,
+          },
+        ],
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid pagination parameters provided.',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description:
+      'Unauthorized. The user must be logged in and provide a valid access token.',
+  })
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard)
+  @Get('fy-page')
+  async getHomePage(
+    @User() user: UserDB,
+    @PaginationParams() paginationParams: Pagination,
+  ): Promise<GetEventCardDTO[]> {
+    const events = await this.eventService.fyPageAlgo(user.id);
+
+    const paginatedEvents = paginate(
+      events,
+      paginationParams.size,
+      paginationParams.page,
+    );
+
+    const friendsEvents = await this.eventService.getFriendsEvents(user.id);
+
+    return await Promise.all(
+      paginatedEvents.map(async (event) => {
+        return this.utilsService.transformEventDBtoGetEventCardDTO(
+          event,
+          friendsEvents,
+        );
+      }),
+    );
   }
 }

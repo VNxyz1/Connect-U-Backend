@@ -8,8 +8,21 @@ import { CategoryDB } from '../CategoryDB';
 import { TagService } from '../../tag/tag.service';
 import { fakerDE as faker } from '@faker-js/faker';
 import * as process from 'node:process';
+import ViewedEventsDB from '../ViewedEventsDB';
+import ViewEventEnum from '../enums/ViewEventEnum';
+import { FriendService } from '../../friend/friend.service';
+import { OnApplicationBootstrap } from '@nestjs/common';
 
-export class InitSeeder {
+const testUser = new UserDB();
+testUser.username = 'testUser';
+testUser.email = 'test@gmail.com';
+testUser.password = 'Passwort1234';
+testUser.firstName = 'firstName';
+testUser.lastName = 'lastName';
+testUser.birthday = '2002-08-06';
+testUser.gender = 2;
+
+export class InitSeeder implements OnApplicationBootstrap {
   constructor(
     @InjectRepository(EventDB)
     private readonly eventRepository: Repository<EventDB>,
@@ -17,7 +30,10 @@ export class InitSeeder {
     private readonly userRepository: Repository<UserDB>,
     @InjectRepository(CategoryDB)
     private readonly categoryRepository: Repository<CategoryDB>,
+    @InjectRepository(ViewedEventsDB)
+    private readonly veRepository: Repository<ViewedEventsDB>,
     private readonly tagService: TagService,
+    private readonly friendService: FriendService,
   ) {}
 
   async onApplicationBootstrap() {
@@ -43,13 +59,16 @@ export class InitSeeder {
   }
 
   private async initUsers(count: number) {
-    const users = [];
+    const users: UserDB[] = [];
 
-    for (let i = 0; i < count; i++) {
+    users.push(testUser);
+
+    for (let i = 1; i < count; i++) {
       users.push(userFactory());
     }
 
-    return this.userRepository.save(users);
+    const userList = await this.userRepository.save<UserDB>(users);
+    await this.initFriends(userList);
   }
 
   private async initEvents(
@@ -66,6 +85,61 @@ export class InitSeeder {
       events.push(await eventFactory(userList, categorys, tags));
     }
 
-    return this.eventRepository.save(events);
+    await this.eventRepository.save(events);
+
+    await this.initClicks(events, userList);
+  }
+
+  private async initClicks(events: EventDB[], userList: UserDB[]) {
+    for (const event of events) {
+      const viewedEvents: ViewedEventsDB[] = [];
+      for (
+        let i = 0;
+        i <
+        faker.number.int({
+          min: 0,
+          max: faker.number.int({ min: 0, max: userList.length - 1 }),
+        });
+        i++
+      ) {
+        const user =
+          userList[faker.number.int({ min: 0, max: userList.length - 1 })];
+        if (viewedEvents.find((ve) => ve.user.id === user.id)) {
+          continue;
+        }
+        const viewedEvent: ViewedEventsDB = new ViewedEventsDB();
+        viewedEvent.user = user;
+        viewedEvent.event = event;
+        viewedEvent.viewed = faker.datatype.boolean({ probability: 0.75 })
+          ? ViewEventEnum.CLICKED_ON
+          : ViewEventEnum.VIEWED;
+        await this.veRepository.save(viewedEvent);
+      }
+    }
+  }
+
+  private async initFriends(userList: UserDB[]) {
+    for (const user of userList) {
+      for (
+        let i = 0;
+        i <
+        faker.number.int({
+          min: 0,
+          max: faker.number.int({ min: 0, max: userList.length - 1 }),
+        });
+        i++
+      ) {
+        try {
+          await this.friendService.createFriend(
+            user,
+            userList[faker.number.int({ min: 0, max: userList.length - 1 })]
+              .username,
+          );
+        } catch (error) {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const e = error;
+        }
+      }
+    }
   }
 }

@@ -506,6 +506,30 @@ describe('EventController', () => {
     });
   });
 
+  describe('EventController - getFyPage', () => {
+    it('should return the fyPage of the logged in user', async () => {
+      const tokens = await mockAuthService.signIn();
+
+      jest
+        .spyOn(app.get(JwtService), 'verifyAsync')
+        .mockResolvedValue(mockAuthPayload);
+
+      return agent
+        .get('/event/fy-page?page=0&size=12')
+        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.OK)
+        .expect((response) => {
+          expect(Array.isArray(response.body)).toBe(true);
+          response.body.forEach((event: any) => {
+            expect(event).toHaveProperty('id');
+            expect(event).toHaveProperty('title');
+            expect(event).toHaveProperty('dateAndTime');
+          });
+        });
+    });
+  });
+
   afterAll(async () => {
     await app.close();
   });
@@ -564,6 +588,7 @@ const mockUser: UserDB = {
   reactions: [],
   tags: [],
   unreadMessages: [],
+  viewEvents: [],
 };
 export const MockPublicEvent: EventDB = {
   id: '1',
@@ -596,6 +621,7 @@ export const MockPublicEvent: EventDB = {
   memories: [],
   tags: [],
   messages: [],
+  viewEvents: [],
 };
 
 const MockPrivateEvent: EventDB = {
@@ -627,6 +653,7 @@ const MockPrivateEvent: EventDB = {
   memories: [],
   tags: [],
   messages: [],
+  viewEvents: [],
 };
 
 const MockEventDetailsDTO: GetEventDetailsDTO = {

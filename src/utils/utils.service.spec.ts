@@ -106,6 +106,7 @@ describe('UtilsService', () => {
       lists: [],
       tags: [],
       unreadMessages: [],
+      viewEvents: [],
     },
     {
       id: '2',
@@ -141,6 +142,7 @@ describe('UtilsService', () => {
       lists: [],
       tags: [],
       unreadMessages: [],
+      viewEvents: [],
     },
     {
       id: '3',
@@ -176,6 +178,7 @@ describe('UtilsService', () => {
       lists: [],
       tags: [],
       unreadMessages: [],
+      viewEvents: [],
     },
   ];
 
