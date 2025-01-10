@@ -514,7 +514,7 @@ export class EventService {
   }
 
   private calculateFriendRelevance(event: EventDB, friendsEvents: EventDB[]) {
-    return !!friendsEvents.find((e) => e.id == event.id) ? 10 : 0;
+    return !!friendsEvents.find((e) => e.id == event.id) ? 3 : 0;
   }
 
   async setEventAsClicked(event: EventDB, user: UserDB) {
