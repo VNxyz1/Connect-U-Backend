@@ -11,7 +11,7 @@ import { EventtypeEnum } from '../database/enums/EventtypeEnum';
 import { GenderEnum } from '../database/enums/GenderEnum';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { StatusEnum } from '../database/enums/StatusEnum';
-import { Repository } from 'typeorm';
+import { In, Not, Repository } from 'typeorm';
 import { SurveyEntryDB } from '../database/SurveyEntryDB';
 import { ListEntryDB } from '../database/ListEntryDB';
 import { SchedulerService } from '../scheduler/scheduler.service';
@@ -352,10 +352,23 @@ describe('EventService', () => {
     const result = await service.getAllActiveEventsByPopularity();
 
     expect(mockEventRepository.find).toHaveBeenCalledWith({
-      relations: ['categories', 'participants', 'tags'],
-      order: {
-        timestamp: 'DESC',
+      where: {
+        status: Not(In([StatusEnum.cancelled, StatusEnum.finished])),
+        type: Not(EventtypeEnum.private),
       },
+      relations: {
+        categories: true,
+        participants: true,
+        tags: true,
+        viewEvents: true,
+      },
+      order: {
+        viewEvents: {
+          viewed: 'DESC',
+        },
+      },
+      skip: 0,
+      take: 12,
     });
     expect(result).toEqual(mockEventList);
   });
@@ -542,18 +555,39 @@ describe('EventService', () => {
       ).rejects.toThrow(BadRequestException);
     });
   });
+
+  describe('fyPageAlgo', () => {
+    it('should return a EventDB array sorted by relevance', async () => {
+      jest.spyOn(service, 'getHostingEvents').mockResolvedValue([]);
+      jest.spyOn(service, 'getParticipatingEvents').mockResolvedValue([]);
+      jest.spyOn(mockEventRepository, 'find').mockResolvedValue([]);
+
+      const result = await service.fyPageAlgo(mockUser.id);
+
+      expect(mockEventRepository.find).toBeCalledTimes(4);
+      expect(result.length).toEqual(0);
+    });
+  });
 });
 
 export const mockEventService = {
   findById: jest.fn().mockResolvedValue(mockCreateEventDTO[1]),
   createEvent: jest.fn().mockResolvedValue(new EventDB()),
   getEventById: jest.fn().mockResolvedValue(new EventDB()),
-  getAllEvents: jest.fn().mockResolvedValue(mockEventList),
+  getAllActiveEventsByPopularity: jest.fn().mockResolvedValue(mockEventList),
   getHostingEvents: jest.fn().mockResolvedValue(mockEventList),
   getParticipatingEvents: jest.fn().mockResolvedValue(mockEventList),
   addUserToEvent: jest.fn().mockResolvedValue(new EventDB()),
   getUpcomingAndLiveEvents: jest.fn().mockResolvedValue(mockEventList),
   removeUserFromEvent: jest.fn().mockResolvedValue(new EventDB()),
+  fyPageAlgo: jest.fn().mockResolvedValue(mockEventList),
+  getFriendsEvents: jest.fn().mockResolvedValue(mockEventList),
+  setEventAsClicked: jest.fn().mockResolvedValue({}),
+  friendMultiplier: jest.fn().mockResolvedValue(1),
+  calculateRelevance: jest.fn().mockResolvedValue(2),
+  calculateFrequencyMaps: jest
+    .fn()
+    .mockResolvedValue([new Map(), new Map(), new Map()]),
 };
 
 export const mockSchedulerService = {
