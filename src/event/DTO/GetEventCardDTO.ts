@@ -98,4 +98,13 @@ export class GetEventCardDTO {
   @IsArray()
   @IsString({ each: true })
   tags?: string[];
+
+  @ApiProperty({
+    description: 'Indicates whether a friend is participating',
+    example: true,
+    type: Boolean,
+    nullable: true,
+  })
+  @IsBoolean()
+  participatingFriend?: boolean;
 }

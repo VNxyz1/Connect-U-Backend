@@ -14,6 +14,7 @@ import { SchedulerService } from '../scheduler/scheduler.service';
 import ViewEventEnum from '../database/enums/ViewEventEnum';
 import ViewedEventsDB from '../database/ViewedEventsDB';
 import { EventtypeEnum } from '../database/enums/EventtypeEnum';
+import { FriendService } from '../friend/friend.service';
 
 export class EventService {
   constructor(
@@ -26,6 +27,7 @@ export class EventService {
     @InjectRepository(ViewedEventsDB)
     private readonly veRepository: Repository<ViewedEventsDB>,
     private readonly schedulerService: SchedulerService,
+    private readonly friendsService: FriendService,
   ) {}
 
   /**
@@ -309,6 +311,40 @@ export class EventService {
     return await this.eventRepository.save(event);
   }
 
+  async getFriendsEvents(userId: string): Promise<EventDB[]> {
+    const friends = await this.friendsService.getFriends(userId);
+    const friendsIds = friends.map((friend) => friend.id);
+    return await this.eventRepository.find({
+      where: [
+        {
+          host: { id: In(friendsIds) },
+          status: Not(In([StatusEnum.finished, StatusEnum.cancelled])),
+          type: Not(EventtypeEnum.private),
+        },
+        {
+          participants: { id: In(friendsIds) },
+          status: Not(In([StatusEnum.finished, StatusEnum.cancelled])),
+          type: Not(EventtypeEnum.private),
+        },
+      ],
+      select: {
+        participantsNumber: true,
+        participants: true,
+        id: true,
+        isOnline: true,
+        city: true,
+        categories: true,
+        dateAndTime: true,
+        title: true,
+        picture: true,
+        status: true,
+        type: true,
+        tags: true,
+      },
+      relations: { categories: true, tags: true },
+    });
+  }
+
   /**
    * Fetches and sorts events based on user preferences, participation, and click frequency.
    * @param {string} userId - The ID of the user for whom the events are fetched and ranked.
@@ -316,44 +352,50 @@ export class EventService {
    */
   async fyPageAlgo(userId: string): Promise<EventDB[]> {
     // Parallelize database calls for hosting, participating, clicked, and active events
-    const [hostingEvents, participatingEvents, clickedEvents, activeEvents] =
-      await Promise.all([
-        this.getHostingEvents(userId),
-        this.getParticipatingEvents(userId),
-        this.eventRepository.find({
-          where: {
-            viewEvents: {
-              user: { id: userId },
-              viewed: ViewEventEnum.CLICKED_ON,
-            },
+    const [
+      hostingEvents,
+      participatingEvents,
+      clickedEvents,
+      activeEvents,
+      friendsEvents,
+    ] = await Promise.all([
+      this.getHostingEvents(userId),
+      this.getParticipatingEvents(userId),
+      this.eventRepository.find({
+        where: {
+          viewEvents: {
+            user: { id: userId },
+            viewed: ViewEventEnum.CLICKED_ON,
           },
-          select: ['id', 'categories', 'tags', 'city'],
-          relations: { categories: true, tags: true },
-        }),
-        this.eventRepository.find({
-          where: {
-            status: Not(In([StatusEnum.finished, StatusEnum.cancelled])),
-            type: Not(EventtypeEnum.private),
-            host: { id: Not(userId) },
-            participants: { id: Not(userId) },
-          },
-          select: {
-            participantsNumber: true,
-            participants: true,
-            id: true,
-            isOnline: true,
-            city: true,
-            categories: true,
-            dateAndTime: true,
-            title: true,
-            picture: true,
-            status: true,
-            type: true,
-            tags: true,
-          },
-          relations: { categories: true, tags: true },
-        }),
-      ]);
+        },
+        select: ['id', 'categories', 'tags', 'city'],
+        relations: { categories: true, tags: true },
+      }),
+      this.eventRepository.find({
+        where: {
+          status: Not(In([StatusEnum.finished, StatusEnum.cancelled])),
+          type: Not(EventtypeEnum.private),
+          host: { id: Not(userId) },
+          participants: { id: Not(userId) },
+        },
+        select: {
+          participantsNumber: true,
+          participants: true,
+          id: true,
+          isOnline: true,
+          city: true,
+          categories: true,
+          dateAndTime: true,
+          title: true,
+          picture: true,
+          status: true,
+          type: true,
+          tags: true,
+        },
+        relations: { categories: true, tags: true },
+      }),
+      this.getFriendsEvents(userId),
+    ]);
 
     const hostAndParticipant = [...hostingEvents, ...participatingEvents];
 
@@ -383,7 +425,8 @@ export class EventService {
           0.08,
           0.02,
           0.1,
-        );
+        ) +
+        this.calculateFriendRelevance(event, friendsEvents);
       return { event, relevance };
     });
 
@@ -468,6 +511,10 @@ export class EventService {
       tagRelevance * tagWeight * 100 +
       cityRelevance * cityWeight * 100
     );
+  }
+
+  private calculateFriendRelevance(event: EventDB, friendsEvents: EventDB[]) {
+    return !!friendsEvents.find((e) => e.id == event.id) ? 10 : 0;
   }
 
   async setEventAsClicked(event: EventDB, user: UserDB) {

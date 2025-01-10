@@ -308,9 +308,14 @@ export class EventController {
       paginationParams.page,
     );
 
+    const friendsEvents = await this.eventService.getFriendsEvents(user.id);
+
     return await Promise.all(
       paginatedEvents.map(async (event) => {
-        return this.utilsService.transformEventDBtoGetEventCardDTO(event);
+        return this.utilsService.transformEventDBtoGetEventCardDTO(
+          event,
+          friendsEvents,
+        );
       }),
     );
   }

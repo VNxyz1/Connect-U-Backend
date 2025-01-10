@@ -241,10 +241,12 @@ export class UtilsService {
   /**
    * Transforms an EventDB object into a GetEventCardDTO.
    * @param event - The event entity from the database.
+   * @param friendsEvents - optional. An array of all events where friends are participating or hosting
    * @returns {Promise<GetEventCardDTO>} - A promise resolving to the transformed event card data transfer object.
    */
   async transformEventDBtoGetEventCardDTO(
     event: EventDB,
+    friendsEvents?: EventDB[],
   ): Promise<GetEventCardDTO> {
     const dto = new GetEventCardDTO();
     dto.id = event.id;
@@ -262,6 +264,9 @@ export class UtilsService {
     dto.maxParticipantsNumber = event.participantsNumber;
     if (event.tags && event.tags.length > 0) {
       dto.tags = event.tags.map((tag) => tag.title);
+    }
+    if (friendsEvents) {
+      dto.participatingFriend = !!friendsEvents.find((e) => e.id == event.id);
     }
     return dto;
   }
