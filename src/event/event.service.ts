@@ -407,26 +407,30 @@ export class EventService {
 
     // Calculate relevance scores for all active events
     const relevanceScores = activeEvents.map((event) => {
+      const hpRelevance = this.calculateRelevance(
+        event,
+        hpCategories,
+        hpTags,
+        hpCities,
+        0.32,
+        0.08,
+        0.4,
+      );
+
+      const clickedRelevance = this.calculateRelevance(
+        event,
+        clickedCategories,
+        clickedTags,
+        clickedCities,
+        0.08,
+        0.02,
+        0.1,
+      );
+
       const relevance =
-        this.calculateRelevance(
-          event,
-          hpCategories,
-          hpTags,
-          hpCities,
-          0.32,
-          0.08,
-          0.4,
-        ) +
-        this.calculateRelevance(
-          event,
-          clickedCategories,
-          clickedTags,
-          clickedCities,
-          0.08,
-          0.02,
-          0.1,
-        ) +
-        this.calculateFriendRelevance(event, friendsEvents);
+        (hpRelevance + clickedRelevance) *
+        this.friendMultiplier(event, friendsEvents);
+
       return { event, relevance };
     });
 
@@ -513,8 +517,8 @@ export class EventService {
     );
   }
 
-  private calculateFriendRelevance(event: EventDB, friendsEvents: EventDB[]) {
-    return !!friendsEvents.find((e) => e.id == event.id) ? 3 : 0;
+  private friendMultiplier(event: EventDB, friendsEvents: EventDB[]) {
+    return !!friendsEvents.find((e) => e.id == event.id) ? 1.1 : 1;
   }
 
   async setEventAsClicked(event: EventDB, user: UserDB) {
