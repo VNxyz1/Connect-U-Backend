@@ -10,10 +10,12 @@ import { RequestDB } from '../database/RequestDB';
 import { UserDB } from '../database/UserDB';
 import { EventDB } from '../database/EventDB';
 import { EventtypeEnum } from '../database/enums/EventtypeEnum';
+import { FriendService } from '../friend/friend.service';
 
 @Injectable()
 export class RequestService {
   constructor(
+    private readonly friendService: FriendService,
     @InjectRepository(RequestDB)
     private readonly requestRepository: Repository<RequestDB>,
     @InjectRepository(EventDB)
@@ -79,7 +81,7 @@ export class RequestService {
    * @returns An array of requests sent by the user
    * @throws NotFoundException If the user does not exist.
    */
-  async getRequestsByUser(userId: string) {
+  async getJoinRequestsByUser(userId: string) {
     const user = await this.userRepository.findOne({
       where: { id: userId },
       relations: ['requests', 'requests.event'],
@@ -97,7 +99,7 @@ export class RequestService {
    * @returns An array of requests for the event
    * @throws NotFoundException If the event does not exist.
    */
-  async getRequestsForEvent(eventId: string, userId: string) {
+  async getJoinRequestsForEvent(eventId: string, userId: string) {
     const event = await this.eventRepository.findOne({
       where: { id: eventId },
       relations: ['requests', 'requests.user', 'host'],
@@ -169,7 +171,7 @@ export class RequestService {
    * @throws NotFoundException If the request or event does not exist.
    * @throws ForbiddenException If the logged-in user is not the host of the event.
    */
-  async denyRequest(requestId: number, userId: string) {
+  async denyJoinRequest(requestId: number, userId: string) {
     const request = await this.requestRepository.findOne({
       where: { id: requestId },
       relations: ['event', 'event.host'],
@@ -236,5 +238,201 @@ export class RequestService {
     }
 
     await this.requestRepository.delete({ event });
+  }
+
+  /**
+   * Creates an invitation for a user to join an event.
+   *
+   * @param eventId - the ID of the event the host is inviting the user to
+   * @param user - the user being invited
+   * @param hostId - the ID of the event host (currently logged-in user)
+   * @throws NotFoundException If the event or user does not exist.
+   * @throws ForbiddenException If the user is not the host of the event.
+   * @throws BadRequestException If the user is already invited or is the host.
+   */
+  async createInvitation(eventId: string, user: UserDB, hostId: string) {
+    const event = await this.eventRepository.findOne({
+      where: { id: eventId },
+      relations: ['host'],
+    });
+
+    if (!event) {
+      throw new NotFoundException('Event not found');
+    }
+
+    if (event.host.id !== hostId) {
+      throw new ForbiddenException('You are not the host of this event');
+    }
+
+    if (event.host.id === user.id) {
+      throw new ForbiddenException(
+        'You cannot invite yourself to your own event',
+      );
+    }
+
+    const existingRequest = await this.requestRepository.findOne({
+      where: { user: { id: user.id }, event: { id: eventId }, type: 2 },
+    });
+
+    if (existingRequest) {
+      if (existingRequest.denied) {
+        existingRequest.denied = false;
+        await this.requestRepository.save(existingRequest);
+        return;
+      } else {
+        throw new BadRequestException('Request already exists');
+      }
+    }
+
+    if ((await this.friendService.areUsersFriends(hostId, user.id)) === false) {
+      throw new BadRequestException('You can only invite friends');
+    }
+
+    const invite = this.requestRepository.create();
+    invite.user = user;
+    invite.event = event;
+    invite.type = 2;
+
+    await this.requestRepository.save(invite);
+
+    return { message: 'Invite successfully created', invite };
+  }
+
+  /**
+   * Retrieves all invitations for a specific event that have not been denied.
+   *
+   * @param eventId - the ID of the event
+   * @param userId - currently logged-in user
+   * @returns An array of invitations for the event
+   * @throws NotFoundException If the event does not exist.
+   */
+  async getInvitationsForEvent(eventId: string, userId: string) {
+    const event = await this.eventRepository.findOne({
+      where: { id: eventId },
+      relations: ['requests', 'requests.user', 'host'],
+    });
+    if (!event) throw new NotFoundException('Event not found');
+
+    if (event.host.id !== userId) {
+      throw new ForbiddenException(
+        'You are not the host and cant view the events invitations',
+      );
+    }
+
+    return event.requests.filter((request) => request.type === 2);
+  }
+
+  /**
+   * Retrieves all invitations sent to a specific user.
+   *
+   * @param userId - the ID of the user
+   * @returns An array of invitations
+   * @throws NotFoundException If the user does not exist.
+   */
+  async getInvitationsByUser(userId: string) {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['requests', 'requests.event'],
+    });
+    if (!user) throw new NotFoundException('User not found');
+
+    return user.requests.filter((request) => request.type === 2);
+  }
+
+  /**
+   * Deletes an invitation.
+   *
+   * @param requestId - the ID of the request to be deleted
+   * @param userId - the ID of the currently logged-in user
+   * @throws NotFoundException If the invitation does not exist.
+   * @throws ForbiddenException If the invitation was not sent by the currently logged-in user.
+   */
+  async deleteInvitation(requestId: number, userId: string) {
+    const request = await this.requestRepository.findOne({
+      where: { id: requestId },
+      relations: ['event', 'event.host'],
+    });
+    if (!request) {
+      throw new NotFoundException('Request not found');
+    }
+    if (request.event.host.id !== userId) {
+      throw new ForbiddenException(
+        'You are not the host and cant delete invitations',
+      );
+    }
+    await this.requestRepository.remove(request);
+  }
+
+  /**
+   * Accepts an invitation, adds the user to the event's participant list, and deletes the request.
+   *
+   * @param requestId - the ID of the invitation
+   * @param userId - the ID of currently logged-in user
+   * @throws NotFoundException If the request or event does not exist.
+   * @throws ForbiddenException If the user is not the host of the event.
+   * @throws BadRequestException If the event is already full or the request is already denied.
+   */
+  async acceptInvitation(requestId: number, userId: string) {
+    const request = await this.requestRepository.findOne({
+      where: { id: requestId },
+      relations: ['event', 'user', 'event.participants'],
+    });
+    if (!request) {
+      throw new NotFoundException('Request not found');
+    }
+
+    const event = request.event;
+
+    if (!event) {
+      throw new NotFoundException('Event not found');
+    }
+    if (request.user.id !== userId) {
+      throw new ForbiddenException(
+        'You are not authorized to accept this request',
+      );
+    }
+    if (request.denied) {
+      throw new BadRequestException('This request has already been denied');
+    }
+
+    if (event.participants.length >= event.participantsNumber) {
+      throw new BadRequestException(
+        'The event has reached the maximum number of participants',
+      );
+    }
+
+    event.participants.push(request.user);
+
+    await this.eventRepository.save(event);
+
+    await this.requestRepository.remove(request);
+  }
+
+  /**
+   * Denies an invitation by setting its `denied` property to true.
+   *
+   * @param requestId - the ID of the invitation to be denied
+   * @param userId - the ID of the currently logged-in user (event host)
+   * @throws NotFoundException If the request or event does not exist.
+   * @throws ForbiddenException If the logged-in user is not the user from the invitation.
+   */
+  async denyInvitation(requestId: number, userId: string) {
+    const request = await this.requestRepository.findOne({
+      where: { id: requestId },
+      relations: ['user'],
+    });
+
+    if (!request) {
+      throw new NotFoundException('Request not found');
+    }
+
+    if (request.user.id !== userId) {
+      throw new ForbiddenException(
+        'You are not authorized to deny this invitation',
+      );
+    }
+    request.denied = true;
+
+    await this.requestRepository.save(request);
   }
 }
