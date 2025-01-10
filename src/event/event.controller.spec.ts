@@ -532,11 +532,18 @@ describe('EventController', () => {
 
   describe('EventController - getFilteredEvents', () => {
     it('/GET event/filteredEvents should return filtered events based on query parameters', async () => {
+      const tokens = await mockAuthService.signIn();
+
+      jest
+        .spyOn(app.get(JwtService), 'verifyAsync')
+        .mockResolvedValue(mockAuthPayload);
+
       const validQuery = {
         isOnline: true,
         isInPlace: false,
         isPublic: true,
         isHalfPublic: false,
+        genders: [1, 2],
       };
 
       jest
@@ -545,6 +552,7 @@ describe('EventController', () => {
 
       return agent
         .get('/event/filteredEvents')
+        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
         .query(validQuery)
         .expect('Content-Type', /json/)
         .expect(HttpStatus.OK)
@@ -562,6 +570,7 @@ describe('EventController', () => {
         isInPlace: false,
         isPublic: true,
         isHalfPublic: false,
+        genders: [1, 2],
       };
 
       return agent
@@ -582,6 +591,7 @@ describe('EventController', () => {
         isInPlace: false,
         isPublic: false,
         isHalfPublic: false,
+        genders: [1, 2],
       };
 
       return agent
@@ -602,6 +612,7 @@ describe('EventController', () => {
         isInPlace: false,
         isPublic: true,
         isHalfPublic: false,
+        genders: [1, 2],
       };
 
       jest
@@ -615,6 +626,174 @@ describe('EventController', () => {
         .expect(HttpStatus.OK)
         .expect((response) => {
           expect(response.body).toEqual([]);
+        });
+    });
+
+    it('/GET event/filteredEvents should return events filtered by date range', async () => {
+      const tokens = await mockAuthService.signIn();
+
+      const validQuery = {
+        isOnline: true,
+        isInPlace: false,
+        isPublic: true,
+        isHalfPublic: false,
+        genders: [1, 2],
+        dates: ['2025-01-15', '2025-01-20'],
+      };
+
+      jest
+        .spyOn(app.get(EventController).eventService, 'getFilteredEvents')
+        .mockResolvedValue([MockPublicEvent]);
+
+      return agent
+        .get('/event/filteredEvents')
+        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+        .query(validQuery)
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.OK)
+        .expect((response) => {
+          expect(Array.isArray(response.body)).toBe(true);
+          expect(response.body[0]).toHaveProperty('id');
+          expect(response.body[0]).toHaveProperty('title');
+          expect(response.body[0]).toHaveProperty('dateAndTime');
+        });
+    });
+
+    it('/GET event/filteredEvents should return events filtered by categories', async () => {
+      const tokens = await mockAuthService.signIn();
+
+      const validQuery = {
+        isOnline: true,
+        isInPlace: false,
+        isPublic: true,
+        isHalfPublic: false,
+        genders: [1, 2],
+        categories: [1, 2, 3],
+      };
+
+      jest
+        .spyOn(app.get(EventController).eventService, 'getFilteredEvents')
+        .mockResolvedValue([MockPublicEvent]);
+
+      return agent
+        .get('/event/filteredEvents')
+        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+        .query(validQuery)
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.OK)
+        .expect((response) => {
+          expect(Array.isArray(response.body)).toBe(true);
+          expect(response.body[0]).toHaveProperty('id');
+          expect(response.body[0]).toHaveProperty('title');
+        });
+    });
+
+    it('/GET event/filteredEvents should return events filtered by cities', async () => {
+      const tokens = await mockAuthService.signIn();
+
+      const validQuery = {
+        isOnline: true,
+        isInPlace: false,
+        isPublic: true,
+        isHalfPublic: false,
+        genders: [1, 2],
+        cities: [35390, 61200],
+      };
+
+      jest
+        .spyOn(app.get(EventController).eventService, 'getFilteredEvents')
+        .mockResolvedValue([MockPublicEvent]);
+
+      return agent
+        .get('/event/filteredEvents')
+        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+        .query(validQuery)
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.OK)
+        .expect((response) => {
+          expect(Array.isArray(response.body)).toBe(true);
+          expect(response.body[0]).toHaveProperty('id');
+          expect(response.body[0]).toHaveProperty('title');
+        });
+    });
+
+    it('/GET event/filteredEvents should return events filtered by friends participation', async () => {
+      const tokens = await mockAuthService.signIn();
+
+      const validQuery = {
+        isOnline: true,
+        isInPlace: false,
+        isPublic: true,
+        isHalfPublic: false,
+        genders: [1, 2],
+        filterFriends: true,
+      };
+
+      jest
+        .spyOn(app.get(EventController).eventService, 'getFilteredEvents')
+        .mockResolvedValue([MockPublicEvent]);
+
+      return agent
+        .get('/event/filteredEvents')
+        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+        .query(validQuery)
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.OK)
+        .expect((response) => {
+          expect(Array.isArray(response.body)).toBe(true);
+          expect(response.body[0]).toHaveProperty('id');
+          expect(response.body[0]).toHaveProperty('title');
+        });
+    });
+
+    it('/GET event/filteredEvents should return 400 for invalid date format', async () => {
+      const invalidQuery = {
+        isOnline: true,
+        isInPlace: false,
+        isPublic: true,
+        isHalfPublic: false,
+        genders: [1, 2],
+        dates: ['2025-01-15', 'invalid-date'],
+      };
+
+      return agent
+        .get('/event/filteredEvents')
+        .query(invalidQuery)
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((response) => {
+          expect(response.body.message).toEqual([
+            'each value in dates must be a valid ISO 8601 date string',
+          ]);
+        });
+    });
+
+    it('/GET event/filteredEvents should return events filtered by tags', async () => {
+      const tokens = await mockAuthService.signIn();
+
+      const validQuery = {
+        isOnline: true,
+        isInPlace: false,
+        isPublic: true,
+        isHalfPublic: false,
+        genders: [1, 2],
+        tags: [1, 2],
+      };
+
+      jest
+        .spyOn(app.get(EventController).eventService, 'getFilteredEvents')
+        .mockResolvedValue([MockPublicEvent]);
+
+      return agent
+        .get('/event/filteredEvents')
+        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+        .query(validQuery)
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.OK)
+        .expect((response) => {
+          expect(Array.isArray(response.body)).toBe(true);
+          expect(response.body[0]).toHaveProperty('id');
+          expect(response.body[0]).toHaveProperty('title');
         });
     });
   });

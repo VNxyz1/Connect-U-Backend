@@ -1,4 +1,12 @@
-import { IsArray, IsBoolean, IsISO8601, IsNotEmpty, IsNumber, IsString, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsISO8601,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { GetCategoryDTO } from '../../category/DTO/GetCategoryDTO';
 import { Type } from 'class-transformer';

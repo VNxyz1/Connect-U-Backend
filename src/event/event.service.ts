@@ -143,7 +143,10 @@ export class EventService {
    * @returns {Promise<EventDB[]>} - The filtered events.
    * @throws {NotFoundException} - If there are no events found.
    */
-  async getFilteredEvents(userId: string, filters: FilterDTO): Promise<EventDB[]> {
+  async getFilteredEvents(
+    userId: string,
+    filters: FilterDTO,
+  ): Promise<EventDB[]> {
     const {
       title,
       minAge,
@@ -186,7 +189,7 @@ export class EventService {
           'participants.id IN (:...friendsIds) OR host.id IN (:...friendsIds)',
           {
             friendsIds: friendsIds,
-          }
+          },
         );
     }
 

@@ -589,7 +589,7 @@ describe('EventService', () => {
 
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
         'event.status = :status',
-        { status: StatusEnum.upcoming }
+        { status: StatusEnum.upcoming },
       );
       expect(result).toEqual(mockEventList);
     });
@@ -612,11 +612,10 @@ describe('EventService', () => {
 
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
         'DATE(event.dateAndTime) IN (:...dates)',
-        { dates: ['2025-01-10'] }
+        { dates: ['2025-01-10'] },
       );
       expect(result).toEqual(mockEventList);
     });
-
 
     it('should filter events by title', async () => {
       const mockQueryBuilder = {
@@ -630,13 +629,16 @@ describe('EventService', () => {
         .spyOn(mockEventRepository, 'createQueryBuilder')
         .mockReturnValue(mockQueryBuilder as any);
 
-      const filters: FilterDTO = { title: 'Tech Conference', genders: [1, 2, 3] };
+      const filters: FilterDTO = {
+        title: 'Tech Conference',
+        genders: [1, 2, 3],
+      };
 
       const result = await service.getFilteredEvents('userId', filters);
 
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
         'event.title LIKE :title',
-        { title: '%Tech Conference%' }
+        { title: '%Tech Conference%' },
       );
       expect(result).toEqual(mockEventList);
     });
@@ -659,11 +661,11 @@ describe('EventService', () => {
 
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
         'categories.id = :category',
-        { category: 1 }
+        { category: 1 },
       );
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
         'categories.id = :category',
-        { category: 2 }
+        { category: 2 },
       );
       expect(result).toEqual(mockEventList);
     });
@@ -686,11 +688,11 @@ describe('EventService', () => {
 
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
         'event.startAge >= :minAge',
-        { minAge: 18 }
+        { minAge: 18 },
       );
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
         'event.endAge <= :maxAge',
-        { maxAge: 30 }
+        { maxAge: 30 },
       );
       expect(result).toEqual(mockEventList);
     });
@@ -714,7 +716,7 @@ describe('EventService', () => {
 
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
         'preferredGender.id IN (:...genders)',
-        { genders: [1, 2] }
+        { genders: [1, 2] },
       );
       expect(result).toEqual(mockEventList);
     });
@@ -737,7 +739,7 @@ describe('EventService', () => {
 
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
         'event.zipCode IN (:...zipCodes)',
-        { zipCodes: [35390, 61200] }
+        { zipCodes: [35390, 61200] },
       );
       expect(result).toEqual(mockEventList);
     });
@@ -754,11 +756,14 @@ describe('EventService', () => {
         .spyOn(mockEventRepository, 'createQueryBuilder')
         .mockReturnValue(mockQueryBuilder as any);
 
-      const filters: FilterDTO = { title: 'Nonexistent Event', genders: [1, 2, 3] };
+      const filters: FilterDTO = {
+        title: 'Nonexistent Event',
+        genders: [1, 2, 3],
+      };
 
-      await expect(service.getFilteredEvents('userId', filters)).rejects.toThrow(
-        new NotFoundException('Events not found')
-      );
+      await expect(
+        service.getFilteredEvents('userId', filters),
+      ).rejects.toThrow(new NotFoundException('Events not found'));
     });
   });
 });

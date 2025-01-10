@@ -48,8 +48,7 @@ export class EventController {
     public readonly categoryService: CategoryService,
     public readonly genderService: GenderService,
     public readonly tagService: TagService,
-  ) {
-  }
+  ) {}
 
   @ApiResponse({
     type: CreateEventResDTO,

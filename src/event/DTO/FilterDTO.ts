@@ -150,9 +150,7 @@ export class FilterDTO {
   })
   @IsOptional()
   @IsArray()
-  @Transform(({ value }) =>
-    Array.isArray(value) ? value : [value],
-  )
+  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
   @IsDateString({}, { each: true })
   dates?: string[];
 
