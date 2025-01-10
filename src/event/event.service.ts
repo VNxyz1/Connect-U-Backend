@@ -169,6 +169,8 @@ export class EventService {
       status: StatusEnum.upcoming,
     });
 
+    queryBuilder.andWhere('event.type != :eventType', { eventType: 3 });
+
     if (title) {
       queryBuilder.andWhere('event.title LIKE :title', { title: `%${title}%` });
     }
@@ -186,14 +188,14 @@ export class EventService {
     }
 
     if (categories && categories.length > 0) {
-      queryBuilder.andWhere('categories.id IN (:...categories)', {
-        categories: categories,
+      categories.forEach((category) => {
+        queryBuilder.andWhere('categories.id = :category', { category });
       });
     }
 
     if (tags && tags.length > 0) {
-      queryBuilder.andWhere('tags.id IN (:...tags)', {
-        tags: tags,
+      tags.forEach((tag) => {
+        queryBuilder.andWhere('tags.id = :tag', { tag });
       });
     }
 
