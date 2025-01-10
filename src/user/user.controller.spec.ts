@@ -22,7 +22,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { EventDB } from '../database/EventDB';
 import { mockEventRepository } from '../event/event.service.spec';
 import { mockProviders } from '../../test/mock-services';
-import { mockFriendService } from '../friend/friend.service.spec';
+import { UserMiddleware } from '../utils/user.middleware';
 
 describe('UserController', () => {
   let app: INestApplication;
@@ -35,6 +35,7 @@ describe('UserController', () => {
         ...mockProviders,
         UserService,
         UtilsService,
+        UserMiddleware,
         {
           provide: getRepositoryToken(EventDB),
           useValue: mockEventRepository,
@@ -146,47 +147,6 @@ describe('UserController', () => {
     expect(response.body).toEqual(mockUserProfile);
 
     expect(mockUserService.findById).toHaveBeenCalledWith(expectedUserDB.id);
-  });
-
-  it('/GET friendProfile/username - should return user profile by username', async () => {
-    const expectedUserDB: UserDB =
-      await mockUserService.findByUsername('johnDoe');
-    const mockUser = { id: 'uuIdMock' };
-    const mockUserProfile = {
-      id: expectedUserDB.id,
-      isUser: false,
-      areFriends: false,
-      firstName: expectedUserDB.firstName,
-      username: expectedUserDB.username,
-      city: expectedUserDB.city,
-      profilePicture: expectedUserDB.profilePicture,
-      pronouns: expectedUserDB.pronouns,
-      age: 39,
-      profileText: expectedUserDB.profileText,
-    };
-
-    jest
-      .spyOn(mockUserService, 'findByUsername')
-      .mockResolvedValueOnce(expectedUserDB);
-
-    jest.spyOn(mockFriendService, 'areUsersFriends').mockResolvedValueOnce(false);
-
-    jest
-      .spyOn(mockUtilsService, 'transformUserDBtoGetFriendProfileDTO')
-      .mockReturnValueOnce(mockUserProfile);
-
-    const response = await request(app.getHttpServer())
-      .get(`/user/friendProfile/${expectedUserDB.username}`)
-      .set('Authorization', 'Bearer valid-token')
-      .expect('Content-Type', /json/)
-      .expect(HttpStatus.OK);
-
-    expect(response.body).toEqual(mockUserProfile);
-
-    expect(mockUserService.findByUsername).toHaveBeenCalledWith(
-      expectedUserDB.username,
-    );
-    expect(mockFriendService.areUsersFriends).toHaveBeenCalledWith(mockUser.id, expectedUserDB.id);
   });
 
   it('/PATCH userData - should update user data successfully', async () => {

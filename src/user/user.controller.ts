@@ -123,11 +123,14 @@ export class UserController {
   ): Promise<GetFriendProfileDTO> {
     const userProfile = await this.userService.findByUsername(username);
     const isUser = user?.id === userProfile.id;
-    const areFriends = await this.friendService.areUsersFriends(user.id, userProfile.id);
+    const areFriends = await this.friendService.areUsersFriends(
+      user.id,
+      userProfile.id,
+    );
     return this.utilsService.transformUserDBtoGetFriendProfileDTO(
       userProfile,
       isUser,
-      areFriends
+      areFriends,
     );
   }
 
