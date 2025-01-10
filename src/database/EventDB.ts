@@ -8,8 +8,6 @@ import {
   JoinTable,
 } from 'typeorm';
 import { UserDB } from './UserDB';
-import { StatusEnum } from './enums/StatusEnum';
-import { EventtypeEnum } from './enums/EventtypeEnum';
 import { MemoryDB } from './MemoryDB';
 import { GenderDB } from './GenderDB';
 import { RequestDB } from './RequestDB';
@@ -18,6 +16,7 @@ import { TagDB } from './TagDB';
 import { CategoryDB } from './CategoryDB';
 import { MessageDB } from './MessageDB';
 import { SurveyDB } from './SurveyDB';
+import { StatusEnum } from './enums/StatusEnum';
 
 @Entity()
 export class EventDB {
@@ -31,7 +30,7 @@ export class EventDB {
   host: UserDB;
 
   @Column({ default: StatusEnum.upcoming })
-  status: StatusEnum;
+  status: number;
 
   @Column()
   dateAndTime: string;
@@ -42,8 +41,11 @@ export class EventDB {
   @Column({ default: '' })
   description: string;
 
+  /**
+   * type: EventtypeEnum
+   */
   @Column({ default: 0 })
-  type: EventtypeEnum;
+  type: number;
 
   @Column({ default: '' })
   picture: string;
