@@ -48,7 +48,8 @@ export class EventController {
     public readonly categoryService: CategoryService,
     public readonly genderService: GenderService,
     public readonly tagService: TagService,
-  ) {}
+  ) {
+  }
 
   @ApiResponse({
     type: CreateEventResDTO,
@@ -145,10 +146,11 @@ export class EventController {
     type: [GetEventCardDTO],
     description: 'gets events using the preferred filters',
   })
-  // @ApiBearerAuth('access-token')
-  // @UseGuards(AuthGuard)
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard)
   @Get('/filteredEvents')
   async getFilteredEvents(
+    @User() user: UserDB,
     @Query() query: FilterDTO,
   ): Promise<GetEventCardDTO[]> {
     if (query.isOnline === false && query.isInPlace === false) {
@@ -162,7 +164,7 @@ export class EventController {
       );
     }
 
-    const events = await this.eventService.getFilteredEvents(query);
+    const events = await this.eventService.getFilteredEvents(user.id, query);
 
     return await Promise.all(
       events.map(async (event) => {

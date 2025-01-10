@@ -171,4 +171,13 @@ export class FilterDTO {
   )
   @IsNumber({}, { each: true })
   cities?: number[];
+
+  @ApiPropertyOptional({
+    description: 'Filter for events where friends are participating or hosting',
+    example: true,
+  })
+  @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => value === 'true' || value === true)
+  filterFriends?: boolean;
 }

@@ -138,11 +138,12 @@ export class EventService {
   /**
    * Gets all events from the database with optional filters.
    *
+   * @param userId - ID of the current user
    * @param {FilterDTO} filters - The filters to apply.
    * @returns {Promise<EventDB[]>} - The filtered events.
    * @throws {NotFoundException} - If there are no events found.
    */
-  async getFilteredEvents(filters: FilterDTO): Promise<EventDB[]> {
+  async getFilteredEvents(userId: string, filters: FilterDTO): Promise<EventDB[]> {
     const {
       title,
       minAge,
@@ -156,7 +157,8 @@ export class EventService {
       categories,
       tags,
       dates,
-      cities
+      cities,
+      filterFriends,
     } = filters;
 
     const queryBuilder = this.eventRepository.createQueryBuilder('event');
@@ -173,6 +175,19 @@ export class EventService {
 
     if (title) {
       queryBuilder.andWhere('event.title LIKE :title', { title: `%${title}%` });
+    }
+
+    if (filterFriends) {
+      const friends = await this.friendsService.getFriends(userId);
+      const friendsIds = friends.map((friend) => friend.id);
+      queryBuilder
+        .leftJoin('event.host', 'host')
+        .andWhere(
+          'participants.id IN (:...friendsIds) OR host.id IN (:...friendsIds)',
+          {
+            friendsIds: friendsIds,
+          }
+        );
     }
 
     if (dates?.length) {
