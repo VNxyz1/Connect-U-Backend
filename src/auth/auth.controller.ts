@@ -37,9 +37,8 @@ export class AuthController {
     const tokens = await this.authService.signIn(body.email, body.password);
     res.cookie('refresh_token', tokens.refresh_token, {
       httpOnly: true,
-      secure: !process.env.API_CORS || process.env.API_CORS != '1',
-      sameSite:
-        !process.env.API_CORS || process.env.API_CORS != '1' ? 'strict' : 'lax',
+      secure: !Boolean(process.env.API_CORS),
+      sameSite: Boolean(process.env.API_CORS) ? 'lax' : 'strict',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
     res.json(new AccessTokenResDTO(tokens.access_token));
@@ -56,14 +55,22 @@ export class AuthController {
   })
   @HttpCode(HttpStatus.OK)
   @Get('refresh')
-  async refresh(@Req() req: Request) {
+  async refresh(@Req() req: Request, @Res() res: Response) {
     const refreshToken = req.cookies['refresh_token'];
 
     if (!refreshToken) {
       throw new BadRequestException('Refresh token missing');
     }
 
-    return await this.authService.refreshAccessToken(refreshToken);
+    try {
+      const token = await this.authService.refreshAccessToken(refreshToken);
+      res.status(HttpStatus.OK).json(token);
+    } catch (error) {
+      res
+        .clearCookie('refresh_token')
+        .status(HttpStatus.BAD_REQUEST)
+        .json(error);
+    }
   }
 
   @ApiResponse({

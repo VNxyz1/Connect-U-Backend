@@ -20,6 +20,7 @@ export const userFactory = () => {
   user.zipCode = faker.location.zipCode();
   user.password = faker.internet.password();
   user.username = faker.internet.username({ firstName, lastName });
+  user.profilePicture = 'empty.png';
 
   return user;
 };

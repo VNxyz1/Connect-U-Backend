@@ -1,7 +1,7 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import * as bcrypt from 'bcryptjs';
@@ -76,7 +76,7 @@ export class AuthService {
         access_token: await this.jwtService.signAsync(newPayload),
       };
     } catch (e) {
-      throw new UnauthorizedException('Invalid refresh token', e);
+      throw new BadRequestException('Invalid refresh token', e);
     }
   }
 
