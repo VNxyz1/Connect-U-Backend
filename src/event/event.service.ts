@@ -154,7 +154,9 @@ export class EventService {
       isInPlace,
       sortOrder,
       categories,
-      tags
+      tags,
+      dates,
+      cities
     } = filters;
 
     const queryBuilder = this.eventRepository.createQueryBuilder('event');
@@ -171,18 +173,28 @@ export class EventService {
       queryBuilder.andWhere('event.title LIKE :title', { title: `%${title}%` });
     }
 
+    if (dates?.length) {
+      queryBuilder.andWhere('DATE(event.dateAndTime) IN (:...dates)', {
+        dates: dates,
+      });
+    }
+
+    if (cities?.length) {
+      queryBuilder.andWhere('event.zipCode IN (:...zipCodes)', {
+        zipCodes: cities,
+      });
+    }
+
     if (categories && categories.length > 0) {
-      queryBuilder
-        .andWhere('categories.id IN (:...categories)', {
+      queryBuilder.andWhere('categories.id IN (:...categories)', {
         categories: categories,
       });
     }
 
     if (tags && tags.length > 0) {
-      queryBuilder
-        .andWhere('tags.id IN (:...tags)', {
-          tags: tags,
-        });
+      queryBuilder.andWhere('tags.id IN (:...tags)', {
+        tags: tags,
+      });
     }
 
     if (minAge) {

@@ -5,7 +5,10 @@ import {
   IsNumber,
   Min,
   Max,
-  IsEnum, IsArray, ArrayMinSize,
+  IsEnum,
+  IsArray,
+  ArrayMinSize,
+  IsDateString,
 } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
@@ -43,17 +46,29 @@ export class FilterDTO {
   })
   @IsOptional()
   @IsArray()
-  @Transform(({ value }) => (Array.isArray(value) ? value.map(Number) : Number.isNaN(value)? undefined : [Number(value)]))
+  @Transform(({ value }) =>
+    Array.isArray(value)
+      ? value.map(Number)
+      : Number.isNaN(value)
+        ? undefined
+        : [Number(value)],
+  )
   @IsNumber({}, { each: true })
   categories?: number[];
 
   @ApiPropertyOptional({
-    description: 'Filter events tags',
+    description: 'Filter events by tags',
     example: [1, 2, 3],
   })
   @IsOptional()
   @IsArray()
-  @Transform(({ value }) => (Array.isArray(value) ? value.map(Number) : Number.isNaN(value)? undefined : [Number(value)]))
+  @Transform(({ value }) =>
+    Array.isArray(value)
+      ? value.map(Number)
+      : Number.isNaN(value)
+        ? undefined
+        : [Number(value)],
+  )
   @IsNumber({}, { each: true })
   tags?: number[];
 
@@ -81,7 +96,13 @@ export class FilterDTO {
     description: 'Allowed genders for the event (e.g., male, female, diverse)',
     example: [1, 3],
   })
-  @Transform(({ value }) => (Array.isArray(value) ? value.map(Number) : Number.isNaN(value)? undefined : [Number(value)]))
+  @Transform(({ value }) =>
+    Array.isArray(value)
+      ? value.map(Number)
+      : Number.isNaN(value)
+        ? undefined
+        : [Number(value)],
+  )
   @IsArray()
   @ArrayMinSize(1, { message: 'You have to select at least one gender' })
   @IsNumber({}, { each: true })
@@ -122,4 +143,32 @@ export class FilterDTO {
   @IsBoolean()
   @Transform(({ value }) => value === 'true' || value === true)
   isInPlace?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Filter events by multiple dates (ISO 8601 format)',
+    example: ['2025-01-15', '2025-01-20'],
+  })
+  @IsOptional()
+  @IsArray()
+  @Transform(({ value }) =>
+    Array.isArray(value) ? value : [value],
+  )
+  @IsDateString({}, { each: true })
+  dates?: string[];
+
+  @ApiPropertyOptional({
+    description: 'Filter events by cities',
+    example: ['35390', '61200'],
+  })
+  @IsOptional()
+  @IsArray()
+  @Transform(({ value }) =>
+    Array.isArray(value)
+      ? value.map(Number)
+      : Number.isNaN(value)
+        ? undefined
+        : [Number(value)],
+  )
+  @IsNumber({}, { each: true })
+  cities?: number[];
 }
