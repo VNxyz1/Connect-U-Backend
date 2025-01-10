@@ -12,7 +12,6 @@ import { SurveyEntryDB } from '../database/SurveyEntryDB';
 import { TagDB } from '../database/TagDB';
 import { SchedulerService } from '../scheduler/scheduler.service';
 import { FilterDTO, SortOrder } from './DTO/FilterDTO';
-import { EventtypeEnum } from '../database/enums/EventtypeEnum';
 import ViewEventEnum from '../database/enums/ViewEventEnum';
 import ViewedEventsDB from '../database/ViewedEventsDB';
 import { EventtypeEnum } from '../database/enums/EventtypeEnum';
