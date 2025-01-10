@@ -32,6 +32,7 @@ import { StatusEnum } from '../database/enums/StatusEnum';
 import { MessageDB } from '../database/MessageDB';
 import { GetEventChatDTO } from '../Message/DTO/GetEventChatDTO';
 import { GetMessageDTO } from '../Message/DTO/GetMessageDTO';
+import { GetFriendProfileDTO } from '../user/DTO/GetFriendProfileDTO';
 
 @Injectable()
 export class UtilsService {
@@ -178,6 +179,36 @@ export class UtilsService {
     const dto = new GetUserProfileDTO();
     dto.id = user.id;
     dto.isUser = isUser;
+    dto.pronouns = user.pronouns;
+    dto.profilePicture = user.profilePicture;
+    dto.profileText = user.profileText;
+    dto.firstName = user.firstName;
+    dto.username = user.username;
+    dto.city = user.city;
+    const birthday = new Date(user.birthday);
+    dto.age = this.calculateAge(birthday);
+    if (user.tags && user.tags.length > 0) {
+      dto.tags = user.tags.map((tag) => tag.title);
+    }
+    return dto;
+  }
+
+  /**
+   * Transforms a UserDB object into a GetUserProfileDTO.
+   * @param user - The user entity from the database.
+   * @param isUser - boolean if logged-in user is user who's visiting the profile
+   * @param areFriends - boolean if users are friends
+   * @returns {GetFriendProfileDTO} - The transformed user profile data transfer object.
+   */
+  transformUserDBtoGetFriendProfileDTO(
+    user: UserDB,
+    isUser: boolean,
+    areFriends: boolean,
+  ): GetFriendProfileDTO {
+    const dto = new GetFriendProfileDTO();
+    dto.id = user.id;
+    dto.isUser = isUser;
+    dto.areFriends = areFriends;
     dto.pronouns = user.pronouns;
     dto.profilePicture = user.profilePicture;
     dto.profileText = user.profileText;
