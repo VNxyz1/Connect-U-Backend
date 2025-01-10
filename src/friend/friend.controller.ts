@@ -14,6 +14,8 @@ import { User } from '../utils/user.decorator';
 import { UserDB } from '../database/UserDB';
 import { GetUserProfileDTO } from '../user/DTO/GetUserProfileDTO';
 import { UtilsService } from '../utils/utils.service';
+import { EventDB } from '../database/EventDB';
+import { EventService } from '../event/event.service';
 
 @ApiTags('friends')
 @Controller('friends')
@@ -21,6 +23,7 @@ export class FriendsController {
   constructor(
     private readonly friendService: FriendService,
     private readonly utilsService: UtilsService,
+    private readonly eventService: EventService,
   ) {}
 
   @ApiResponse({
@@ -57,7 +60,7 @@ export class FriendsController {
     type: [GetUserProfileDTO],
     description: 'Retrieves the list of friends for the authenticated user',
   })
-  @Get()
+  @Get('/allFriends')
   @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard)
   async getFriends(@User() user: UserDB): Promise<GetUserProfileDTO[]> {
@@ -65,5 +68,44 @@ export class FriendsController {
     return friends.map((friend) =>
       this.utilsService.transformUserDBtoGetUserProfileDTO(friend, false),
     );
+  }
+
+  @ApiResponse({
+    type: [GetUserProfileDTO],
+    description:
+      'Retrieves the list of friends that meet the event requirements',
+  })
+  @Get('/filteredFriends/:eventId')
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard)
+  async getFilteredFriends(
+    @User() user: UserDB,
+    @Param('eventId') eventId: string,
+  ): Promise<GetUserProfileDTO[]> {
+    const event: EventDB = await this.eventService.getEventById(eventId);
+    const participantIds = new Set(
+      event.participants.map((participant) => participant.id),
+    );
+
+    const friends = await this.friendService.getFriends(user.id);
+    const filteredFriends = [];
+    for (const friend of friends) {
+      try {
+        if (participantIds.has(friend.id)) {
+          continue;
+        }
+
+        const isAllowed = await this.utilsService.isUserAllowedToJoinEvent(
+          friend,
+          event,
+        );
+        if (isAllowed) {
+          filteredFriends.push(
+            this.utilsService.transformUserDBtoGetUserProfileDTO(friend, false),
+          );
+        }
+      } catch {}
+    }
+    return filteredFriends;
   }
 }

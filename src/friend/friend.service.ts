@@ -76,6 +76,7 @@ export class FriendService {
    * @returns The updated user with the new friend added.
    * @throws NotFoundException if the friend with the given ID is not found.
    * @throws Error if the friend already exists in the user's friend list or friendOf list.
+   * @throws Error if the User trys to befriend thyself
    */
   async createFriend(user: UserDB, username: string): Promise<UserDB> {
     const friend = await this.userRepository.findOne({
@@ -85,6 +86,10 @@ export class FriendService {
 
     if (!friend) {
       throw new NotFoundException('Friend not found');
+    }
+
+    if (user.username == username) {
+      throw new Error('User cannot befriend thyself');
     }
 
     user.friends = user.friends || [];
@@ -119,7 +124,6 @@ export class FriendService {
       where: { id: userId },
       relations: ['friends', 'friendOf'],
     });
-
     if (!user) {
       throw new NotFoundException('User not found');
     }

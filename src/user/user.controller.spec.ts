@@ -22,6 +22,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { EventDB } from '../database/EventDB';
 import { mockEventRepository } from '../event/event.service.spec';
 import { mockProviders } from '../../test/mock-services';
+import { UserMiddleware } from '../utils/user.middleware';
 
 describe('UserController', () => {
   let app: INestApplication;
@@ -34,6 +35,7 @@ describe('UserController', () => {
         ...mockProviders,
         UserService,
         UtilsService,
+        UserMiddleware,
         {
           provide: getRepositoryToken(EventDB),
           useValue: mockEventRepository,
