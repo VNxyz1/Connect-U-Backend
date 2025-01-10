@@ -46,7 +46,7 @@ export class UserService {
     newUser.username = body.username;
     newUser.password = body.password;
     newUser.birthday = body.birthday;
-    newUser.gender = body.gender;
+    newUser.gender = body.gender['value'] ? body.gender['value'] : body.gender;
     return await this.userRepository.save(newUser);
   }
 
