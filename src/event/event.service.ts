@@ -153,7 +153,8 @@ export class EventService {
       isOnline,
       isInPlace,
       sortOrder,
-      categories
+      categories,
+      tags
     } = filters;
 
     const queryBuilder = this.eventRepository.createQueryBuilder('event');
@@ -177,6 +178,13 @@ export class EventService {
       });
     }
 
+    if (tags && tags.length > 0) {
+      queryBuilder
+        .andWhere('tags.id IN (:...tags)', {
+          tags: tags,
+        });
+    }
+
     if (minAge) {
       queryBuilder.andWhere('event.startAge >= :minAge', { minAge });
     }
@@ -185,7 +193,7 @@ export class EventService {
       queryBuilder.andWhere('event.endAge <= :maxAge', { maxAge });
     }
 
-    if (genders && genders.length > 0) {
+    if (genders.length !== 3) {
       queryBuilder
         .leftJoin('event.preferredGenders', 'preferredGender')
         .andWhere('preferredGender.id IN (:...genders)', { genders: genders });
