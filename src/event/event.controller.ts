@@ -338,13 +338,6 @@ export class EventController {
       'eventPictures',
       image,
     );
-
-    if (!fs.existsSync(imgPath)) {
-      return res.status(404).json({
-        message: 'Event picture not found',
-      });
-    }
-
     res.sendFile(imgPath);
   }
 
