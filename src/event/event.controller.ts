@@ -127,13 +127,17 @@ export class EventController {
 
   @ApiResponse({
     type: [GetEventCardDTO],
-    description: 'A paginated list of all public, half-private, upcoming or live events sorted by popularity',
+    description:
+      'A paginated list of all public, half-private, upcoming or live events sorted by popularity',
   })
   @Get('/allEvents')
   async getAllEvents(
     @PaginationParams() paginationParams: Pagination,
   ): Promise<GetEventCardDTO[]> {
-    const events = await this.eventService.getAllActiveEventsByPopularity(paginationParams.page, paginationParams.size);
+    const events = await this.eventService.getAllActiveEventsByPopularity(
+      paginationParams.page,
+      paginationParams.size,
+    );
     return await Promise.all(
       events.map(async (event) => {
         return this.utilsService.transformEventDBtoGetEventCardDTO(event);
