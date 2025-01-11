@@ -6,6 +6,7 @@ import {
   ManyToOne,
   ManyToMany,
   JoinTable,
+  CreateDateColumn,
 } from 'typeorm';
 import { UserDB } from './UserDB';
 import { MemoryDB } from './MemoryDB';
@@ -24,7 +25,7 @@ export class EventDB {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ default: new Date().toISOString() })
+  @CreateDateColumn()
   timestamp: string;
 
   @ManyToOne(() => UserDB)

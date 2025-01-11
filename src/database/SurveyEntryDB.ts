@@ -5,6 +5,7 @@ import {
   ManyToOne,
   ManyToMany,
   JoinTable,
+  CreateDateColumn,
 } from 'typeorm';
 import { UserDB } from './UserDB';
 import { SurveyDB } from './SurveyDB';
@@ -14,7 +15,7 @@ export class SurveyEntryDB {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ default: new Date().toISOString() })
+  @CreateDateColumn()
   timestamp: string;
 
   @ManyToOne(() => SurveyDB, (survey) => survey.surveyEntries, {

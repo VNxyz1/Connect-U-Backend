@@ -4,6 +4,7 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   OneToMany,
+  CreateDateColumn,
 } from 'typeorm';
 import { EventDB } from './EventDB';
 import { ListEntryDB } from './ListEntryDB';
@@ -14,7 +15,7 @@ export class ListDB {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ default: new Date().toISOString() })
+  @CreateDateColumn()
   timestamp: string;
 
   @ManyToOne(() => EventDB)
