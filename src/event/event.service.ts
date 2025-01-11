@@ -127,7 +127,7 @@ export class EventService {
       take: size,
     });
 
-    if (!events || events.length === 0) {
+    if (!events) {
       throw new NotFoundException('Events not found');
     }
 

@@ -373,12 +373,10 @@ describe('EventService', () => {
     expect(result).toEqual(mockEventList);
   });
 
-  it('should throw a NotFoundException if no events are found', async () => {
+  it('should return an empty array if no events are found', async () => {
     mockEventRepository.find.mockResolvedValue([]);
 
-    await expect(service.getAllActiveEventsByPopularity()).rejects.toThrow(
-      NotFoundException,
-    );
+    await expect(service.getAllActiveEventsByPopularity()).resolves.toEqual([]);
   });
 
   describe('EventService - getHostingEvents', () => {

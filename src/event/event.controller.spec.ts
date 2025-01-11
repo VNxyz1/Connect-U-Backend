@@ -200,7 +200,7 @@ describe('EventController', () => {
   describe('EventController - getAllEvents', () => {
     it('/GET event/allEvents should return all events', async () => {
       return agent
-        .get('/event/allEvents')
+        .get('/event/allEvents?page=0&size=12')
         .expect('Content-Type', /json/)
         .expect(HttpStatus.OK)
         .expect((response) => {
