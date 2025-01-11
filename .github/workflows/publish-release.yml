@@ -17,6 +17,8 @@ env:
 jobs:
   setup:
     runs-on: ubuntu-latest
+    outputs:
+      DEV_VERSION: ${{ steps.set-version.outputs.dev-version }}
     steps:
       - name: Check out repositorycontainer registry push test
         uses: actions/checkout@v4
@@ -41,6 +43,13 @@ jobs:
           path: ./*
           key: ${{ github.ref }}-${{ github.sha }}-setup
 
+      - name: Generate version for dev images
+        id: set-version
+        run: |
+          if [[ "${GITHUB_REF}" == "refs/heads/dev" ]]; then
+            echo "DEV_VERSION=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
+            echo "::set-output name=dev-version::$(date +%Y%m%d%H%M%S)"
+          fi
 
   build-and-push:
     needs: [setup]
@@ -82,5 +91,31 @@ jobs:
           tags: |
             ${{ steps.meta.outputs.tags }}
             ${{ env.REGISTRY }}/${{ env.LOWERCASE_IMAGE_NAME }}:dev
-            ${{ env.REGISTRY }}/${{ env.LOWERCASE_IMAGE_NAME }}:dev-${{ env.DEV_VERSION }}
+            ${{ env.REGISTRY }}/${{ env.LOWERCASE_IMAGE_NAME }}:dev-${{ needs.setup.outputs.DEV_VERSION }}
           labels: ${{ steps.meta.outputs.labels }}
+
+  update-tag:
+    needs: [ setup, build-and-push ]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/dev'
+    steps:
+      - name: Clone target repository
+        env:
+          TARGET_REPO_PAT: ${{ secrets.CR_PAT }}
+        run: |
+          git clone https://x-access-token:${{ secrets.CR_PAT }}@github.com/VNxyz1/connect-u-deployment.git target-repo
+          cd target-repo
+
+      - name: Update image tag
+        run: |
+          cd target-repo
+          sed -i 's|image: ghcr.io/vnxyz1/connect-u-backend:.*|image: ghcr.io/vnxyz1/connect-u-backend:dev-${{ needs.setup.outputs.DEV_VERSION }}|' connect-u/dev/argocd-conf/backend-deployment.yaml
+
+      - name: Commit and push changes
+        run: |
+          cd target-repo
+          git config user.name "GitHub Action Bot"
+          git config user.email "actions@github.com"
+          git add connect-u/dev/argocd-conf/backend-deployment.yaml
+          git commit -m "Update image tag to dev-${{ needs.setup.outputs.DEV_VERSION }}"
+          git push
