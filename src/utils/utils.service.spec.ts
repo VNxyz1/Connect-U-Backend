@@ -7,6 +7,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { mockEventRepository } from '../event/event.service.spec';
 import { GetUserProfileDTO } from '../user/DTO/GetUserProfileDTO';
 import { GetUserDataDTO } from '../user/DTO/GetUserDataDTO';
+import { GetFriendProfileDTO } from '../user/DTO/GetFriendProfileDTO';
 
 describe('UtilsService', () => {
   let service: UtilsService;
@@ -94,8 +95,8 @@ describe('UtilsService', () => {
       participatedEvents: [],
       favoritedEvents: [],
       memories: [],
-      friends: Promise.resolve([]),
-      friendOf: Promise.resolve([]),
+      friends: [],
+      friendOf: [],
       listEntries: [],
       achievements: Promise.resolve([]),
       surveyEntries: [],
@@ -105,6 +106,7 @@ describe('UtilsService', () => {
       lists: [],
       tags: [],
       unreadMessages: [],
+      viewEvents: [],
     },
     {
       id: '2',
@@ -129,8 +131,8 @@ describe('UtilsService', () => {
       participatedEvents: [],
       favoritedEvents: [],
       memories: [],
-      friends: Promise.resolve([]),
-      friendOf: Promise.resolve([]),
+      friends: [],
+      friendOf: [],
       listEntries: [],
       achievements: Promise.resolve([]),
       surveyEntries: [],
@@ -140,6 +142,7 @@ describe('UtilsService', () => {
       lists: [],
       tags: [],
       unreadMessages: [],
+      viewEvents: [],
     },
     {
       id: '3',
@@ -164,8 +167,8 @@ describe('UtilsService', () => {
       participatedEvents: [],
       favoritedEvents: [],
       memories: [],
-      friends: Promise.resolve([]),
-      friendOf: Promise.resolve([]),
+      friends: [],
+      friendOf: [],
       listEntries: [],
       achievements: Promise.resolve([]),
       surveyEntries: [],
@@ -175,6 +178,7 @@ describe('UtilsService', () => {
       lists: [],
       tags: [],
       unreadMessages: [],
+      viewEvents: [],
     },
   ];
 
@@ -198,6 +202,20 @@ export const mockUtilsService = {
     (user): GetUserProfileDTO => ({
       id: user.id,
       isUser: false,
+      firstName: user.firstName,
+      username: user.username,
+      city: user.city,
+      profilePicture: user.profilePicture,
+      pronouns: user.pronouns,
+      age: 23,
+      profileText: user.profileText,
+    }),
+  ),
+  transformUserDBtoGetFriendProfileDTO: jest.fn(
+    (user): GetFriendProfileDTO => ({
+      id: user.id,
+      isUser: false,
+      areFriends: false,
       firstName: user.firstName,
       username: user.username,
       city: user.city,

@@ -32,6 +32,7 @@ import { StatusEnum } from '../database/enums/StatusEnum';
 import { MessageDB } from '../database/MessageDB';
 import { GetEventChatDTO } from '../Message/DTO/GetEventChatDTO';
 import { GetMessageDTO } from '../Message/DTO/GetMessageDTO';
+import { GetFriendProfileDTO } from '../user/DTO/GetFriendProfileDTO';
 
 @Injectable()
 export class UtilsService {
@@ -193,6 +194,36 @@ export class UtilsService {
   }
 
   /**
+   * Transforms a UserDB object into a GetUserProfileDTO.
+   * @param user - The user entity from the database.
+   * @param isUser - boolean if logged-in user is user who's visiting the profile
+   * @param areFriends - boolean if users are friends
+   * @returns {GetFriendProfileDTO} - The transformed user profile data transfer object.
+   */
+  transformUserDBtoGetFriendProfileDTO(
+    user: UserDB,
+    isUser: boolean,
+    areFriends: boolean,
+  ): GetFriendProfileDTO {
+    const dto = new GetFriendProfileDTO();
+    dto.id = user.id;
+    dto.isUser = isUser;
+    dto.areFriends = areFriends;
+    dto.pronouns = user.pronouns;
+    dto.profilePicture = user.profilePicture;
+    dto.profileText = user.profileText;
+    dto.firstName = user.firstName;
+    dto.username = user.username;
+    dto.city = user.city;
+    const birthday = new Date(user.birthday);
+    dto.age = this.calculateAge(birthday);
+    if (user.tags && user.tags.length > 0) {
+      dto.tags = user.tags.map((tag) => tag.title);
+    }
+    return dto;
+  }
+
+  /**
    * Transforms a UserDB object into a GetUserDataDTO.
    * @param user - The user entity from the database.
    * @returns {GetUserDataDTO} - The transformed user data transfer object.
@@ -241,10 +272,12 @@ export class UtilsService {
   /**
    * Transforms an EventDB object into a GetEventCardDTO.
    * @param event - The event entity from the database.
+   * @param friendsEvents - optional. An array of all events where friends are participating or hosting
    * @returns {Promise<GetEventCardDTO>} - A promise resolving to the transformed event card data transfer object.
    */
   async transformEventDBtoGetEventCardDTO(
     event: EventDB,
+    friendsEvents?: EventDB[],
   ): Promise<GetEventCardDTO> {
     const dto = new GetEventCardDTO();
     dto.id = event.id;
@@ -258,10 +291,13 @@ export class UtilsService {
     dto.isOnline = event.isOnline;
     dto.city = event.city;
     const participants = event.participants;
-    dto.participantsNumber = participants.length;
+    dto.participantsNumber = participants?.length || 0;
     dto.maxParticipantsNumber = event.participantsNumber;
     if (event.tags && event.tags.length > 0) {
       dto.tags = event.tags.map((tag) => tag.title);
+    }
+    if (friendsEvents) {
+      dto.participatingFriend = !!friendsEvents.find((e) => e.id == event.id);
     }
     return dto;
   }
@@ -517,13 +553,13 @@ export class UtilsService {
       id: message.id,
       text: message.text,
       timestamp: message.timestamp,
-      isHost: message.writer.id === eventHostId,
+      isHost: message.writer ? message.writer.id === eventHostId : false, // Safely check writer
       writer: message.writer
         ? this.transformUserDBtoGetUserProfileDTO(
             message.writer,
             message.writer.id === currentUserId,
           )
-        : null,
+        : null, // Handle null writer case
     };
   }
 
@@ -566,37 +602,14 @@ export class UtilsService {
       }
     }
 
-    const latestReadTimestamp =
-      readMessages.length > 0
-        ? new Date(readMessages[readMessages.length - 1].timestamp).getTime()
-        : null;
-
-    const adjustedUnreadMessages = [];
-    for (const message of unreadMessages) {
-      const messageTimestamp = new Date(message.timestamp).getTime();
-
-      if (
-        latestReadTimestamp !== null &&
-        messageTimestamp <= latestReadTimestamp
-      ) {
-        readMessages.push(message);
-      } else {
-        adjustedUnreadMessages.push(message);
-      }
-    }
-
     readMessages.sort(
-      (a, b) =>
-        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
-    );
-    adjustedUnreadMessages.sort(
       (a, b) =>
         new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
     );
 
     return {
       readMessages,
-      unreadMessages: adjustedUnreadMessages,
+      unreadMessages,
     };
   }
 }

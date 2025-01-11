@@ -8,8 +8,6 @@ import {
   JoinTable,
 } from 'typeorm';
 import { UserDB } from './UserDB';
-import { StatusEnum } from './enums/StatusEnum';
-import { EventtypeEnum } from './enums/EventtypeEnum';
 import { MemoryDB } from './MemoryDB';
 import { GenderDB } from './GenderDB';
 import { RequestDB } from './RequestDB';
@@ -18,6 +16,8 @@ import { TagDB } from './TagDB';
 import { CategoryDB } from './CategoryDB';
 import { MessageDB } from './MessageDB';
 import { SurveyDB } from './SurveyDB';
+import ViewedEventsDB from './ViewedEventsDB';
+import { StatusEnum } from './enums/StatusEnum';
 
 @Entity()
 export class EventDB {
@@ -31,9 +31,9 @@ export class EventDB {
   host: UserDB;
 
   @Column({ default: StatusEnum.upcoming })
-  status: StatusEnum;
+  status: number;
 
-  @Column({ type: 'datetime' })
+  @Column()
   dateAndTime: string;
 
   @Column()
@@ -42,8 +42,11 @@ export class EventDB {
   @Column({ default: '' })
   description: string;
 
+  /**
+   * type: {@link EventtypeEnum}
+   */
   @Column({ default: 0 })
-  type: EventtypeEnum;
+  type: number;
 
   @Column({ default: '' })
   picture: string;
@@ -107,4 +110,7 @@ export class EventDB {
   @ManyToMany(() => CategoryDB, (category) => category.events)
   @JoinTable({ name: 'EventCategories' })
   categories: CategoryDB[];
+
+  @OneToMany(() => ViewedEventsDB, (viewEvents) => viewEvents.event)
+  viewEvents: ViewedEventsDB[];
 }
