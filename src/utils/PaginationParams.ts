@@ -5,16 +5,13 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional } from 'class-validator';
 
 export class Pagination {
   @ApiProperty()
-  @IsOptional()
-  page?: number;
+  page: number;
 
   @ApiProperty()
-  @IsOptional()
-  size?: number;
+  size: number;
 }
 
 export const PaginationParams = createParamDecorator(

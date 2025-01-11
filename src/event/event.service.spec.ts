@@ -27,6 +27,8 @@ export const mockEventRepository = {
     leftJoinAndSelect: jest.fn().mockReturnThis(),
     where: jest.fn().mockReturnThis(),
     getMany: jest.fn(),
+    skip: jest.fn().mockReturnThis(),
+    take: jest.fn().mockReturnThis(),
     orderBy: jest.fn().mockReturnThis(),
   })),
 };
@@ -203,6 +205,8 @@ const queryBuilderMock = {
   where: jest.fn().mockReturnThis(),
   getMany: jest.fn().mockResolvedValue(mockEventList),
   orderBy: jest.fn().mockReturnThis(),
+  skip: jest.fn().mockReturnThis(),
+  take: jest.fn().mockReturnThis(),
 };
 
 mockEventRepository.createQueryBuilder.mockReturnValue(queryBuilderMock);
@@ -577,6 +581,8 @@ describe('EventService', () => {
         andWhere: jest.fn().mockReturnThis(),
         orderBy: jest.fn().mockReturnThis(),
         getMany: jest.fn().mockResolvedValue(mockEventList),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
       };
 
       jest
@@ -600,6 +606,8 @@ describe('EventService', () => {
         andWhere: jest.fn().mockReturnThis(),
         orderBy: jest.fn().mockReturnThis(),
         getMany: jest.fn().mockResolvedValue(mockEventList),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
       };
 
       jest
@@ -623,6 +631,8 @@ describe('EventService', () => {
         andWhere: jest.fn().mockReturnThis(),
         orderBy: jest.fn().mockReturnThis(),
         getMany: jest.fn().mockResolvedValue(mockEventList),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
       };
 
       jest
@@ -649,6 +659,8 @@ describe('EventService', () => {
         andWhere: jest.fn().mockReturnThis(),
         orderBy: jest.fn().mockReturnThis(),
         getMany: jest.fn().mockResolvedValue(mockEventList),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
       };
 
       jest
@@ -676,6 +688,8 @@ describe('EventService', () => {
         andWhere: jest.fn().mockReturnThis(),
         orderBy: jest.fn().mockReturnThis(),
         getMany: jest.fn().mockResolvedValue(mockEventList),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
       };
 
       jest
@@ -704,6 +718,8 @@ describe('EventService', () => {
         leftJoin: jest.fn().mockReturnThis(),
         orderBy: jest.fn().mockReturnThis(),
         getMany: jest.fn().mockResolvedValue(mockEventList),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
       };
 
       jest
@@ -727,6 +743,8 @@ describe('EventService', () => {
         andWhere: jest.fn().mockReturnThis(),
         orderBy: jest.fn().mockReturnThis(),
         getMany: jest.fn().mockResolvedValue(mockEventList),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
       };
 
       jest
@@ -744,12 +762,14 @@ describe('EventService', () => {
       expect(result).toEqual(mockEventList);
     });
 
-    it('should throw NotFoundException if no events match the filters', async () => {
+    it('returns a empty array if no events match the filters', async () => {
       const mockQueryBuilder = {
         leftJoinAndSelect: jest.fn().mockReturnThis(),
         andWhere: jest.fn().mockReturnThis(),
         orderBy: jest.fn().mockReturnThis(),
         getMany: jest.fn().mockResolvedValue([]),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
       };
 
       jest
@@ -763,7 +783,7 @@ describe('EventService', () => {
 
       await expect(
         service.getFilteredEvents('userId', filters),
-      ).rejects.toThrow(new NotFoundException('Events not found'));
+      ).resolves.toEqual([]);
     });
   });
 });

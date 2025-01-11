@@ -131,6 +131,9 @@ export class EventController {
     type: [GetEventCardDTO],
     description: 'gets all events sorted by popularity',
   })
+  @ApiQuery({
+    type: Pagination,
+  })
   @Get('/allEvents')
   async getAllEvents(): Promise<GetEventCardDTO[]> {
     const events = await this.eventService.getAllActiveEventsByPopularity();
@@ -145,12 +148,16 @@ export class EventController {
     type: [GetEventCardDTO],
     description: 'gets events using the preferred filters',
   })
+  @ApiQuery({
+    type: Pagination,
+  })
   @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard)
   @Get('/filteredEvents')
   async getFilteredEvents(
     @User() user: UserDB,
     @Query() query: FilterDTO,
+    @PaginationParams() pagination: Pagination,
   ): Promise<GetEventCardDTO[]> {
     if (query.isOnline === false && query.isInPlace === false) {
       throw new BadRequestException(
@@ -163,7 +170,12 @@ export class EventController {
       );
     }
 
-    const events = await this.eventService.getFilteredEvents(user.id, query);
+    const events = await this.eventService.getFilteredEvents(
+      user.id,
+      query,
+      pagination.page,
+      pagination.size,
+    );
 
     return await Promise.all(
       events.map(async (event) => {

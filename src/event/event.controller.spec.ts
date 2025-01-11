@@ -24,6 +24,7 @@ import { StatusEnum } from '../database/enums/StatusEnum';
 import { GetEventDetailsDTO } from './DTO/GetEventDetailsDTO';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { mockEventRepository } from './event.service.spec';
+import { UserService } from '../user/user.service';
 
 describe('EventController', () => {
   let app: INestApplication;
@@ -538,12 +539,16 @@ describe('EventController', () => {
         .spyOn(app.get(JwtService), 'verifyAsync')
         .mockResolvedValue(mockAuthPayload);
 
+      jest.spyOn(app.get(UserService), 'findById').mockResolvedValue(mockUser);
+
       const validQuery = {
         isOnline: true,
         isInPlace: false,
         isPublic: true,
         isHalfPublic: false,
         genders: [1, 2],
+        page: 0,
+        size: 12,
       };
 
       jest
@@ -571,6 +576,8 @@ describe('EventController', () => {
         isPublic: true,
         isHalfPublic: false,
         genders: [1, 2],
+        page: 0,
+        size: 12,
       };
 
       return agent
@@ -592,6 +599,8 @@ describe('EventController', () => {
         isPublic: false,
         isHalfPublic: false,
         genders: [1, 2],
+        page: 0,
+        size: 12,
       };
 
       return agent
@@ -613,6 +622,8 @@ describe('EventController', () => {
         isPublic: true,
         isHalfPublic: false,
         genders: [1, 2],
+        page: 0,
+        size: 12,
       };
 
       jest
@@ -639,6 +650,8 @@ describe('EventController', () => {
         isHalfPublic: false,
         genders: [1, 2],
         dates: ['2025-01-15', '2025-01-20'],
+        page: 0,
+        size: 12,
       };
 
       jest
@@ -669,6 +682,8 @@ describe('EventController', () => {
         isHalfPublic: false,
         genders: [1, 2],
         categories: [1, 2, 3],
+        page: 0,
+        size: 12,
       };
 
       jest
@@ -698,6 +713,8 @@ describe('EventController', () => {
         isHalfPublic: false,
         genders: [1, 2],
         cities: [35390, 61200],
+        page: 0,
+        size: 12,
       };
 
       jest
@@ -727,6 +744,8 @@ describe('EventController', () => {
         isHalfPublic: false,
         genders: [1, 2],
         filterFriends: true,
+        page: 0,
+        size: 12,
       };
 
       jest
@@ -754,6 +773,8 @@ describe('EventController', () => {
         isHalfPublic: false,
         genders: [1, 2],
         dates: ['2025-01-15', 'invalid-date'],
+        page: 0,
+        size: 12,
       };
 
       return agent
@@ -778,6 +799,8 @@ describe('EventController', () => {
         isHalfPublic: false,
         genders: [1, 2],
         tags: [1, 2],
+        page: 0,
+        size: 12,
       };
 
       jest

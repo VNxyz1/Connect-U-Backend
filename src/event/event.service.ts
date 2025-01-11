@@ -140,12 +140,16 @@ export class EventService {
    *
    * @param userId - ID of the current user
    * @param {FilterDTO} filters - The filters to apply.
+   * @param page which page
+   * @param size page size
    * @returns {Promise<EventDB[]>} - The filtered events.
    * @throws {NotFoundException} - If there are no events found.
    */
   async getFilteredEvents(
     userId: string,
     filters: FilterDTO,
+    page: number = 0,
+    size: number = 12,
   ): Promise<EventDB[]> {
     const {
       title,
@@ -276,9 +280,12 @@ export class EventService {
       queryBuilder.orderBy('event.dateAndTime', 'ASC');
     }
 
-    const events = await queryBuilder.getMany();
+    const events = await queryBuilder
+      .skip(page * size)
+      .take(size)
+      .getMany();
 
-    if (!events || events.length === 0) {
+    if (!events) {
       throw new NotFoundException('Events not found');
     }
 
