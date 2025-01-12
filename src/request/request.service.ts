@@ -435,4 +435,31 @@ export class RequestService {
 
     await this.requestRepository.save(request);
   }
+
+  /**
+   * Checks if a user has a pending request (join request or invitation) for a specific event.
+   *
+   * @param eventId - The ID of the event.
+   * @param userId - The ID of the user.
+   * @returns A boolean indicating if the user has a request for the event.
+   * @throws NotFoundException If the event does not exist.
+   */
+  async hasUserRequestForEvent(
+    eventId: string,
+    userId: string,
+  ): Promise<boolean> {
+    const event = await this.eventRepository.findOne({
+      where: { id: eventId },
+    });
+
+    if (!event) {
+      throw new NotFoundException('Event not found');
+    }
+
+    const existingRequest = await this.requestRepository.findOne({
+      where: { event: { id: eventId }, user: { id: userId } },
+    });
+
+    return !!existingRequest; // Return true if a request exists, otherwise false
+  }
 }
