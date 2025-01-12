@@ -2,7 +2,7 @@ import { FriendService } from './friend.service';
 import {
   BadRequestException,
   Controller,
-  Get,
+  Get, Logger,
   Param,
   Put,
   UseGuards,
@@ -16,14 +16,18 @@ import { GetUserProfileDTO } from '../user/DTO/GetUserProfileDTO';
 import { UtilsService } from '../utils/utils.service';
 import { EventDB } from '../database/EventDB';
 import { EventService } from '../event/event.service';
+import { RequestService } from '../request/request.service';
 
 @ApiTags('friends')
 @Controller('friends')
 export class FriendsController {
+  private readonly logger = new Logger(FriendsController.name);
+
   constructor(
     private readonly friendService: FriendService,
     private readonly utilsService: UtilsService,
     private readonly eventService: EventService,
+    private readonly requestService: RequestService,
   ) {}
 
   @ApiResponse({
@@ -73,7 +77,7 @@ export class FriendsController {
   @ApiResponse({
     type: [GetUserProfileDTO],
     description:
-      'Retrieves the list of friends that meet the event requirements',
+      'Retrieves the list of friends that meet the event requirements and have no invitations/requests already',
   })
   @Get('/filteredFriends/:eventId')
   @ApiBearerAuth('access-token')
@@ -95,14 +99,29 @@ export class FriendsController {
           continue;
         }
 
-        const isAllowed = await this.utilsService.isUserAllowedToJoinEvent(
+        const isHostOrParticipant = await this.utilsService.isHostOrParticipant(
           friend,
-          event,
+          event.id,
         );
-        if (isAllowed) {
-          filteredFriends.push(
-            this.utilsService.transformUserDBtoGetUserProfileDTO(friend, false),
+        if (!isHostOrParticipant) {
+          this.logger.log(`Friend is not a host or participant: ${friend.username}`);
+          const hasRequest = await this.requestService.hasUserRequestForEvent(
+            event.id,
+            friend.id,
           );
+
+          if (!hasRequest) {
+            const isAllowed = await this.utilsService.isUserAllowedToJoinEvent(
+              friend,
+              event,
+            );
+
+            if (isAllowed) {
+              filteredFriends.push(
+                this.utilsService.transformUserDBtoGetUserProfileDTO(friend, false),
+              );
+            }
+          }
         }
       } catch {}
     }
