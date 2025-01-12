@@ -48,7 +48,7 @@ jobs:
         run: |
           if [[ "${GITHUB_REF}" == "refs/heads/dev" ]]; then
             echo "DEV_VERSION=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
-            echo "::set-output name=dev-version::$(date +%Y%m%d%H%M%S)"
+            echo "dev-version=$(date +%Y%m%d%H%M%S)" >> $GITHUB_OUTPUT
           fi
 
   build-and-push:

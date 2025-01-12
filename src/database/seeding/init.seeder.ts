@@ -21,6 +21,7 @@ testUser.firstName = 'firstName';
 testUser.lastName = 'lastName';
 testUser.birthday = '2002-08-06';
 testUser.gender = 2;
+testUser.profilePicture = 'empty.png';
 
 export class InitSeeder implements OnApplicationBootstrap {
   constructor(
