@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CategoryDB } from '../database/CategoryDB';
 import { GetCategoryDTO } from '../category/DTO/GetCategoryDTO';
 import { GenderDB } from '../database/GenderDB';
@@ -141,7 +137,7 @@ export class UtilsService {
    *
    * @returns {boolean} - Returns true if the user is the host or a participant.
    *
-   * @throws {ForbiddenException} - If the user is neither the host nor a participant.
+   *
    */
   async isHostOrParticipant(user: UserDB, eventId: string): Promise<boolean> {
     const event = await this.eventRepository.findOne({
@@ -157,11 +153,7 @@ export class UtilsService {
     }
     const isHost = event.host.id === user.id;
 
-    if (!isParticipant && !isHost) {
-      return false;
-    }
-
-    return true;
+    return isParticipant || isHost;
   }
 
   /**
