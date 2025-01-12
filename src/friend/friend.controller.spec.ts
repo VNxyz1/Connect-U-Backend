@@ -14,6 +14,8 @@ import { FriendService } from './friend.service';
 import { mockFriendService } from './friend.service.spec';
 import { EventService } from '../event/event.service';
 import { mockEventService } from '../event/event.service.spec';
+import { RequestService } from '../request/request.service';
+import { mockRequestService } from '../request/request.service.spec';
 
 describe('FriendsController', () => {
   let app: INestApplication;
@@ -49,6 +51,10 @@ describe('FriendsController', () => {
         {
           provide: UtilsService,
           useValue: mockUtilsService,
+        },
+        {
+          provide: RequestService,
+          useValue: mockRequestService,
         },
       ],
     }).compile();
