@@ -158,9 +158,7 @@ export class UtilsService {
     const isHost = event.host.id === user.id;
 
     if (!isParticipant && !isHost) {
-      throw new ForbiddenException(
-        'You are not allowed to perform this action',
-      );
+      return false;
     }
 
     return true;

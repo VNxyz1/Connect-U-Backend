@@ -2,7 +2,7 @@ import { FriendService } from './friend.service';
 import {
   BadRequestException,
   Controller,
-  Get, Logger,
+  Get,
   Param,
   Put,
   UseGuards,
@@ -21,8 +21,6 @@ import { RequestService } from '../request/request.service';
 @ApiTags('friends')
 @Controller('friends')
 export class FriendsController {
-  private readonly logger = new Logger(FriendsController.name);
-
   constructor(
     private readonly friendService: FriendService,
     private readonly utilsService: UtilsService,
@@ -104,7 +102,6 @@ export class FriendsController {
           event.id,
         );
         if (!isHostOrParticipant) {
-          this.logger.log(`Friend is not a host or participant: ${friend.username}`);
           const hasRequest = await this.requestService.hasUserRequestForEvent(
             event.id,
             friend.id,
@@ -118,7 +115,10 @@ export class FriendsController {
 
             if (isAllowed) {
               filteredFriends.push(
-                this.utilsService.transformUserDBtoGetUserProfileDTO(friend, false),
+                this.utilsService.transformUserDBtoGetUserProfileDTO(
+                  friend,
+                  false,
+                ),
               );
             }
           }
