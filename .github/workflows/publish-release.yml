@@ -61,13 +61,6 @@ jobs:
           LOWERCASE_IMAGE_NAME=$(echo "${{ env.IMAGE_NAME }}" | tr '[:upper:]' '[:lower:]')
           echo "LOWERCASE_IMAGE_NAME=${LOWERCASE_IMAGE_NAME}" >> $GITHUB_ENV
 
-      - name: Generate version for dev images
-        if: github.ref == 'refs/heads/dev'
-        id: version
-        run: |
-          echo "DEV_VERSION=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
-          echo "Generated version: $DEV_VERSION"
-
       - name: Build and push Docker image
         id: push
         uses: docker/build-push-action@v6
