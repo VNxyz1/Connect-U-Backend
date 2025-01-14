@@ -550,7 +550,7 @@ export class EventService {
           type: true,
           tags: true,
         },
-        relations: { categories: true, tags: true },
+        relations: { categories: true, tags: true, participants: true },
       }),
       this.getFriendsEvents(userId),
     ]);
