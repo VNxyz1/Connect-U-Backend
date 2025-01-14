@@ -112,13 +112,25 @@ describe('FriendService', () => {
 
   describe('createFriend', () => {
     it('should create a friendship between two users', async () => {
-      const user = { id: '1', friends: [], friendOf: [] } as UserDB;
-      const friend = { id: '2', friends: [], friendOf: [] } as UserDB;
+      const user = {
+        id: '1',
+        username: 'testUser',
+        friends: [],
+        friendOf: [],
+      } as UserDB;
+
+      const friend = {
+        id: '2',
+        username: 'testFriend',
+        friends: [],
+        friendOf: [],
+      } as UserDB;
 
       jest.spyOn(userRepository, 'findOne').mockResolvedValueOnce(friend);
+      jest.spyOn(userRepository, 'findOne').mockResolvedValueOnce(user);
       jest.spyOn(userRepository, 'save').mockResolvedValueOnce(user);
 
-      const updatedUser = await service.createFriend(user, '2');
+      const updatedUser = await service.createFriend(user, 'testFriend');
 
       expect(updatedUser.friends).toContain(friend);
       expect(friend.friendOf).toContain(user);
@@ -139,6 +151,7 @@ describe('FriendService', () => {
       const user = { id: '1', friends: [friend], friendOf: [] } as UserDB;
 
       jest.spyOn(userRepository, 'findOne').mockResolvedValueOnce(friend);
+      jest.spyOn(userRepository, 'findOne').mockResolvedValueOnce(user);
 
       await expect(service.createFriend(user, '2')).rejects.toThrow(
         'Friend already exists in the users friend list',

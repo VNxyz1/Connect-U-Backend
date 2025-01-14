@@ -639,10 +639,7 @@ describe('RequestService', () => {
 
       await service.denyInvitation(1, 'user123');
 
-      expect(requestRepository.save).toHaveBeenCalledWith({
-        ...mockRequest,
-        denied: true,
-      });
+      expect(requestRepository.remove).toHaveBeenCalledWith(mockRequest);
     });
   });
 
