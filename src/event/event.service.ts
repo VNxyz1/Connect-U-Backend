@@ -235,13 +235,13 @@ export class EventService {
         .andWhere('preferredGender.id IN (:...genders)', { genders: genders });
     }
 
-    if (isPublic == false) {
+    if (isPublic === false) {
       queryBuilder.andWhere('event.type != :eventType', {
         eventType: EventtypeEnum.public,
       });
     }
 
-    if (isHalfPublic == false) {
+    if (isHalfPublic === false) {
       queryBuilder.andWhere('event.type != :eventType', {
         eventType: EventtypeEnum.halfPrivate,
       });

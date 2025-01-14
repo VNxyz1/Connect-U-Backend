@@ -391,9 +391,6 @@ export class RequestService {
         'You are not authorized to accept this request',
       );
     }
-    if (request.denied) {
-      throw new BadRequestException('This request has already been denied');
-    }
 
     if (event.participants.length >= event.participantsNumber) {
       throw new BadRequestException(
@@ -431,9 +428,8 @@ export class RequestService {
         'You are not authorized to deny this invitation',
       );
     }
-    request.denied = true;
 
-    await this.requestRepository.save(request);
+    await this.requestRepository.remove(request);
   }
 
   /**
