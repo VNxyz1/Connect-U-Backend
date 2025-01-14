@@ -11,7 +11,6 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  NODE_VERSION: 20
 
 
 jobs:
@@ -22,20 +21,6 @@ jobs:
     steps:
       - name: Check out repositorycontainer registry push test
         uses: actions/checkout@v4
-
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          check-latest: true
-          cache: npm
-
-      - name: Install dependencies
-        run: |
-          npm ci
-
-      - name: Build project
-        run: npm run build
 
       - name: Cache setup
         uses: actions/cache@v4
@@ -65,7 +50,7 @@ jobs:
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
+          registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.CR_PAT }}
 
@@ -74,13 +59,6 @@ jobs:
         run: |
           LOWERCASE_IMAGE_NAME=$(echo "${{ env.IMAGE_NAME }}" | tr '[:upper:]' '[:lower:]')
           echo "LOWERCASE_IMAGE_NAME=${LOWERCASE_IMAGE_NAME}" >> $GITHUB_ENV
-
-      - name: Generate version for dev images
-        if: github.ref == 'refs/heads/dev'
-        id: version
-        run: |
-          echo "DEV_VERSION=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
-          echo "Generated version: $DEV_VERSION"
 
       - name: Build and push Docker image
         id: push
