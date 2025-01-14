@@ -8,7 +8,7 @@ import {
 import {
   BadRequestException,
   Body,
-  Controller,
+  Controller, ForbiddenException,
   Get,
   HttpCode,
   HttpStatus,
@@ -38,6 +38,7 @@ import {
   Pagination,
   PaginationParams,
 } from '../utils/PaginationParams';
+import { RequestService } from '../request/request.service';
 
 @ApiTags('event')
 @Controller('event')
@@ -46,6 +47,7 @@ export class EventController {
     public readonly eventService: EventService,
     public readonly utilsService: UtilsService,
     public readonly categoryService: CategoryService,
+    public readonly requestService: RequestService,
     public readonly genderService: GenderService,
     public readonly tagService: TagService,
   ) {}
@@ -104,6 +106,19 @@ export class EventController {
     @User() user: UserDB | null,
   ): Promise<GetEventDetailsDTO> {
     const event = await this.eventService.getEventById(eventId);
+
+    if (event.type === 3) {
+      if (!user) {
+        throw new ForbiddenException('Access denied. Private event requires authentication.');
+      }
+
+      const isAuthorized = await this.utilsService.isHostOrParticipant(user, eventId) ||
+        await this.requestService.hasUserRequestForEvent(eventId, user.id);
+
+      if (!isAuthorized) {
+        throw new ForbiddenException('Access denied. You are not authorized to view this event.');
+      }
+    }
 
     let isHost: boolean = false;
     let isParticipant: boolean = false;
