@@ -150,7 +150,7 @@ export class EventService {
     filters: FilterDTO,
     page: number = 0,
     size: number = 12,
-  ): Promise<EventDB[]> {
+  ): Promise<[EventDB[], number]> {
     const {
       title,
       minAge,
@@ -280,16 +280,16 @@ export class EventService {
       queryBuilder.orderBy('event.dateAndTime', 'ASC');
     }
 
-    const events = await queryBuilder
+    const [events, total] = await queryBuilder
       .skip(page * size)
       .take(size)
-      .getMany();
+      .getManyAndCount();
 
-    if (!events) {
+    if (!events.length) {
       throw new NotFoundException('Events not found');
     }
 
-    return events;
+    return [events, total];
   }
 
   /**

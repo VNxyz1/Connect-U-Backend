@@ -151,7 +151,7 @@ export class EventController {
   }
 
   @ApiResponse({
-    type: [GetEventCardDTO],
+    type: Promise<{ events: GetEventCardDTO[]; total: number }>,
     description: 'gets events using the preferred filters',
   })
   @ApiQuery({
@@ -164,7 +164,7 @@ export class EventController {
     @User() user: UserDB,
     @Query() query: FilterDTO,
     @PaginationParams() pagination: Pagination,
-  ): Promise<GetEventCardDTO[]> {
+  ):  Promise<{ events: GetEventCardDTO[]; total: number }> {
     if (query.isOnline === false && query.isInPlace === false) {
       throw new BadRequestException(
         'An event must be either online or in place.',
@@ -176,18 +176,20 @@ export class EventController {
       );
     }
 
-    const events = await this.eventService.getFilteredEvents(
+    const [events, total] = await this.eventService.getFilteredEvents(
       user.id,
       query,
       pagination.page,
       pagination.size,
     );
 
-    return await Promise.all(
-      events.map(async (event) => {
+    const transformedEvents = await Promise.all(
+      events.map(async (event: EventDB) => {
         return this.utilsService.transformEventDBtoGetEventCardDTO(event);
       }),
     );
+
+    return { events: transformedEvents, total };
   }
 
   @ApiResponse({
