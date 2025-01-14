@@ -4,6 +4,7 @@ import {
   ApiQuery,
   ApiResponse,
   ApiTags,
+  getSchemaPath,
 } from '@nestjs/swagger';
 import {
   BadRequestException,
@@ -172,8 +173,21 @@ export class EventController {
   }
 
   @ApiResponse({
-    type: Promise<{ events: GetEventCardDTO[]; total: number }>,
-    description: 'gets events using the preferred filters',
+    status: 200,
+    description: 'Gets events using the preferred filters',
+    schema: {
+      type: 'object',
+      properties: {
+        events: {
+          type: 'array',
+          items: { $ref: getSchemaPath(GetEventCardDTO) },
+        },
+        total: {
+          type: 'number',
+          example: 42,
+        },
+      },
+    },
   })
   @ApiQuery({
     type: Pagination,
