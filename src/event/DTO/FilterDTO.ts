@@ -58,19 +58,20 @@ export class FilterDTO {
 
   @ApiPropertyOptional({
     description: 'Filter events by tags',
-    example: [1, 2, 3],
+    example: ['tag1', 'tag2', 'tag3'],
   })
   @IsOptional()
   @IsArray()
   @Transform(({ value }) =>
     Array.isArray(value)
-      ? value.map(Number)
-      : Number.isNaN(value)
-        ? undefined
-        : [Number(value)],
+      ? value.map(String)
+      : typeof value === 'string'
+        ? [value]
+        : undefined,
   )
-  @IsNumber({}, { each: true })
-  tags?: number[];
+  @IsString({ each: true })
+  tags?: string[];
+
 
   @ApiPropertyOptional({
     description: 'The minimum age allowed for the event',

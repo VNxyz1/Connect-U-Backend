@@ -217,7 +217,7 @@ export class EventService {
 
     if (tags && tags.length > 0) {
       tags.forEach((tag) => {
-        queryBuilder.andWhere('tags.id = :tag', { tag });
+        queryBuilder.andWhere('tags.title = :tag', { tag });
       });
     }
 
