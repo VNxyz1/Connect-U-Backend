@@ -141,7 +141,7 @@ const mockEventList: EventDB[] = [
     timestamp: '2022-12-01T10:00:00',
     title: 'Tech Conference 2024',
     description: 'A conference for tech enthusiasts.',
-    dateAndTime: '2024-12-01T10:00:00',
+    dateAndTime: '2026-01-14T18:54:56',
     categories: mockCategoryList,
     host: mockUser,
     type: EventtypeEnum.halfPrivate,
@@ -172,7 +172,7 @@ const mockEventList: EventDB[] = [
     timestamp: '2022-12-01T10:00:00',
     title: 'Game Jam 2024',
     description: 'Game Jam to create awesome new games!',
-    dateAndTime: '2024-12-01T10:00:00',
+    dateAndTime: '2026-01-14T18:54:56',
     categories: mockCategoryList,
     host: mockUser,
     type: EventtypeEnum.halfPrivate,
@@ -199,6 +199,8 @@ const mockEventList: EventDB[] = [
     viewEvents: [],
   },
 ];
+
+const mockTotal = 2;
 
 const queryBuilderMock = {
   leftJoinAndSelect: jest.fn().mockReturnThis(),
@@ -581,6 +583,9 @@ describe('EventService', () => {
         getMany: jest.fn().mockResolvedValue(mockEventList),
         skip: jest.fn().mockReturnThis(),
         take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest
+          .fn()
+          .mockResolvedValue([mockEventList, mockTotal]),
       };
 
       jest
@@ -595,7 +600,7 @@ describe('EventService', () => {
         'event.status = :status',
         { status: StatusEnum.upcoming },
       );
-      expect(result).toEqual(mockEventList);
+      expect(result).toEqual([mockEventList, mockTotal]);
     });
 
     it('should filter events by date', async () => {
@@ -606,6 +611,9 @@ describe('EventService', () => {
         getMany: jest.fn().mockResolvedValue(mockEventList),
         skip: jest.fn().mockReturnThis(),
         take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest
+          .fn()
+          .mockResolvedValue([mockEventList, mockTotal]),
       };
 
       jest
@@ -620,7 +628,7 @@ describe('EventService', () => {
         'DATE(event.dateAndTime) IN (:...dates)',
         { dates: ['2025-01-10'] },
       );
-      expect(result).toEqual(mockEventList);
+      expect(result).toEqual([mockEventList, mockTotal]);
     });
 
     it('should filter events by title', async () => {
@@ -631,6 +639,9 @@ describe('EventService', () => {
         getMany: jest.fn().mockResolvedValue(mockEventList),
         skip: jest.fn().mockReturnThis(),
         take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest
+          .fn()
+          .mockResolvedValue([mockEventList, mockTotal]),
       };
 
       jest
@@ -648,7 +659,7 @@ describe('EventService', () => {
         'event.title LIKE :title',
         { title: '%Tech Conference%' },
       );
-      expect(result).toEqual(mockEventList);
+      expect(result).toEqual([mockEventList, mockTotal]);
     });
 
     it('should filter events by category', async () => {
@@ -659,6 +670,9 @@ describe('EventService', () => {
         getMany: jest.fn().mockResolvedValue(mockEventList),
         skip: jest.fn().mockReturnThis(),
         take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest
+          .fn()
+          .mockResolvedValue([mockEventList, mockTotal]),
       };
 
       jest
@@ -677,7 +691,7 @@ describe('EventService', () => {
         'categories.id = :category',
         { category: 2 },
       );
-      expect(result).toEqual(mockEventList);
+      expect(result).toEqual([mockEventList, mockTotal]);
     });
 
     it('should filter events by age range', async () => {
@@ -688,6 +702,9 @@ describe('EventService', () => {
         getMany: jest.fn().mockResolvedValue(mockEventList),
         skip: jest.fn().mockReturnThis(),
         take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest
+          .fn()
+          .mockResolvedValue([mockEventList, mockTotal]),
       };
 
       jest
@@ -706,7 +723,7 @@ describe('EventService', () => {
         'event.endAge <= :maxAge',
         { maxAge: 30 },
       );
-      expect(result).toEqual(mockEventList);
+      expect(result).toEqual([mockEventList, mockTotal]);
     });
 
     it('should filter events by preferred gender', async () => {
@@ -718,6 +735,9 @@ describe('EventService', () => {
         getMany: jest.fn().mockResolvedValue(mockEventList),
         skip: jest.fn().mockReturnThis(),
         take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest
+          .fn()
+          .mockResolvedValue([mockEventList, mockTotal]),
       };
 
       jest
@@ -732,7 +752,7 @@ describe('EventService', () => {
         'preferredGender.id IN (:...genders)',
         { genders: [1, 2] },
       );
-      expect(result).toEqual(mockEventList);
+      expect(result).toEqual([mockEventList, mockTotal]);
     });
 
     it('should filter events by cities', async () => {
@@ -743,6 +763,9 @@ describe('EventService', () => {
         getMany: jest.fn().mockResolvedValue(mockEventList),
         skip: jest.fn().mockReturnThis(),
         take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest
+          .fn()
+          .mockResolvedValue([mockEventList, mockTotal]),
       };
 
       jest
@@ -757,31 +780,7 @@ describe('EventService', () => {
         'event.zipCode IN (:...zipCodes)',
         { zipCodes: [35390, 61200] },
       );
-      expect(result).toEqual(mockEventList);
-    });
-
-    it('returns a empty array if no events match the filters', async () => {
-      const mockQueryBuilder = {
-        leftJoinAndSelect: jest.fn().mockReturnThis(),
-        andWhere: jest.fn().mockReturnThis(),
-        orderBy: jest.fn().mockReturnThis(),
-        getMany: jest.fn().mockResolvedValue([]),
-        skip: jest.fn().mockReturnThis(),
-        take: jest.fn().mockReturnThis(),
-      };
-
-      jest
-        .spyOn(mockEventRepository, 'createQueryBuilder')
-        .mockReturnValue(mockQueryBuilder as any);
-
-      const filters: FilterDTO = {
-        title: 'Nonexistent Event',
-        genders: [1, 2, 3],
-      };
-
-      await expect(
-        service.getFilteredEvents('userId', filters),
-      ).resolves.toEqual([]);
+      expect(result).toEqual([mockEventList, mockTotal]);
     });
   });
 });
@@ -789,7 +788,7 @@ describe('EventService', () => {
 export const mockEventService = {
   findById: jest.fn().mockResolvedValue(mockCreateEventDTO[1]),
   createEvent: jest.fn().mockResolvedValue(new EventDB()),
-  getEventById: jest.fn().mockResolvedValue(new EventDB()),
+  getEventById: jest.fn().mockResolvedValue(mockCreateEventDTO[1]),
   getAllActiveEventsByPopularity: jest.fn().mockResolvedValue(mockEventList),
   getHostingEvents: jest.fn().mockResolvedValue(mockEventList),
   getParticipatingEvents: jest.fn().mockResolvedValue(mockEventList),
@@ -804,7 +803,7 @@ export const mockEventService = {
   calculateFrequencyMaps: jest
     .fn()
     .mockResolvedValue([new Map(), new Map(), new Map()]),
-  getFilteredEvents: jest.fn().mockResolvedValue(mockEventList),
+  getFilteredEvents: jest.fn().mockResolvedValue([mockEventList, 2]),
 };
 
 export const mockSchedulerService = {

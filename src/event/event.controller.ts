@@ -6,11 +6,13 @@ import {
   ApiQuery,
   ApiResponse,
   ApiTags,
+  getSchemaPath,
 } from '@nestjs/swagger';
 import {
   BadRequestException,
   Body,
   Controller,
+  ForbiddenException,
   Get,
   HttpCode,
   HttpStatus,
@@ -50,6 +52,7 @@ import {
   Pagination,
   PaginationParams,
 } from '../utils/PaginationParams';
+import { RequestService } from '../request/request.service';
 
 @ApiTags('event')
 @Controller('event')
@@ -58,6 +61,7 @@ export class EventController {
     public readonly eventService: EventService,
     public readonly utilsService: UtilsService,
     public readonly categoryService: CategoryService,
+    public readonly requestService: RequestService,
     public readonly genderService: GenderService,
     public readonly tagService: TagService,
   ) {}
@@ -117,6 +121,24 @@ export class EventController {
   ): Promise<GetEventDetailsDTO> {
     const event = await this.eventService.getEventById(eventId);
 
+    if (event.type === EventtypeEnum.private) {
+      if (!user) {
+        throw new ForbiddenException(
+          'Access denied. Private event requires authentication.',
+        );
+      }
+
+      const isAuthorized =
+        (await this.utilsService.isHostOrParticipant(user, eventId)) ||
+        (await this.requestService.hasUserRequestForEvent(eventId, user.id));
+
+      if (!isAuthorized) {
+        throw new ForbiddenException(
+          'Access denied. You are not authorized to view this event.',
+        );
+      }
+    }
+
     let isHost: boolean = false;
     let isParticipant: boolean = false;
     let isLoggedIn: boolean = false;
@@ -163,8 +185,21 @@ export class EventController {
   }
 
   @ApiResponse({
-    type: [GetEventCardDTO],
-    description: 'gets events using the preferred filters',
+    status: 200,
+    description: 'Gets events using the preferred filters',
+    schema: {
+      type: 'object',
+      properties: {
+        events: {
+          type: 'array',
+          items: { $ref: getSchemaPath(GetEventCardDTO) },
+        },
+        total: {
+          type: 'number',
+          example: 42,
+        },
+      },
+    },
   })
   @ApiQuery({
     type: Pagination,
@@ -176,7 +211,7 @@ export class EventController {
     @User() user: UserDB,
     @Query() query: FilterDTO,
     @PaginationParams() pagination: Pagination,
-  ): Promise<GetEventCardDTO[]> {
+  ): Promise<{ events: GetEventCardDTO[]; total: number }> {
     if (query.isOnline === false && query.isInPlace === false) {
       throw new BadRequestException(
         'An event must be either online or in place.',
@@ -188,18 +223,20 @@ export class EventController {
       );
     }
 
-    const events = await this.eventService.getFilteredEvents(
+    const [events, total] = await this.eventService.getFilteredEvents(
       user.id,
       query,
       pagination.page,
       pagination.size,
     );
 
-    return await Promise.all(
-      events.map(async (event) => {
+    const transformedEvents = await Promise.all(
+      events.map(async (event: EventDB) => {
         return this.utilsService.transformEventDBtoGetEventCardDTO(event);
       }),
     );
+
+    return { events: transformedEvents, total };
   }
 
   @ApiResponse({
