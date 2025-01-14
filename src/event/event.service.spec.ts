@@ -581,6 +581,7 @@ describe('EventService', () => {
         getMany: jest.fn().mockResolvedValue(mockEventList),
         skip: jest.fn().mockReturnThis(),
         take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest.fn().mockReturnThis(),
       };
 
       jest
