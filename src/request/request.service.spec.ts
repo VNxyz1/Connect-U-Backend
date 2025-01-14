@@ -645,6 +645,60 @@ describe('RequestService', () => {
       });
     });
   });
+
+  describe('RequestService - hasUserRequestForEvent', () => {
+    it('should return true if a user has a request for the event', async () => {
+      const mockEvent = { id: 'event123' } as EventDB;
+      const mockRequest = {
+        id: 1,
+        user: { id: 'user123' },
+        event: mockEvent,
+        type: 1, // Join request type
+      } as RequestDB;
+
+      eventRepository.findOne.mockResolvedValue(mockEvent);
+      requestRepository.findOne.mockResolvedValue(mockRequest);
+
+      const result = await service.hasUserRequestForEvent(
+        'event123',
+        'user123',
+      );
+
+      expect(result).toBe(true);
+      expect(requestRepository.findOne).toHaveBeenCalledWith({
+        where: { event: { id: 'event123' }, user: { id: 'user123' } },
+      });
+    });
+
+    it('should return false if a user does not have a request for the event', async () => {
+      const mockEvent = { id: 'event123' } as EventDB;
+
+      eventRepository.findOne.mockResolvedValue(mockEvent);
+      requestRepository.findOne.mockResolvedValue(null);
+
+      const result = await service.hasUserRequestForEvent(
+        'event123',
+        'user123',
+      );
+
+      expect(result).toBe(false);
+      expect(requestRepository.findOne).toHaveBeenCalledWith({
+        where: { event: { id: 'event123' }, user: { id: 'user123' } },
+      });
+    });
+
+    it('should throw NotFoundException if the event does not exist', async () => {
+      eventRepository.findOne.mockResolvedValue(null);
+
+      await expect(
+        service.hasUserRequestForEvent('event123', 'user123'),
+      ).rejects.toThrowError(new NotFoundException('Event not found'));
+
+      expect(eventRepository.findOne).toHaveBeenCalledWith({
+        where: { id: 'event123' },
+      });
+    });
+  });
 });
 
 export const mockRequestService = {

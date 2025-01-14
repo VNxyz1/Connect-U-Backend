@@ -11,6 +11,7 @@ import { ListEntryDB } from '../database/ListEntryDB';
 import { SurveyEntryDB } from '../database/SurveyEntryDB';
 import { TagDB } from '../database/TagDB';
 import { SchedulerService } from '../scheduler/scheduler.service';
+import { FilterDTO, SortOrder } from './DTO/FilterDTO';
 import ViewEventEnum from '../database/enums/ViewEventEnum';
 import ViewedEventsDB from '../database/ViewedEventsDB';
 import { EventtypeEnum } from '../database/enums/EventtypeEnum';
@@ -127,7 +128,164 @@ export class EventService {
       take: size,
     });
 
-    if (!events || events.length === 0) {
+    if (!events) {
+      throw new NotFoundException('Events not found');
+    }
+
+    return events;
+  }
+
+  /**
+   * Gets all events from the database with optional filters.
+   *
+   * @param userId - ID of the current user
+   * @param {FilterDTO} filters - The filters to apply.
+   * @param page which page
+   * @param size page size
+   * @returns {Promise<EventDB[]>} - The filtered events.
+   * @throws {NotFoundException} - If there are no events found.
+   */
+  async getFilteredEvents(
+    userId: string,
+    filters: FilterDTO,
+    page: number = 0,
+    size: number = 12,
+  ): Promise<EventDB[]> {
+    const {
+      title,
+      minAge,
+      maxAge,
+      genders,
+      isPublic,
+      isHalfPublic,
+      isOnline,
+      isInPlace,
+      sortOrder,
+      categories,
+      tags,
+      dates,
+      cities,
+      filterFriends,
+    } = filters;
+
+    const queryBuilder = this.eventRepository.createQueryBuilder('event');
+
+    queryBuilder.leftJoinAndSelect('event.categories', 'categories');
+    queryBuilder.leftJoinAndSelect('event.participants', 'participants');
+    queryBuilder.leftJoinAndSelect('event.tags', 'tags');
+
+    queryBuilder.andWhere('event.status = :status', {
+      status: StatusEnum.upcoming,
+    });
+
+    queryBuilder.andWhere('event.type != :eventType', { eventType: 3 });
+
+    if (title) {
+      queryBuilder.andWhere('event.title LIKE :title', { title: `%${title}%` });
+    }
+
+    if (filterFriends) {
+      const friends = await this.friendsService.getFriends(userId);
+      const friendsIds = friends.map((friend) => friend.id);
+      queryBuilder
+        .leftJoin('event.host', 'host')
+        .andWhere(
+          'participants.id IN (:...friendsIds) OR host.id IN (:...friendsIds)',
+          {
+            friendsIds: friendsIds,
+          },
+        );
+    }
+
+    if (dates?.length) {
+      queryBuilder.andWhere('DATE(event.dateAndTime) IN (:...dates)', {
+        dates: dates,
+      });
+    }
+
+    if (cities?.length) {
+      queryBuilder.andWhere('event.zipCode IN (:...zipCodes)', {
+        zipCodes: cities,
+      });
+    }
+
+    if (categories && categories.length > 0) {
+      categories.forEach((category) => {
+        queryBuilder.andWhere('categories.id = :category', { category });
+      });
+    }
+
+    if (tags && tags.length > 0) {
+      tags.forEach((tag) => {
+        queryBuilder.andWhere('tags.id = :tag', { tag });
+      });
+    }
+
+    if (minAge) {
+      queryBuilder.andWhere('event.startAge >= :minAge', { minAge });
+    }
+
+    if (maxAge) {
+      queryBuilder.andWhere('event.endAge <= :maxAge', { maxAge });
+    }
+
+    if (genders.length !== 3) {
+      queryBuilder
+        .leftJoin('event.preferredGenders', 'preferredGender')
+        .andWhere('preferredGender.id IN (:...genders)', { genders: genders });
+    }
+
+    if (isPublic == false) {
+      queryBuilder.andWhere('event.type != :eventType', {
+        eventType: EventtypeEnum.public,
+      });
+    }
+
+    if (isHalfPublic == false) {
+      queryBuilder.andWhere('event.type != :eventType', {
+        eventType: EventtypeEnum.halfPrivate,
+      });
+    }
+
+    if (isOnline === false) {
+      queryBuilder.andWhere('event.isOnline = :isOnline', { isOnline: false });
+    }
+
+    if (isInPlace === false) {
+      queryBuilder.andWhere('event.isOnline = :isOnline', { isOnline: true });
+    }
+
+    if (sortOrder) {
+      switch (sortOrder) {
+        case SortOrder.NEWEST_FIRST:
+          queryBuilder.orderBy('event.timestamp', 'DESC');
+          break;
+        case SortOrder.OLDEST_FIRST:
+          queryBuilder.orderBy('event.timestamp', 'ASC');
+          break;
+        case SortOrder.UPCOMING_NEXT:
+          queryBuilder.orderBy('event.dateAndTime', 'ASC');
+          break;
+        case SortOrder.UPCOMING_LAST:
+          queryBuilder.orderBy('event.dateAndTime', 'DESC');
+          break;
+        case SortOrder.ALPHABETICAL_ASC:
+          queryBuilder.orderBy('event.title', 'ASC');
+          break;
+        case SortOrder.ALPHABETICAL_DESC:
+          queryBuilder.orderBy('event.title', 'DESC');
+          break;
+      }
+    } else {
+      queryBuilder.orderBy('event.dateAndTime', 'ASC');
+    }
+
+    const events = await queryBuilder
+      .skip(page * size)
+      .take(size)
+      .getMany();
+
+    if (!events) {
       throw new NotFoundException('Events not found');
     }
 

@@ -6,6 +6,7 @@ import {
   OneToMany,
   ManyToMany,
   JoinTable,
+  CreateDateColumn,
 } from 'typeorm';
 import { EventDB } from './EventDB';
 import { UserDB } from './UserDB';
@@ -25,7 +26,7 @@ export class MessageDB {
   @Column()
   text: string;
 
-  @Column({ default: new Date().toISOString() })
+  @CreateDateColumn()
   timestamp: string;
 
   @OneToMany(() => ReactionDB, (reaction) => reaction.message)

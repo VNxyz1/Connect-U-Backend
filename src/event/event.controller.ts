@@ -18,6 +18,7 @@ import {
   ParseFilePipeBuilder,
   Patch,
   Post,
+  Query,
   Res,
   UploadedFile,
   UseGuards,
@@ -38,6 +39,7 @@ import { EventtypeEnum } from '../database/enums/EventtypeEnum';
 import { CreateEventResDTO } from './DTO/CreateEventResDTO';
 import { GetEventDetailsDTO } from './DTO/GetEventDetailsDTO';
 import { TagService } from '../tag/tag.service';
+import { FilterDTO } from './DTO/FilterDTO';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname, join } from 'path';
@@ -139,11 +141,60 @@ export class EventController {
 
   @ApiResponse({
     type: [GetEventCardDTO],
-    description: 'gets all events sorted by popularity',
+    description:
+      'A paginated list of all public, half-private, upcoming or live events sorted by popularity',
+  })
+  @ApiQuery({
+    type: Pagination,
   })
   @Get('/allEvents')
-  async getAllEvents(): Promise<GetEventCardDTO[]> {
-    const events = await this.eventService.getAllActiveEventsByPopularity();
+  async getAllEvents(
+    @PaginationParams() paginationParams: Pagination,
+  ): Promise<GetEventCardDTO[]> {
+    const events = await this.eventService.getAllActiveEventsByPopularity(
+      paginationParams.page,
+      paginationParams.size,
+    );
+    return await Promise.all(
+      events.map(async (event) => {
+        return this.utilsService.transformEventDBtoGetEventCardDTO(event);
+      }),
+    );
+  }
+
+  @ApiResponse({
+    type: [GetEventCardDTO],
+    description: 'gets events using the preferred filters',
+  })
+  @ApiQuery({
+    type: Pagination,
+  })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard)
+  @Get('/filteredEvents')
+  async getFilteredEvents(
+    @User() user: UserDB,
+    @Query() query: FilterDTO,
+    @PaginationParams() pagination: Pagination,
+  ): Promise<GetEventCardDTO[]> {
+    if (query.isOnline === false && query.isInPlace === false) {
+      throw new BadRequestException(
+        'An event must be either online or in place.',
+      );
+    }
+    if (query.isPublic === false && query.isHalfPublic === false) {
+      throw new BadRequestException(
+        'An event must be either public or half public.',
+      );
+    }
+
+    const events = await this.eventService.getFilteredEvents(
+      user.id,
+      query,
+      pagination.page,
+      pagination.size,
+    );
+
     return await Promise.all(
       events.map(async (event) => {
         return this.utilsService.transformEventDBtoGetEventCardDTO(event);
