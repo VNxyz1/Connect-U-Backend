@@ -469,6 +469,21 @@ export class EventService {
     return await this.eventRepository.save(event);
   }
 
+  /**
+   * Updates a user's profile picture.
+   *
+   * @param {string} id - The unique ID of the event to update.
+   * @param picture - new picture path
+   * @returns {Promise<UserDB>} - The updated event.
+   */
+  async updatePicture(id: string, picture: string): Promise<EventDB> {
+    const event = await this.getEventById(id);
+
+    event.picture = picture;
+
+    return await this.eventRepository.save(event);
+  }
+
   async getFriendsEvents(userId: string): Promise<EventDB[]> {
     const friends = await this.friendsService.getFriends(userId);
     const friendsIds = friends.map((friend) => friend.id);
