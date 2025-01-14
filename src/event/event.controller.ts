@@ -108,7 +108,7 @@ export class EventController {
   ): Promise<GetEventDetailsDTO> {
     const event = await this.eventService.getEventById(eventId);
 
-    if (event.type === 3) {
+    if (event.type === EventtypeEnum.private) {
       if (!user) {
         throw new ForbiddenException(
           'Access denied. Private event requires authentication.',
