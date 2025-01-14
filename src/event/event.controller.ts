@@ -8,7 +8,8 @@ import {
 import {
   BadRequestException,
   Body,
-  Controller, ForbiddenException,
+  Controller,
+  ForbiddenException,
   Get,
   HttpCode,
   HttpStatus,
@@ -109,14 +110,19 @@ export class EventController {
 
     if (event.type === 3) {
       if (!user) {
-        throw new ForbiddenException('Access denied. Private event requires authentication.');
+        throw new ForbiddenException(
+          'Access denied. Private event requires authentication.',
+        );
       }
 
-      const isAuthorized = await this.utilsService.isHostOrParticipant(user, eventId) ||
-        await this.requestService.hasUserRequestForEvent(eventId, user.id);
+      const isAuthorized =
+        (await this.utilsService.isHostOrParticipant(user, eventId)) ||
+        (await this.requestService.hasUserRequestForEvent(eventId, user.id));
 
       if (!isAuthorized) {
-        throw new ForbiddenException('Access denied. You are not authorized to view this event.');
+        throw new ForbiddenException(
+          'Access denied. You are not authorized to view this event.',
+        );
       }
     }
 
@@ -179,7 +185,7 @@ export class EventController {
     @User() user: UserDB,
     @Query() query: FilterDTO,
     @PaginationParams() pagination: Pagination,
-  ):  Promise<{ events: GetEventCardDTO[]; total: number }> {
+  ): Promise<{ events: GetEventCardDTO[]; total: number }> {
     if (query.isOnline === false && query.isInPlace === false) {
       throw new BadRequestException(
         'An event must be either online or in place.',

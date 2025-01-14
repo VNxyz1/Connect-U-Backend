@@ -583,7 +583,9 @@ describe('EventService', () => {
         getMany: jest.fn().mockResolvedValue(mockEventList),
         skip: jest.fn().mockReturnThis(),
         take: jest.fn().mockReturnThis(),
-        getManyAndCount: jest.fn().mockResolvedValue([mockEventList, mockTotal]),
+        getManyAndCount: jest
+          .fn()
+          .mockResolvedValue([mockEventList, mockTotal]),
       };
 
       jest
@@ -609,7 +611,9 @@ describe('EventService', () => {
         getMany: jest.fn().mockResolvedValue(mockEventList),
         skip: jest.fn().mockReturnThis(),
         take: jest.fn().mockReturnThis(),
-        getManyAndCount: jest.fn().mockResolvedValue([mockEventList, mockTotal]),
+        getManyAndCount: jest
+          .fn()
+          .mockResolvedValue([mockEventList, mockTotal]),
       };
 
       jest
@@ -635,7 +639,9 @@ describe('EventService', () => {
         getMany: jest.fn().mockResolvedValue(mockEventList),
         skip: jest.fn().mockReturnThis(),
         take: jest.fn().mockReturnThis(),
-        getManyAndCount: jest.fn().mockResolvedValue([mockEventList, mockTotal]),
+        getManyAndCount: jest
+          .fn()
+          .mockResolvedValue([mockEventList, mockTotal]),
       };
 
       jest
@@ -664,7 +670,9 @@ describe('EventService', () => {
         getMany: jest.fn().mockResolvedValue(mockEventList),
         skip: jest.fn().mockReturnThis(),
         take: jest.fn().mockReturnThis(),
-        getManyAndCount: jest.fn().mockResolvedValue([mockEventList, mockTotal]),
+        getManyAndCount: jest
+          .fn()
+          .mockResolvedValue([mockEventList, mockTotal]),
       };
 
       jest
@@ -694,7 +702,9 @@ describe('EventService', () => {
         getMany: jest.fn().mockResolvedValue(mockEventList),
         skip: jest.fn().mockReturnThis(),
         take: jest.fn().mockReturnThis(),
-        getManyAndCount: jest.fn().mockResolvedValue([mockEventList, mockTotal]),
+        getManyAndCount: jest
+          .fn()
+          .mockResolvedValue([mockEventList, mockTotal]),
       };
 
       jest
@@ -725,7 +735,9 @@ describe('EventService', () => {
         getMany: jest.fn().mockResolvedValue(mockEventList),
         skip: jest.fn().mockReturnThis(),
         take: jest.fn().mockReturnThis(),
-        getManyAndCount: jest.fn().mockResolvedValue([mockEventList, mockTotal]),
+        getManyAndCount: jest
+          .fn()
+          .mockResolvedValue([mockEventList, mockTotal]),
       };
 
       jest
@@ -751,7 +763,9 @@ describe('EventService', () => {
         getMany: jest.fn().mockResolvedValue(mockEventList),
         skip: jest.fn().mockReturnThis(),
         take: jest.fn().mockReturnThis(),
-        getManyAndCount: jest.fn().mockResolvedValue([mockEventList, mockTotal]),
+        getManyAndCount: jest
+          .fn()
+          .mockResolvedValue([mockEventList, mockTotal]),
       };
 
       jest

@@ -77,11 +77,12 @@ export class UserService {
    * @throws {NotFoundException} - If no user with the given username is found.
    */
   async findByUsername(username: string): Promise<UserDB> {
-    const user = await this.userRepository.findOne({ where: { username },
-    relations: {
+    const user = await this.userRepository.findOne({
+      where: { username },
+      relations: {
         tags: true,
-    },
-  });
+      },
+    });
     if (user === null) {
       throw new NotFoundException(
         `The user with the username \"${username}\" does not exist`,

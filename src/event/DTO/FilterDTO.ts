@@ -72,7 +72,6 @@ export class FilterDTO {
   @IsString({ each: true })
   tags?: string[];
 
-
   @ApiPropertyOptional({
     description: 'The minimum age allowed for the event',
     example: '18',
