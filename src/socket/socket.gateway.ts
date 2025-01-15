@@ -102,4 +102,13 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   emitNewMessageChat(eventId: string): void {
     this.server.emit('newChatMessages', eventId);
   }
+
+  emitNewInvitation(userId: string): void {
+    this.server.to(`user_${userId}`).emit('newInvite');
+  }
+
+  emitInvitationStatusChanged(userId: string): void {
+    this.server.to(`user_${userId}`).emit('inviteStatusChange');
+  }
+
 }

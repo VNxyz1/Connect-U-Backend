@@ -211,7 +211,7 @@ export class RequestService {
   async deleteJoinRequest(requestId: number, userId: string) {
     const request = await this.requestRepository.findOne({
       where: { id: requestId },
-      relations: ['user'],
+      relations: ['event', 'user', 'event.host'],
     });
     if (!request) {
       throw new NotFoundException('Request not found');
@@ -222,6 +222,7 @@ export class RequestService {
       );
     }
     await this.requestRepository.remove(request);
+    return request.event;
   }
 
   /**
@@ -406,6 +407,7 @@ export class RequestService {
     await this.eventRepository.save(event);
 
     await this.requestRepository.remove(request);
+    return request.event;
   }
 
   /**
@@ -419,7 +421,7 @@ export class RequestService {
   async denyInvitation(requestId: number, userId: string) {
     const request = await this.requestRepository.findOne({
       where: { id: requestId },
-      relations: ['user'],
+      relations: ['event', 'user', 'event.host'],
     });
 
     if (!request) {
@@ -434,6 +436,7 @@ export class RequestService {
     request.denied = true;
 
     await this.requestRepository.save(request);
+    return request.event;
   }
 
   /**
