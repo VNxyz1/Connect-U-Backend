@@ -66,6 +66,7 @@ export class ListController {
 
     await this.messageService.createMessage(null, eventId, systemMessageText);
     this.socketService.emitUpdateChat(eventId);
+    this.socketService.emitNewMessageChat(eventId);
 
     return new CreateListResDTO(
       true,
