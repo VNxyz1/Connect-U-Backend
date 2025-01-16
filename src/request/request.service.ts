@@ -54,13 +54,17 @@ export class RequestService {
 
     const existingRequest = await this.requestRepository.findOne({
       where: { user: { id: userId }, event: { id: eventId } },
+      relations: {
+        event: {
+          host: true,
+        },
+      },
     });
 
     if (existingRequest) {
       if (existingRequest.denied) {
         existingRequest.denied = false;
-        await this.requestRepository.save(existingRequest);
-        return;
+        return await this.requestRepository.save(existingRequest);
       } else {
         throw new BadRequestException('Request already exists');
       }

@@ -21,7 +21,7 @@ import { UtilsService } from '../utils/utils.service';
 import { GetEventJoinRequestDTO } from './DTO/GetEventJoinRequestDTO';
 import { GetUserJoinRequestDTO } from './DTO/GetUserJoinRequestDTO';
 import { UserService } from '../user/user.service';
-import {SocketGateway} from '../socket/socket.gateway';
+import { SocketGateway } from '../socket/socket.gateway';
 
 @ApiTags('request')
 @Controller('request')
@@ -31,8 +31,8 @@ export class RequestController {
     private readonly utilsService: UtilsService,
     private readonly eventService: EventService,
     private readonly userService: UserService,
-  private readonly socketService: SocketGateway,
-) {}
+    private readonly socketService: SocketGateway,
+  ) {}
 
   @ApiResponse({
     type: OkDTO,
@@ -52,7 +52,7 @@ export class RequestController {
     await this.utilsService.isUserAllowedToJoinEvent(user, event);
 
     const request = await this.requestService.postJoinRequest(eventId, user.id);
-    this.socketService.emitNewInvitation(request.event.host.id)
+    this.socketService.emitNewInvitation(request.event.host.id);
     return new OkDTO(true, 'Request was sent');
   }
 
@@ -116,7 +116,10 @@ export class RequestController {
     @Param('requestId') requestId: number,
     @User() currentUser: UserDB,
   ): Promise<OkDTO> {
-    const request = await this.requestService.acceptJoinRequest(requestId, currentUser.id);
+    const request = await this.requestService.acceptJoinRequest(
+      requestId,
+      currentUser.id,
+    );
     this.socketService.emitInvitationStatusChanged(request.user.id);
     return new OkDTO(true, 'Request successfully accepted');
   }
@@ -134,8 +137,11 @@ export class RequestController {
     @Param('requestId') requestId: number,
     @User() currentUser: UserDB,
   ): Promise<OkDTO> {
-    const request = await this.requestService.denyJoinRequest(requestId, currentUser.id);
-    this.socketService.emitInvitationStatusChanged(request.user.id)
+    const request = await this.requestService.denyJoinRequest(
+      requestId,
+      currentUser.id,
+    );
+    this.socketService.emitInvitationStatusChanged(request.user.id);
     return new OkDTO(true, 'Request successfully denied');
   }
 
@@ -152,7 +158,10 @@ export class RequestController {
     @Param('requestId') requestId: number,
     @User() currentUser: UserDB,
   ): Promise<OkDTO> {
-    const request = await this.requestService.deleteJoinRequest(requestId, currentUser.id);
+    const request = await this.requestService.deleteJoinRequest(
+      requestId,
+      currentUser.id,
+    );
     this.socketService.emitInvitationStatusChanged(request.event.host.id);
     return new OkDTO(true, 'Request successfully deleted');
   }
@@ -247,8 +256,11 @@ export class RequestController {
     @Param('requestId') requestId: number,
     @User() currentUser: UserDB,
   ): Promise<OkDTO> {
-    const request = await this.requestService.acceptInvitation(requestId, currentUser.id);
-    this.socketService.emitInvitationStatusChanged(request.user.id)
+    const request = await this.requestService.acceptInvitation(
+      requestId,
+      currentUser.id,
+    );
+    this.socketService.emitInvitationStatusChanged(request.user.id);
     return new OkDTO(true, 'Invitation successfully accepted');
   }
 
@@ -265,7 +277,10 @@ export class RequestController {
     @Param('requestId') requestId: number,
     @User() currentUser: UserDB,
   ): Promise<OkDTO> {
-    const request = await this.requestService.denyInvitation(requestId, currentUser.id);
+    const request = await this.requestService.denyInvitation(
+      requestId,
+      currentUser.id,
+    );
     this.socketService.emitInvitationStatusChanged(request.event.host.id);
     return new OkDTO(true, 'Invitation successfully denied');
   }

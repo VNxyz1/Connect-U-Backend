@@ -3,7 +3,7 @@ import { In, Not, Repository } from 'typeorm';
 import { MessageDB } from '../database/MessageDB';
 import { InjectRepository } from '@nestjs/typeorm';
 import { StatusEnum } from '../database/enums/StatusEnum';
-import {RequestDB} from '../database/RequestDB';
+import { RequestDB } from '../database/RequestDB';
 
 @Injectable()
 export class PushNotificationService {
@@ -71,14 +71,15 @@ export class PushNotificationService {
       where: {
         event: {
           host: {
-            id: userId
+            id: userId,
           },
-          status: Not(In([StatusEnum.finished, StatusEnum.cancelled]))
-        }
+          status: Not(In([StatusEnum.finished, StatusEnum.cancelled])),
+        },
+        denied: false,
       },
       relations: {
-        event: true
-      }
+        event: true,
+      },
     });
 
     const convMap: Record<string, number> = {};
