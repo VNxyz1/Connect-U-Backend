@@ -210,15 +210,13 @@ export class EventService {
     }
 
     if (categories && categories.length > 0) {
-      categories.forEach((category) => {
-        queryBuilder.andWhere('categories.id = :category', { category });
+      queryBuilder.andWhere('categories.id IN (:...categories)', {
+        categories,
       });
     }
 
     if (tags && tags.length > 0) {
-      tags.forEach((tag) => {
-        queryBuilder.andWhere('tags.title = :tag', { tag });
-      });
+      queryBuilder.andWhere('tags.title IN (:...tags)', { tags });
     }
 
     if (minAge) {
@@ -232,7 +230,11 @@ export class EventService {
     if (genders.length !== 3) {
       queryBuilder
         .leftJoin('event.preferredGenders', 'preferredGender')
-        .andWhere('preferredGender.id IN (:...genders)', { genders: genders });
+        .andWhere(
+          'NOT EXISTS (SELECT 1 FROM EventPreferredGenders pg WHERE pg.eventDbId = event.id AND pg.genderDbId NOT IN (:...genders))',
+          { genders },
+        )
+        .andWhere('preferredGender.id IS NOT NULL');
     }
 
     if (isPublic === false) {
