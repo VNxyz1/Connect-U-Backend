@@ -28,6 +28,8 @@ import { mockTagService } from '../src/tag/tag.service.spec';
 import { SchedulerService } from '../src/scheduler/scheduler.service';
 import { FriendService } from '../src/friend/friend.service';
 import { mockFriendService } from '../src/friend/friend.service.spec';
+import { mockPushNotificationService } from '../src/push-notification/push-notification.service.spec';
+import { PushNotificationService } from '../src/push-notification/push-notification.service';
 
 export const mockProviders = [
   {
@@ -94,5 +96,12 @@ export const mockProviders = [
     provide: FriendService,
     useValue: mockFriendService,
   },
-  { provide: SurveyService, useValue: mockSurveyService },
+  {
+    provide: SurveyService,
+    useValue: mockSurveyService,
+  },
+  {
+    provide: PushNotificationService,
+    useValue: mockPushNotificationService,
+  },
 ];

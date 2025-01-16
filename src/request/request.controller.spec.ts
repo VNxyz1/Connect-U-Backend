@@ -16,6 +16,7 @@ import { EventService } from '../event/event.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { EventDB } from '../database/EventDB';
 import { mockEventRepository } from '../event/event.service.spec';
+import { SocketGateway } from '../socket/socket.gateway';
 
 describe('RequestController', () => {
   let app: INestApplication;
@@ -26,6 +27,7 @@ describe('RequestController', () => {
       controllers: [RequestController],
       providers: [
         ...mockProviders,
+        SocketGateway,
         UtilsService,
         {
           provide: getRepositoryToken(EventDB),
