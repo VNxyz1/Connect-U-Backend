@@ -17,21 +17,21 @@ export class PushNotificationController {
     private readonly pushNotificationService: PushNotificationService,
   ) {}
 
-  @Get('host')
+  @Get('chat/host')
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard)
-  async getPushNotificationsHost(
+  async getChatPushNotificationsHost(
     @User() user: UserDB,
   ): Promise<Record<string, number>> {
     return await this.pushNotificationService.getUnreadMessagesMapHost(user.id);
   }
 
-  @Get('participant')
+  @Get('chat/participant')
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard)
-  async getPushNotificationsParticipant(
+  async getChatPushNotificationsParticipant(
     @User() user: UserDB,
   ): Promise<Record<string, number>> {
     return await this.pushNotificationService.getUnreadMessagesMapParticipant(
