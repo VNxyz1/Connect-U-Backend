@@ -1,21 +1,30 @@
 import {
+  ApiConsumes,
+  ApiParam,
   ApiBearerAuth,
   ApiOperation,
   ApiQuery,
   ApiResponse,
   ApiTags,
+  getSchemaPath,
 } from '@nestjs/swagger';
 import {
   BadRequestException,
   Body,
   Controller,
+  ForbiddenException,
   Get,
   HttpCode,
   HttpStatus,
   Param,
+  ParseFilePipeBuilder,
+  Patch,
   Post,
   Query,
+  Res,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { OkDTO } from '../serverDTO/OkDTO';
 import { UtilsService } from '../utils/utils.service';
@@ -33,11 +42,17 @@ import { CreateEventResDTO } from './DTO/CreateEventResDTO';
 import { GetEventDetailsDTO } from './DTO/GetEventDetailsDTO';
 import { TagService } from '../tag/tag.service';
 import { FilterDTO } from './DTO/FilterDTO';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname, join } from 'path';
+import fs from 'node:fs';
+import { Response } from 'express';
 import {
   paginate,
   Pagination,
   PaginationParams,
 } from '../utils/PaginationParams';
+import { RequestService } from '../request/request.service';
 
 @ApiTags('event')
 @Controller('event')
@@ -46,6 +61,7 @@ export class EventController {
     public readonly eventService: EventService,
     public readonly utilsService: UtilsService,
     public readonly categoryService: CategoryService,
+    public readonly requestService: RequestService,
     public readonly genderService: GenderService,
     public readonly tagService: TagService,
   ) {}
@@ -105,6 +121,24 @@ export class EventController {
   ): Promise<GetEventDetailsDTO> {
     const event = await this.eventService.getEventById(eventId);
 
+    if (event.type === EventtypeEnum.private) {
+      if (!user) {
+        throw new ForbiddenException(
+          'Access denied. Private event requires authentication.',
+        );
+      }
+
+      const isAuthorized =
+        (await this.utilsService.isHostOrParticipant(user, eventId)) ||
+        (await this.requestService.hasUserRequestForEvent(eventId, user.id));
+
+      if (!isAuthorized) {
+        throw new ForbiddenException(
+          'Access denied. You are not authorized to view this event.',
+        );
+      }
+    }
+
     let isHost: boolean = false;
     let isParticipant: boolean = false;
     let isLoggedIn: boolean = false;
@@ -151,8 +185,21 @@ export class EventController {
   }
 
   @ApiResponse({
-    type: [GetEventCardDTO],
-    description: 'gets events using the preferred filters',
+    status: 200,
+    description: 'Gets events using the preferred filters',
+    schema: {
+      type: 'object',
+      properties: {
+        events: {
+          type: 'array',
+          items: { $ref: getSchemaPath(GetEventCardDTO) },
+        },
+        total: {
+          type: 'number',
+          example: 42,
+        },
+      },
+    },
   })
   @ApiQuery({
     type: Pagination,
@@ -164,7 +211,7 @@ export class EventController {
     @User() user: UserDB,
     @Query() query: FilterDTO,
     @PaginationParams() pagination: Pagination,
-  ): Promise<GetEventCardDTO[]> {
+  ): Promise<{ events: GetEventCardDTO[]; total: number }> {
     if (query.isOnline === false && query.isInPlace === false) {
       throw new BadRequestException(
         'An event must be either online or in place.',
@@ -176,18 +223,20 @@ export class EventController {
       );
     }
 
-    const events = await this.eventService.getFilteredEvents(
+    const [events, total] = await this.eventService.getFilteredEvents(
       user.id,
       query,
       pagination.page,
       pagination.size,
     );
 
-    return await Promise.all(
-      events.map(async (event) => {
+    const transformedEvents = await Promise.all(
+      events.map(async (event: EventDB) => {
         return this.utilsService.transformEventDBtoGetEventCardDTO(event);
       }),
     );
+
+    return { events: transformedEvents, total };
   }
 
   @ApiResponse({
@@ -280,6 +329,104 @@ export class EventController {
   ): Promise<OkDTO> {
     await this.eventService.removeUserFromEvent(user, eventId);
     return new OkDTO(true, 'User was removed from participant list');
+  }
+
+  @ApiResponse({
+    type: OkDTO,
+    description: 'Uploads a picture for a specific event',
+  })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard)
+  @Patch('eventPicture/:eventId')
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads/eventPictures',
+        filename: (_req: any, file, callback) => {
+          const randomName = Array(32)
+            .fill(null)
+            .map(() => Math.round(Math.random() * 16).toString(16))
+            .join('');
+          callback(null, `${randomName}${extname(file.originalname)}`);
+        },
+      }),
+      limits: {
+        fileSize: 5242880,
+      },
+      fileFilter: (req, file, callback) => {
+        if (!file.mimetype.startsWith('image/')) {
+          return callback(new Error('Invalid file type'), false);
+        }
+        callback(null, true);
+      },
+    }),
+  )
+  async uploadEventPicture(
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addFileTypeValidator({
+          fileType: /^image/,
+        })
+        .addMaxSizeValidator({
+          maxSize: 5242880,
+        })
+        .build({
+          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+        }),
+    )
+    file: Express.Multer.File,
+    @Param('eventId') eventId: string,
+    @User() user: UserDB,
+  ) {
+    const event = await this.eventService.getEventById(eventId);
+
+    if (event.host.id !== user.id) {
+      throw new BadRequestException('You are not the host of this event.');
+    }
+
+    const currentEventPic = event.picture;
+
+    await this.eventService.updatePicture(event.id, file.filename);
+
+    if (currentEventPic && currentEventPic !== 'empty.png') {
+      const oldFilePath = `./uploads/eventPictures/${currentEventPic}`;
+      await fs.promises.unlink(oldFilePath);
+    }
+
+    return new OkDTO(true, 'Event picture upload successful');
+  }
+
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully fetched the event picture',
+    content: {
+      'image/png': {
+        example: 'Event picture image file',
+      },
+      'image/jpeg': {
+        example: 'Event picture image file',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Event picture not found',
+  })
+  @ApiParam({
+    name: 'image',
+    description: 'The filename of the event picture to fetch',
+    example: 'eventPicture123.png',
+  })
+  @Get('eventPicture/:image')
+  async getEventPicture(@Param('image') image: string, @Res() res: Response) {
+    const imgPath: string = join(
+      process.cwd(),
+      'uploads',
+      'eventPictures',
+      image,
+    );
+    res.sendFile(imgPath);
   }
 
   @ApiResponse({

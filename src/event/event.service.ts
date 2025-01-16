@@ -150,7 +150,7 @@ export class EventService {
     filters: FilterDTO,
     page: number = 0,
     size: number = 12,
-  ): Promise<EventDB[]> {
+  ): Promise<[EventDB[], number]> {
     const {
       title,
       minAge,
@@ -217,7 +217,7 @@ export class EventService {
 
     if (tags && tags.length > 0) {
       tags.forEach((tag) => {
-        queryBuilder.andWhere('tags.id = :tag', { tag });
+        queryBuilder.andWhere('tags.title = :tag', { tag });
       });
     }
 
@@ -235,13 +235,13 @@ export class EventService {
         .andWhere('preferredGender.id IN (:...genders)', { genders: genders });
     }
 
-    if (isPublic == false) {
+    if (isPublic === false) {
       queryBuilder.andWhere('event.type != :eventType', {
         eventType: EventtypeEnum.public,
       });
     }
 
-    if (isHalfPublic == false) {
+    if (isHalfPublic === false) {
       queryBuilder.andWhere('event.type != :eventType', {
         eventType: EventtypeEnum.halfPrivate,
       });
@@ -280,16 +280,16 @@ export class EventService {
       queryBuilder.orderBy('event.dateAndTime', 'ASC');
     }
 
-    const events = await queryBuilder
+    const [events, total] = await queryBuilder
       .skip(page * size)
       .take(size)
-      .getMany();
+      .getManyAndCount();
 
-    if (!events) {
+    if (!events.length) {
       throw new NotFoundException('Events not found');
     }
 
-    return events;
+    return [events, total];
   }
 
   /**
@@ -469,6 +469,21 @@ export class EventService {
     return await this.eventRepository.save(event);
   }
 
+  /**
+   * Updates a user's profile picture.
+   *
+   * @param {string} id - The unique ID of the event to update.
+   * @param picture - new picture path
+   * @returns {Promise<UserDB>} - The updated event.
+   */
+  async updatePicture(id: string, picture: string): Promise<EventDB> {
+    const event = await this.getEventById(id);
+
+    event.picture = picture;
+
+    return await this.eventRepository.save(event);
+  }
+
   async getFriendsEvents(userId: string): Promise<EventDB[]> {
     const friends = await this.friendsService.getFriends(userId);
     const friendsIds = friends.map((friend) => friend.id);
@@ -550,7 +565,7 @@ export class EventService {
           type: true,
           tags: true,
         },
-        relations: { categories: true, tags: true },
+        relations: { categories: true, tags: true, participants: true },
       }),
       this.getFriendsEvents(userId),
     ]);

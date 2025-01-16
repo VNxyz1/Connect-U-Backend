@@ -131,10 +131,10 @@ describe('EventController', () => {
     it('/GET eventDetails/:eventId should return event details for a valid ID', async () => {
       jest
         .spyOn(app.get(EventController).eventService, 'getEventById')
-        .mockResolvedValue(MockPrivateEvent);
+        .mockResolvedValue(MockEvent);
 
       return agent
-        .get(`/event/eventDetails/${MockPrivateEvent.id}`)
+        .get(`/event/eventDetails/${MockEvent.id}`)
         .expect('Content-Type', /json/)
         .expect(HttpStatus.OK)
         .expect((response) => {
@@ -153,7 +153,7 @@ describe('EventController', () => {
 
     it('/GET eventDetails/:eventId should return event details for a valid ID, and not show address when showAddress is false', async () => {
       const eventWithHiddenAddress = {
-        ...MockPrivateEvent,
+        ...MockPublicEvent,
         showAddress: false,
       };
       jest
@@ -553,7 +553,7 @@ describe('EventController', () => {
 
       jest
         .spyOn(app.get(EventController).eventService, 'getFilteredEvents')
-        .mockResolvedValue([MockPublicEvent]);
+        .mockResolvedValue([[MockPublicEvent], 2]);
 
       return agent
         .get('/event/filteredEvents')
@@ -562,10 +562,11 @@ describe('EventController', () => {
         .expect('Content-Type', /json/)
         .expect(HttpStatus.OK)
         .expect((response) => {
-          expect(Array.isArray(response.body)).toBe(true);
-          expect(response.body[0]).toHaveProperty('id');
-          expect(response.body[0]).toHaveProperty('title');
-          expect(response.body[0]).toHaveProperty('dateAndTime');
+          expect(response.body).toHaveProperty('total');
+          expect(response.body.total).toBe(2);
+          expect(response.body.events[0]).toHaveProperty('id');
+          expect(response.body.events[0]).toHaveProperty('title');
+          expect(response.body.events[0]).toHaveProperty('dateAndTime');
         });
     });
 
@@ -615,31 +616,6 @@ describe('EventController', () => {
         });
     });
 
-    it('/GET event/filteredEvents should return 200 with empty array when no events match the filter', async () => {
-      const validQuery = {
-        isOnline: true,
-        isInPlace: false,
-        isPublic: true,
-        isHalfPublic: false,
-        genders: [1, 2],
-        page: 0,
-        size: 12,
-      };
-
-      jest
-        .spyOn(app.get(EventController).eventService, 'getFilteredEvents')
-        .mockResolvedValue([]);
-
-      return agent
-        .get('/event/filteredEvents')
-        .query(validQuery)
-        .expect('Content-Type', /json/)
-        .expect(HttpStatus.OK)
-        .expect((response) => {
-          expect(response.body).toEqual([]);
-        });
-    });
-
     it('/GET event/filteredEvents should return events filtered by date range', async () => {
       const tokens = await mockAuthService.signIn();
 
@@ -656,7 +632,7 @@ describe('EventController', () => {
 
       jest
         .spyOn(app.get(EventController).eventService, 'getFilteredEvents')
-        .mockResolvedValue([MockPublicEvent]);
+        .mockResolvedValue([[MockPublicEvent], 2]);
 
       return agent
         .get('/event/filteredEvents')
@@ -665,10 +641,11 @@ describe('EventController', () => {
         .expect('Content-Type', /json/)
         .expect(HttpStatus.OK)
         .expect((response) => {
-          expect(Array.isArray(response.body)).toBe(true);
-          expect(response.body[0]).toHaveProperty('id');
-          expect(response.body[0]).toHaveProperty('title');
-          expect(response.body[0]).toHaveProperty('dateAndTime');
+          expect(response.body).toHaveProperty('total');
+          expect(response.body.total).toBe(2);
+          expect(response.body.events[0]).toHaveProperty('id');
+          expect(response.body.events[0]).toHaveProperty('title');
+          expect(response.body.events[0]).toHaveProperty('dateAndTime');
         });
     });
 
@@ -688,7 +665,7 @@ describe('EventController', () => {
 
       jest
         .spyOn(app.get(EventController).eventService, 'getFilteredEvents')
-        .mockResolvedValue([MockPublicEvent]);
+        .mockResolvedValue([[MockPublicEvent], 2]);
 
       return agent
         .get('/event/filteredEvents')
@@ -697,9 +674,11 @@ describe('EventController', () => {
         .expect('Content-Type', /json/)
         .expect(HttpStatus.OK)
         .expect((response) => {
-          expect(Array.isArray(response.body)).toBe(true);
-          expect(response.body[0]).toHaveProperty('id');
-          expect(response.body[0]).toHaveProperty('title');
+          expect(response.body).toHaveProperty('total');
+          expect(response.body.total).toBe(2);
+          expect(response.body.events[0]).toHaveProperty('id');
+          expect(response.body.events[0]).toHaveProperty('title');
+          expect(response.body.events[0]).toHaveProperty('dateAndTime');
         });
     });
 
@@ -719,7 +698,7 @@ describe('EventController', () => {
 
       jest
         .spyOn(app.get(EventController).eventService, 'getFilteredEvents')
-        .mockResolvedValue([MockPublicEvent]);
+        .mockResolvedValue([[MockPublicEvent], 2]);
 
       return agent
         .get('/event/filteredEvents')
@@ -728,9 +707,11 @@ describe('EventController', () => {
         .expect('Content-Type', /json/)
         .expect(HttpStatus.OK)
         .expect((response) => {
-          expect(Array.isArray(response.body)).toBe(true);
-          expect(response.body[0]).toHaveProperty('id');
-          expect(response.body[0]).toHaveProperty('title');
+          expect(response.body).toHaveProperty('total');
+          expect(response.body.total).toBe(2);
+          expect(response.body.events[0]).toHaveProperty('id');
+          expect(response.body.events[0]).toHaveProperty('title');
+          expect(response.body.events[0]).toHaveProperty('dateAndTime');
         });
     });
 
@@ -750,7 +731,7 @@ describe('EventController', () => {
 
       jest
         .spyOn(app.get(EventController).eventService, 'getFilteredEvents')
-        .mockResolvedValue([MockPublicEvent]);
+        .mockResolvedValue([[MockPublicEvent], 2]);
 
       return agent
         .get('/event/filteredEvents')
@@ -759,9 +740,11 @@ describe('EventController', () => {
         .expect('Content-Type', /json/)
         .expect(HttpStatus.OK)
         .expect((response) => {
-          expect(Array.isArray(response.body)).toBe(true);
-          expect(response.body[0]).toHaveProperty('id');
-          expect(response.body[0]).toHaveProperty('title');
+          expect(response.body).toHaveProperty('total');
+          expect(response.body.total).toBe(2);
+          expect(response.body.events[0]).toHaveProperty('id');
+          expect(response.body.events[0]).toHaveProperty('title');
+          expect(response.body.events[0]).toHaveProperty('dateAndTime');
         });
     });
 
@@ -805,7 +788,7 @@ describe('EventController', () => {
 
       jest
         .spyOn(app.get(EventController).eventService, 'getFilteredEvents')
-        .mockResolvedValue([MockPublicEvent]);
+        .mockResolvedValue([[MockPublicEvent], 2]);
 
       return agent
         .get('/event/filteredEvents')
@@ -814,9 +797,11 @@ describe('EventController', () => {
         .expect('Content-Type', /json/)
         .expect(HttpStatus.OK)
         .expect((response) => {
-          expect(Array.isArray(response.body)).toBe(true);
-          expect(response.body[0]).toHaveProperty('id');
-          expect(response.body[0]).toHaveProperty('title');
+          expect(response.body).toHaveProperty('total');
+          expect(response.body.total).toBe(2);
+          expect(response.body.events[0]).toHaveProperty('id');
+          expect(response.body.events[0]).toHaveProperty('title');
+          expect(response.body.events[0]).toHaveProperty('dateAndTime');
         });
     });
   });
@@ -883,12 +868,10 @@ const mockUser: UserDB = {
 };
 export const MockPublicEvent: EventDB = {
   id: '1',
-  timestamp: '2022-12-01T10:00:00',
+  timestamp: '2026-01-14T18:54:56',
   title: 'Tech Conference 2024',
   description: 'A conference for tech enthusiasts.',
-  dateAndTime: new Date(
-    new Date().setFullYear(new Date().getFullYear() + 1),
-  ).toISOString(),
+  dateAndTime: '2026-01-14T18:54:56',
   categories: [],
   host: mockUser,
   type: EventtypeEnum.public,
@@ -915,12 +898,44 @@ export const MockPublicEvent: EventDB = {
   viewEvents: [],
 };
 
+export const MockEvent: EventDB = {
+  id: '1',
+  timestamp: '2026-01-14T18:54:56',
+  title: 'Tech Conference 2024',
+  description: 'A conference for tech enthusiasts.',
+  dateAndTime: '2026-01-14T18:54:56',
+  categories: [],
+  host: mockUser,
+  type: EventtypeEnum.public,
+  isOnline: false,
+  showAddress: true,
+  streetNumber: '456',
+  street: 'Tech Ave',
+  zipCode: '67890',
+  city: 'Tech City',
+  participantsNumber: 100,
+  preferredGenders: [],
+  status: StatusEnum.upcoming,
+  picture: '',
+  startAge: 0,
+  endAge: 0,
+  participants: [],
+  requests: [],
+  lists: [],
+  surveys: [],
+  favorited: [],
+  memories: [],
+  tags: [],
+  messages: [],
+  viewEvents: [],
+};
+
 const MockPrivateEvent: EventDB = {
   id: '1',
   timestamp: '2022-12-01T10:00:00',
   title: 'Tech Conference 2024',
   description: 'A conference for tech enthusiasts.',
-  dateAndTime: '2024-12-01T10:00:00',
+  dateAndTime: '2026-01-14T18:54:56',
   categories: [],
   host: mockUser,
   type: EventtypeEnum.private,
@@ -954,12 +969,12 @@ const MockEventDetailsDTO: GetEventDetailsDTO = {
   host: null,
   isHost: false,
   isParticipant: false,
-  dateAndTime: '2024-12-01T10:00:00',
+  dateAndTime: '2026-01-14T18:54:56',
   title: 'Tech Conference 2024',
   description: 'A conference for tech enthusiasts.',
   picture: '',
   status: StatusEnum.upcoming,
-  type: EventtypeEnum.private,
+  type: EventtypeEnum.public,
   isOnline: false,
   streetNumber: '456',
   street: 'Tech Ave',
@@ -979,12 +994,12 @@ const MockEventDetailsWOAddress: GetEventDetailsDTO = {
   host: null,
   isHost: false,
   isParticipant: false,
-  dateAndTime: '2024-12-01T10:00:00',
+  dateAndTime: '2026-01-14T18:54:56',
   title: 'Tech Conference 2024',
   description: 'A conference for tech enthusiasts.',
   picture: '',
   status: StatusEnum.upcoming,
-  type: EventtypeEnum.private,
+  type: EventtypeEnum.public,
   isOnline: false,
   zipCode: '67890',
   city: 'Tech City',

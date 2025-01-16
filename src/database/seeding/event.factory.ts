@@ -55,6 +55,7 @@ export const eventFactory = async (
   event.title = faker.word.words({ count: { min: 2, max: 5 } });
 
   event.tags = tags;
+  event.picture = 'empty.png';
 
   return event;
 };

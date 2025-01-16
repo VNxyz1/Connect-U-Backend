@@ -165,7 +165,6 @@ export class RequestService {
     await this.eventRepository.save(event);
 
     await this.requestRepository.remove(request);
-    return request;
   }
 
   /**
@@ -179,7 +178,7 @@ export class RequestService {
   async denyJoinRequest(requestId: number, userId: string) {
     const request = await this.requestRepository.findOne({
       where: { id: requestId },
-      relations: ['event', 'event.host', 'user'],
+      relations: ['event', 'event.host'],
     });
 
     if (!request) {
@@ -398,9 +397,6 @@ export class RequestService {
         'You are not authorized to accept this request',
       );
     }
-    if (request.denied) {
-      throw new BadRequestException('This request has already been denied');
-    }
 
     if (event.participants.length >= event.participantsNumber) {
       throw new BadRequestException(
@@ -439,9 +435,8 @@ export class RequestService {
         'You are not authorized to deny this invitation',
       );
     }
-    request.denied = true;
 
-    await this.requestRepository.save(request);
+    await this.requestRepository.remove(request);
     return request;
   }
 
