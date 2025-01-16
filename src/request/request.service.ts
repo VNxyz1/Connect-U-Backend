@@ -164,7 +164,7 @@ export class RequestService {
 
     await this.eventRepository.save(event);
 
-    await this.requestRepository.remove(request);
+    return await this.requestRepository.remove(request);
   }
 
   /**
