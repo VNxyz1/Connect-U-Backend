@@ -204,9 +204,12 @@ export class EventService {
     }
 
     if (cities?.length) {
-      queryBuilder.andWhere('event.zipCode IN (:...zipCodes)', {
-        zipCodes: cities,
+      queryBuilder.andWhere('event.city IN (:...cities)', {
+        cities,
       });
+    }
+    if (isOnline) {
+      queryBuilder.orWhere('event.city IS NULL');
     }
 
     if (categories && categories.length > 0) {
