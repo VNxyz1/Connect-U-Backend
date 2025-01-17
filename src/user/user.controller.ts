@@ -355,8 +355,9 @@ export class UserController {
   async getInviteLink(@Req() req: Request, @User() user: UserDB) {
     const uuid = crypto.randomUUID();
     const host: string = process.env.FRONTEND_URL || req.get('host');
+    const protocol: string = process.env.FRONTEND_PROTOCOL || req.protocol;
     const link = this.friendService.createInviteLink(
-      req.protocol,
+      protocol,
       host,
       user.username,
       uuid,
