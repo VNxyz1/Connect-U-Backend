@@ -60,7 +60,7 @@ function enableCors(app: INestApplication) {
 
 function enableCorsForCapacitorApp(app: INestApplication) {
   app.enableCors({
-    origin: ['capacitor://localhost', 'http://localhost'],
+    origin: ['capacitor://localhost', 'http://localhost', 'https://localhost'],
     methods: ['GET', 'PUT', 'POST', 'DELETE', 'PATCH', 'HEAD'],
     allowedHeaders: [
       'Content-Type',
