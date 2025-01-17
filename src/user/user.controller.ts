@@ -87,8 +87,8 @@ export class UserController {
     const tokens = await this.authService.signIn(body.email, body.password);
     res.cookie('refresh_token', tokens.refresh_token, {
       httpOnly: true,
-      secure: !Boolean(process.env.API_CORS),
-      sameSite: Boolean(process.env.API_CORS) ? 'lax' : 'strict',
+      secure: !JSON.parse(process.env.API_CORS ?? 'false'),
+      sameSite: JSON.parse(process.env.API_CORS ?? 'false') ? 'lax' : 'strict',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
     res.json({ access_token: tokens.access_token });

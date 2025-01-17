@@ -14,7 +14,6 @@ import {
 import { PostLoginBodyDTO } from './DTO/PostLoginBodyDTO';
 import { AuthService } from './auth.service';
 import { Request, Response } from 'express';
-import * as process from 'node:process';
 import { OkDTO } from '../serverDTO/OkDTO';
 import { ApiBadRequestResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from './auth.guard';
@@ -37,8 +36,8 @@ export class AuthController {
     const tokens = await this.authService.signIn(body.email, body.password);
     res.cookie('refresh_token', tokens.refresh_token, {
       httpOnly: true,
-      secure: !Boolean(process.env.API_CORS),
-      sameSite: Boolean(process.env.API_CORS) ? 'lax' : 'strict',
+      secure: !JSON.parse(process.env.API_CORS ?? 'false'),
+      sameSite: JSON.parse(process.env.API_CORS ?? 'false') ? 'lax' : 'strict',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
     res.json(new AccessTokenResDTO(tokens.access_token));
