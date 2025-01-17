@@ -87,8 +87,8 @@ export class UserController {
     const tokens = await this.authService.signIn(body.email, body.password);
     res.cookie('refresh_token', tokens.refresh_token, {
       httpOnly: true,
-      secure: !Boolean(process.env.API_CORS),
-      sameSite: Boolean(process.env.API_CORS) ? 'lax' : 'strict',
+      secure: !JSON.parse(process.env.API_CORS ?? 'false'),
+      sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
     res.json({ access_token: tokens.access_token });
@@ -355,8 +355,9 @@ export class UserController {
   async getInviteLink(@Req() req: Request, @User() user: UserDB) {
     const uuid = crypto.randomUUID();
     const host: string = process.env.FRONTEND_URL || req.get('host');
+    const protocol: string = process.env.FRONTEND_PROTOCOL || req.protocol;
     const link = this.friendService.createInviteLink(
-      req.protocol,
+      protocol,
       host,
       user.username,
       uuid,
