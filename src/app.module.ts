@@ -41,6 +41,7 @@ import { FriendService } from './friend/friend.service';
 import { FriendsController } from './friend/friend.controller';
 import { PushNotificationService } from './push-notification/push-notification.service';
 import { InitSeeder } from './database/seeding/init.seeder';
+import { PushNotificationController } from './push-notification/push-notification.controller';
 
 @Module({
   imports: [
@@ -76,6 +77,7 @@ import { InitSeeder } from './database/seeding/init.seeder';
     TagController,
     MessageController,
     FriendsController,
+    PushNotificationController,
   ],
   providers: [
     AppService,
