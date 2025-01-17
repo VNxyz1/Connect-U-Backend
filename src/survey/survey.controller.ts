@@ -63,6 +63,7 @@ export class SurveyController {
     };
     await this.messageService.createMessage(null, eventId, systemMessageText);
     this.socketService.emitUpdateChat(eventId);
+    this.socketService.emitNewMessageChat(eventId);
 
     this.socketService.emitUpdateSurveys(eventId);
 

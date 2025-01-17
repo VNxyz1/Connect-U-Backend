@@ -43,6 +43,7 @@ import { PushNotificationService } from './push-notification/push-notification.s
 import { InitSeeder } from './database/seeding/init.seeder';
 import { CityController } from './API/city.controller';
 import { CityService } from './API/city.service';
+import { PushNotificationController } from './push-notification/push-notification.controller';
 
 @Module({
   imports: [
@@ -78,7 +79,8 @@ import { CityService } from './API/city.service';
     TagController,
     MessageController,
     FriendsController,
-    CityController
+    CityController,
+    PushNotificationController
   ],
   providers: [
     AppService,

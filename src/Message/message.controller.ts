@@ -46,6 +46,7 @@ export class MessageController {
 
     await this.messageService.createMessage(user, eventId, body.content);
     this.socketService.emitUpdateChat(eventId);
+    this.socketService.emitNewMessageChat(eventId);
 
     return new OkDTO(true, 'Message was posted successfully');
   }

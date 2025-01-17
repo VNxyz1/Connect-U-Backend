@@ -47,6 +47,33 @@ function enableCors(app: INestApplication) {
       'X-Requested-With',
       'Origin',
       'Accept',
+      'Viewport-Width',
+      'Width',
+      'Downlink',
+      'DPR',
+      'Accept-Language',
+      'Content-Language',
+    ],
+    credentials: true,
+  });
+}
+
+function enableCorsForCapacitorApp(app: INestApplication) {
+  app.enableCors({
+    origin: ['capacitor://localhost', 'http://localhost', 'https://localhost'],
+    methods: ['GET', 'PUT', 'POST', 'DELETE', 'PATCH', 'HEAD'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Requested-With',
+      'Origin',
+      'Accept',
+      'Viewport-Width',
+      'Width',
+      'Downlink',
+      'DPR',
+      'Accept-Language',
+      'Content-Language',
     ],
     credentials: true,
   });
@@ -61,8 +88,10 @@ async function bootstrap() {
     createSwagger(app);
   }
 
-  if (Boolean(process.env.API_CORS)) {
+  if (JSON.parse(process.env.API_CORS ?? 'false')) {
     enableCors(app);
+  } else {
+    enableCorsForCapacitorApp(app);
   }
 
   app.use(cookieParser());

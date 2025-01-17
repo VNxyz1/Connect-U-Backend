@@ -699,7 +699,13 @@ describe('RequestService', () => {
 });
 
 export const mockRequestService = {
-  postJoinRequest: jest.fn().mockResolvedValue(new RequestDB()),
+  postJoinRequest: jest.fn().mockResolvedValue({
+    id: 1,
+    user: { id: 'user123' },
+    event: { id: 'event123', host: { id: 'host123' } },
+    denied: false,
+    type: 1,
+  }),
   getJoinRequestsByUser: jest.fn().mockResolvedValue([
     {
       id: 1,
@@ -718,10 +724,34 @@ export const mockRequestService = {
       type: 1,
     },
   ]),
-  acceptJoinRequest: jest.fn().mockResolvedValue(undefined),
-  denyJoinRequest: jest.fn().mockResolvedValue(undefined),
-  deleteJoinRequest: jest.fn().mockResolvedValue(undefined),
-  createInvitation: jest.fn().mockResolvedValue(undefined),
+  acceptJoinRequest: jest.fn().mockResolvedValue({
+    id: 1,
+    user: { id: 'user123' },
+    event: { id: 'event123', host: { id: 'host123' } },
+    denied: false,
+    type: 1,
+  }),
+  denyJoinRequest: jest.fn().mockResolvedValue({
+    id: 1,
+    user: { id: 'user123' },
+    event: { id: 'event123', host: { id: 'host123' } },
+    denied: false,
+    type: 1,
+  }),
+  deleteJoinRequest: jest.fn().mockResolvedValue({
+    id: 1,
+    user: { id: 'user123' },
+    event: { id: 'event123', host: { id: 'host123' } },
+    denied: false,
+    type: 1,
+  }),
+  createInvitation: jest.fn().mockResolvedValue({
+    id: 1,
+    user: { id: 'user123' },
+    event: { id: 'event123', host: { id: 'host123' } },
+    denied: false,
+    type: 1,
+  }),
   getInvitationsForEvent: jest.fn().mockResolvedValue([
     {
       id: 1,
@@ -738,9 +768,27 @@ export const mockRequestService = {
       type: 1,
     },
   ]),
-  acceptInvitation: jest.fn().mockResolvedValue(undefined),
-  denyInvitation: jest.fn().mockResolvedValue(undefined),
-  deleteInvitation: jest.fn().mockResolvedValue(undefined),
+  acceptInvitation: jest.fn().mockResolvedValue({
+    id: 1,
+    user: { id: 'user123' },
+    event: { id: 'event123', host: { id: 'host123' } },
+    denied: false,
+    type: 1,
+  }),
+  denyInvitation: jest.fn().mockResolvedValue({
+    id: 1,
+    user: { id: 'user123' },
+    event: { id: 'event123', host: { id: 'host123' } },
+    denied: false,
+    type: 1,
+  }),
+  deleteInvitation: jest.fn().mockResolvedValue({
+    id: 1,
+    user: { id: 'user123' },
+    event: { id: 'event123', host: { id: 'host123' } },
+    denied: false,
+    type: 1,
+  }),
 };
 
 const mockUserList: UserDB[] = [

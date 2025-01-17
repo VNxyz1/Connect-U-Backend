@@ -44,7 +44,7 @@ export const databaseConfig = () =>
     password: process.env.DATABASE_PASSWORD || undefined,
     database: process.env.DATABASE_DATABASENAME || undefined,
     entities: typeOrmEntities,
-    synchronize: Boolean(process.env.DATABASE_SYNCHRONIZE) || false,
+    synchronize: JSON.parse(process.env.DATABASE_SYNCHRONIZE) || false,
   });
 
 export const databaseConfigForFeature = () =>

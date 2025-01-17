@@ -7,7 +7,6 @@ import { eventFactory } from './event.factory';
 import { CategoryDB } from '../CategoryDB';
 import { TagService } from '../../tag/tag.service';
 import { fakerDE as faker } from '@faker-js/faker';
-import * as process from 'node:process';
 import ViewedEventsDB from '../ViewedEventsDB';
 import ViewEventEnum from '../enums/ViewEventEnum';
 import { FriendService } from '../../friend/friend.service';
@@ -38,7 +37,7 @@ export class InitSeeder implements OnApplicationBootstrap {
   ) {}
 
   async onApplicationBootstrap() {
-    const populate = Boolean(process.env.POPULATE_DB) || false;
+    const populate = JSON.parse(process.env.POPULATE_DB) || false;
     if (populate) {
       const userCount = await this.userRepository.count();
       const desiredUsers = Number(process.env.DESIRED_USERS) || 50;
