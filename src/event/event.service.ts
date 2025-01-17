@@ -209,7 +209,7 @@ export class EventService {
       });
     }
     if (isOnline) {
-      queryBuilder.orWhere('event.city IS NULL');
+      queryBuilder.andWhere('event.city IS NULL');
     }
 
     if (categories && categories.length > 0) {

@@ -162,8 +162,10 @@ export class FilterDTO {
   @IsArray()
   @Transform(({ value }) =>
     Array.isArray(value)
-      ? value.map((city) => String(city))
-      : undefined,
+      ? value.map(String)
+      : typeof value === 'string'
+        ? [value]
+        : undefined,
   )
   @IsString({ each: true })
   cities?: string[];
