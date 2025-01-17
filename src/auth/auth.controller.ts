@@ -37,7 +37,7 @@ export class AuthController {
     res.cookie('refresh_token', tokens.refresh_token, {
       httpOnly: true,
       secure: !JSON.parse(process.env.API_CORS ?? 'false'),
-      sameSite: JSON.parse(process.env.API_CORS ?? 'false') ? 'lax' : 'strict',
+      sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
     res.json(new AccessTokenResDTO(tokens.access_token));
