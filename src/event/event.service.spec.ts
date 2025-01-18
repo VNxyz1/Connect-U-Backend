@@ -740,13 +740,16 @@ describe('EventService', () => {
         .spyOn(mockEventRepository, 'createQueryBuilder')
         .mockReturnValue(mockQueryBuilder as any);
 
-      const filters: FilterDTO = { cities: [35390, 61200], genders: [1, 2, 3] };
+      const filters: FilterDTO = {
+        cities: ['35390', '61200'],
+        genders: [1, 2, 3],
+      };
 
       const result = await service.getFilteredEvents('userId', filters);
 
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        'event.zipCode IN (:...zipCodes)',
-        { zipCodes: [35390, 61200] },
+        'event.city IN (:...cities)',
+        { cities: ['35390', '61200'] },
       );
       expect(result).toEqual([mockEventList, mockTotal]);
     });
