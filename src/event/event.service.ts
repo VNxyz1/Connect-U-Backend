@@ -213,8 +213,6 @@ export class EventService {
       } else {
         queryBuilder.andWhere('event.city IN (:...cities)', { cities });
       }
-    } else if (isOnline) {
-      queryBuilder.andWhere('event.city IS NULL');
     }
 
     if (categories && categories.length > 0) {
