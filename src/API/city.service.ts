@@ -17,26 +17,31 @@ export class CityService {
    *
    * @throws HttpException If an error occurs during the API request or if no results are found.
    */
-  async searchLocalities(postalCode?: string, name?: string, page = 1, pageSize = 50) {
-      const params: any = { page, pageSize };
+  async searchLocalities(
+    postalCode?: string,
+    name?: string,
+    page = 1,
+    pageSize = 50,
+  ) {
+    const params: any = { page, pageSize };
 
-      if (postalCode) {
-        params.postalCode = postalCode;
-      }
+    if (postalCode) {
+      params.postalCode = postalCode;
+    }
 
-      if (name) {
-        params.name = name;
-      }
+    if (name) {
+      params.name = name;
+    }
 
-      const response = await axios.get(`${this.baseUrl}/de/Localities`, {
-        params,
-        headers: {
-          accept: 'text/json',
-        },
-      });
-      if (!response) {
+    const response = await axios.get(`${this.baseUrl}/de/Localities`, {
+      params,
+      headers: {
+        accept: 'text/json',
+      },
+    });
+    if (!response) {
       throw new NotFoundException('No cities found');
-     }
+    }
 
     return response.data.map((locality: any) => ({
       postalCode: locality.postalCode,
@@ -44,6 +49,3 @@ export class CityService {
     }));
   }
 }
-
-
-

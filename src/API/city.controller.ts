@@ -1,6 +1,6 @@
 import { Controller, Get, Query, HttpStatus, HttpCode } from '@nestjs/common';
 import { CityService } from './city.service';
-import {  ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('city')
 @Controller('city')
@@ -13,14 +13,12 @@ export class CityController {
   })
   @HttpCode(HttpStatus.OK)
   @Get('localities')
-  async getLocalities( @Query('postalCode') postalCode: string,
-                       @Query('name') name: string,
-                       @Query('page') page: number,
-                       @Query('pageSize') pageSize: number) {
-
+  async getLocalities(
+    @Query('postalCode') postalCode: string,
+    @Query('name') name: string,
+    @Query('page') page: number,
+    @Query('pageSize') pageSize: number,
+  ) {
     return this.cityService.searchLocalities(postalCode, name, page, pageSize);
   }
 }
-
-
-

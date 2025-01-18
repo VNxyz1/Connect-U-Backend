@@ -80,7 +80,7 @@ import { PushNotificationController } from './push-notification/push-notificatio
     MessageController,
     FriendsController,
     CityController,
-    PushNotificationController
+    PushNotificationController,
   ],
   providers: [
     AppService,
