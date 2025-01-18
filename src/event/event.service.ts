@@ -66,6 +66,7 @@ export class EventService {
     newEvent.categories = categories;
     newEvent.preferredGenders = preferredGenders;
     newEvent.tags = eventTags;
+    newEvent.picture = 'empty.png'
     const savedEvent = await this.eventRepository.save(newEvent);
 
     await this.schedulerService.scheduleEventStatusUpdate(savedEvent);
