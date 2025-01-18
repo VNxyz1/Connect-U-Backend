@@ -206,7 +206,7 @@ export class EventService {
 
     if (cities?.length) {
       queryBuilder.andWhere('event.city IN (:...cities)', {
-        cities,
+        cities: cities,
       });
     }
     if (isOnline) {
