@@ -66,6 +66,7 @@ export class EventService {
     newEvent.categories = categories;
     newEvent.preferredGenders = preferredGenders;
     newEvent.tags = eventTags;
+    newEvent.picture = 'empty.png';
     const savedEvent = await this.eventRepository.save(newEvent);
 
     await this.schedulerService.scheduleEventStatusUpdate(savedEvent);
@@ -204,9 +205,14 @@ export class EventService {
     }
 
     if (cities?.length) {
-      queryBuilder.andWhere('event.zipCode IN (:...zipCodes)', {
-        zipCodes: cities,
-      });
+      if (isOnline) {
+        queryBuilder.andWhere(
+          '(event.city IN (:...cities) OR event.isOnline = :isOnline)',
+          { cities, isOnline: true },
+        );
+      } else {
+        queryBuilder.andWhere('event.city IN (:...cities)', { cities });
+      }
     }
 
     if (categories && categories.length > 0) {

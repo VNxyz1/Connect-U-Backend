@@ -156,19 +156,19 @@ export class FilterDTO {
 
   @ApiPropertyOptional({
     description: 'Filter events by cities',
-    example: ['35390', '61200'],
+    example: ['Berlin', 'Munich'],
   })
   @IsOptional()
   @IsArray()
   @Transform(({ value }) =>
     Array.isArray(value)
-      ? value.map(Number)
-      : Number.isNaN(value)
-        ? undefined
-        : [Number(value)],
+      ? value.map(String)
+      : typeof value === 'string'
+        ? [value]
+        : undefined,
   )
-  @IsNumber({}, { each: true })
-  cities?: number[];
+  @IsString({ each: true })
+  cities?: string[];
 
   @ApiPropertyOptional({
     description: 'Filter for events where friends are participating or hosting',
