@@ -41,6 +41,8 @@ import { FriendService } from './friend/friend.service';
 import { FriendsController } from './friend/friend.controller';
 import { PushNotificationService } from './push-notification/push-notification.service';
 import { InitSeeder } from './database/seeding/init.seeder';
+import { CityController } from './API/city.controller';
+import { CityService } from './API/city.service';
 import { PushNotificationController } from './push-notification/push-notification.controller';
 
 @Module({
@@ -77,6 +79,7 @@ import { PushNotificationController } from './push-notification/push-notificatio
     TagController,
     MessageController,
     FriendsController,
+    CityController,
     PushNotificationController,
   ],
   providers: [
@@ -99,6 +102,7 @@ import { PushNotificationController } from './push-notification/push-notificatio
     FriendService,
     PushNotificationService,
     InitSeeder,
+    CityService,
   ],
 })
 export class AppModule implements NestModule {

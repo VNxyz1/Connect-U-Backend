@@ -169,6 +169,29 @@ export class EventController {
   @ApiQuery({
     type: Pagination,
   })
+  @Get('/allCities')
+  async getAllCities(
+    @PaginationParams() paginationParams: Pagination,
+  ): Promise<GetEventCardDTO[]> {
+    const events = await this.eventService.getAllActiveEventsByPopularity(
+      paginationParams.page,
+      paginationParams.size,
+    );
+    return await Promise.all(
+      events.map(async (event) => {
+        return this.utilsService.transformEventDBtoGetEventCardDTO(event);
+      }),
+    );
+  }
+
+  @ApiResponse({
+    type: [GetEventCardDTO],
+    description:
+      'A paginated list of all public, half-private, upcoming or live events sorted by popularity',
+  })
+  @ApiQuery({
+    type: Pagination,
+  })
   @Get('/allEvents')
   async getAllEvents(
     @PaginationParams() paginationParams: Pagination,
