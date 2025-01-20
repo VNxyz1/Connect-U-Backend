@@ -5,9 +5,9 @@ import {
   OneToMany,
   JoinTable,
   ManyToMany,
+  BeforeInsert,
 } from 'typeorm';
 import { IsEmail, IsPhoneNumber } from 'class-validator';
-import { GenderEnum } from './enums/GenderEnum';
 import { EventDB } from './EventDB';
 import { MemoryDB } from './MemoryDB';
 import { RequestDB } from './RequestDB';
@@ -19,9 +19,17 @@ import { ReactionDB } from './ReactionDB';
 import { TagDB } from './TagDB';
 import { ListDB } from './ListDB';
 import { SurveyDB } from './SurveyDB';
+import * as bcrypt from 'bcryptjs';
+import ViewedEventsDB from './ViewedEventsDB';
 
 @Entity()
 export class UserDB {
+  @BeforeInsert()
+  async setPassword?(password: string) {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(password || this.password, salt);
+  }
+
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -73,7 +81,7 @@ export class UserDB {
   isVerified: boolean;
 
   @Column({ default: 0 })
-  gender: GenderEnum;
+  gender: number;
 
   @OneToMany(() => EventDB, (event) => event.host)
   hostedEvents: EventDB[];
@@ -94,10 +102,10 @@ export class UserDB {
 
   @ManyToMany(() => UserDB, (user) => user.friendOf)
   @JoinTable({ name: 'FriendshipDB' })
-  friends: Promise<UserDB[]>;
+  friends: UserDB[];
 
   @ManyToMany(() => UserDB, (user) => user.friends)
-  friendOf: Promise<UserDB[]>;
+  friendOf: UserDB[];
 
   @OneToMany(() => ListDB, (list) => list.creator)
   lists: ListDB[];
@@ -127,4 +135,7 @@ export class UserDB {
 
   @ManyToMany(() => MessageDB, (message) => message.unreadUsers)
   unreadMessages: MessageDB[];
+
+  @OneToMany(() => ViewedEventsDB, (viewEvents) => viewEvents.user)
+  viewEvents: ViewedEventsDB[];
 }

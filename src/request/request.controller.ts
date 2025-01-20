@@ -8,6 +8,7 @@ import {
   Get,
   Patch,
   Delete,
+  NotFoundException,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RequestService } from './request.service';
@@ -19,6 +20,8 @@ import { EventService } from '../event/event.service';
 import { UtilsService } from '../utils/utils.service';
 import { GetEventJoinRequestDTO } from './DTO/GetEventJoinRequestDTO';
 import { GetUserJoinRequestDTO } from './DTO/GetUserJoinRequestDTO';
+import { UserService } from '../user/user.service';
+import { SocketGateway } from '../socket/socket.gateway';
 
 @ApiTags('request')
 @Controller('request')
@@ -27,6 +30,8 @@ export class RequestController {
     private readonly requestService: RequestService,
     private readonly utilsService: UtilsService,
     private readonly eventService: EventService,
+    private readonly userService: UserService,
+    private readonly socketService: SocketGateway,
   ) {}
 
   @ApiResponse({
@@ -46,7 +51,8 @@ export class RequestController {
 
     await this.utilsService.isUserAllowedToJoinEvent(user, event);
 
-    await this.requestService.postJoinRequest(eventId, user.id);
+    const request = await this.requestService.postJoinRequest(eventId, user.id);
+    this.socketService.emitNewInvitation(request.event.host.id);
     return new OkDTO(true, 'Request was sent');
   }
 
@@ -62,7 +68,7 @@ export class RequestController {
   async getRequestsByUser(
     @User() user: UserDB,
   ): Promise<GetEventJoinRequestDTO[]> {
-    const requests = await this.requestService.getRequestsByUser(user.id);
+    const requests = await this.requestService.getJoinRequestsByUser(user.id);
 
     return Promise.all(
       requests.map((request) =>
@@ -84,7 +90,7 @@ export class RequestController {
     @Param('eventId') eventId: string,
     @User() user: UserDB,
   ): Promise<GetUserJoinRequestDTO[]> {
-    const requests = await this.requestService.getRequestsForEvent(
+    const requests = await this.requestService.getJoinRequestsForEvent(
       eventId,
       user.id,
     );
@@ -96,21 +102,25 @@ export class RequestController {
     );
   }
 
-  @Patch('/accept/:requestId')
-  @HttpCode(HttpStatus.OK)
-  @UseGuards(AuthGuard)
-  @ApiBearerAuth('access-token')
   @ApiResponse({
     type: OkDTO,
     description:
       'Accepts a join request, adds the user to the event, and deletes the request',
     status: HttpStatus.OK,
   })
+  @Patch('/accept/:requestId')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth('access-token')
   async acceptRequest(
     @Param('requestId') requestId: number,
     @User() currentUser: UserDB,
   ): Promise<OkDTO> {
-    await this.requestService.acceptJoinRequest(requestId, currentUser.id);
+    const request = await this.requestService.acceptJoinRequest(
+      requestId,
+      currentUser.id,
+    );
+    this.socketService.emitInvitationStatusChanged(request.user.id);
     return new OkDTO(true, 'Request successfully accepted');
   }
 
@@ -127,7 +137,11 @@ export class RequestController {
     @Param('requestId') requestId: number,
     @User() currentUser: UserDB,
   ): Promise<OkDTO> {
-    await this.requestService.denyRequest(requestId, currentUser.id);
+    const request = await this.requestService.denyJoinRequest(
+      requestId,
+      currentUser.id,
+    );
+    this.socketService.emitInvitationStatusChanged(request.user.id);
     return new OkDTO(true, 'Request successfully denied');
   }
 
@@ -144,7 +158,147 @@ export class RequestController {
     @Param('requestId') requestId: number,
     @User() currentUser: UserDB,
   ): Promise<OkDTO> {
-    await this.requestService.deleteJoinRequest(requestId, currentUser.id);
+    const request = await this.requestService.deleteJoinRequest(
+      requestId,
+      currentUser.id,
+    );
+    this.socketService.emitInvitationStatusChanged(request.event.host.id);
     return new OkDTO(true, 'Request successfully deleted');
+  }
+
+  @ApiResponse({
+    type: OkDTO,
+    description: 'Creates an invite for a user to join an event',
+    status: HttpStatus.CREATED,
+  })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard)
+  @Post('/invite/:eventId/:userId')
+  @HttpCode(HttpStatus.CREATED)
+  async createInvitation(
+    @Param('eventId') eventId: string,
+    @Param('userId') userId: string,
+    @User() host: UserDB,
+  ) {
+    const event = await this.eventService.getEventById(eventId);
+    if (!event) {
+      throw new NotFoundException('Event not found');
+    }
+    const user = await this.userService.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    await this.utilsService.isUserAllowedToJoinEvent(user, event);
+
+    await this.requestService.createInvitation(eventId, user, host.id);
+    this.socketService.emitNewInvitation(userId);
+    return new OkDTO(true, 'Invitation was sent');
+  }
+
+  @ApiResponse({
+    type: [GetUserJoinRequestDTO],
+    description: 'Fetches all invitations for a specific event',
+    status: HttpStatus.OK,
+  })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard)
+  @Get('invite/event/:eventId')
+  @HttpCode(HttpStatus.OK)
+  async getInvitationsForEvent(
+    @Param('eventId') eventId: string,
+    @User() user: UserDB,
+  ): Promise<GetUserJoinRequestDTO[]> {
+    const requests = await this.requestService.getInvitationsForEvent(
+      eventId,
+      user.id,
+    );
+
+    return Promise.all(
+      requests.map((request) =>
+        this.utilsService.transformRequestDBtoGetUserJoinRequestDTO(request),
+      ),
+    );
+  }
+
+  @ApiResponse({
+    type: [GetEventJoinRequestDTO],
+    description: 'Fetches all invitations sent to a specific user',
+    status: HttpStatus.OK,
+  })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard)
+  @Get('invite/user')
+  @HttpCode(HttpStatus.OK)
+  async getInvitationsByUser(
+    @User() user: UserDB,
+  ): Promise<GetEventJoinRequestDTO[]> {
+    const requests = await this.requestService.getInvitationsByUser(user.id);
+
+    return Promise.all(
+      requests.map((request) =>
+        this.utilsService.transformRequestDBtoGetEventJoinRequestDTO(request),
+      ),
+    );
+  }
+
+  @ApiResponse({
+    type: OkDTO,
+    description:
+      'Accepts an invitation, adds the user to the event, and deletes the request',
+    status: HttpStatus.OK,
+  })
+  @Patch('/acceptInvite/:requestId')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth('access-token')
+  async acceptInvitation(
+    @Param('requestId') requestId: number,
+    @User() currentUser: UserDB,
+  ): Promise<OkDTO> {
+    const request = await this.requestService.acceptInvitation(
+      requestId,
+      currentUser.id,
+    );
+    this.socketService.emitInvitationStatusChanged(request.user.id);
+    return new OkDTO(true, 'Invitation successfully accepted');
+  }
+
+  @ApiResponse({
+    type: OkDTO,
+    description: 'denies an invitation for an event',
+    status: HttpStatus.CREATED,
+  })
+  @Patch('/denyInvite/:requestId')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth('access-token')
+  async denyInvitation(
+    @Param('requestId') requestId: number,
+    @User() currentUser: UserDB,
+  ): Promise<OkDTO> {
+    const request = await this.requestService.denyInvitation(
+      requestId,
+      currentUser.id,
+    );
+    this.socketService.emitInvitationStatusChanged(request.event.host.id);
+    return new OkDTO(true, 'Invitation successfully denied');
+  }
+
+  @Delete('/invite/:requestId')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth('access-token')
+  @ApiResponse({
+    type: OkDTO,
+    description: 'Deletes an invitation sent by the user',
+    status: HttpStatus.OK,
+  })
+  async deleteInvitation(
+    @Param('requestId') requestId: number,
+    @User() currentUser: UserDB,
+  ): Promise<OkDTO> {
+    await this.requestService.deleteInvitation(requestId, currentUser.id);
+    return new OkDTO(true, 'Invitation successfully deleted');
   }
 }

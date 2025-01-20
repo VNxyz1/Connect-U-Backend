@@ -10,11 +10,15 @@ const API_DEFAULT_PREFIX = '/api/';
 const SWAGGER_TITLE = 'ConnectU API';
 const SWAGGER_DESCRIPTION = 'API used for ConnectU application';
 const SWAGGER_PREFIX = '/docs';
+const SWAGGER_REQUEST_BASE_PATH = '';
 
 function createSwagger(app: INestApplication) {
   const config = new DocumentBuilder()
     .setTitle(SWAGGER_TITLE)
     .setDescription(SWAGGER_DESCRIPTION)
+    .setBasePath(
+      process.env.SWAGGER_REQUEST_BASE_PATH || SWAGGER_REQUEST_BASE_PATH,
+    )
     .addBearerAuth(
       {
         description:
@@ -43,6 +47,33 @@ function enableCors(app: INestApplication) {
       'X-Requested-With',
       'Origin',
       'Accept',
+      'Viewport-Width',
+      'Width',
+      'Downlink',
+      'DPR',
+      'Accept-Language',
+      'Content-Language',
+    ],
+    credentials: true,
+  });
+}
+
+function enableCorsForCapacitorApp(app: INestApplication) {
+  app.enableCors({
+    origin: ['capacitor://localhost', 'http://localhost', 'https://localhost'],
+    methods: ['GET', 'PUT', 'POST', 'DELETE', 'PATCH', 'HEAD'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Requested-With',
+      'Origin',
+      'Accept',
+      'Viewport-Width',
+      'Width',
+      'Downlink',
+      'DPR',
+      'Accept-Language',
+      'Content-Language',
     ],
     credentials: true,
   });
@@ -57,8 +88,10 @@ async function bootstrap() {
     createSwagger(app);
   }
 
-  if (!process.env.API_CORS || process.env.API_CORS === '1') {
+  if (JSON.parse(process.env.API_CORS ?? 'false')) {
     enableCors(app);
+  } else {
+    enableCorsForCapacitorApp(app);
   }
 
   app.use(cookieParser());

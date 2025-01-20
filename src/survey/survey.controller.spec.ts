@@ -21,6 +21,8 @@ import { mockSurveyEntry, mockSurveyService } from './survey.service.spec';
 import { mockUtilsService } from '../utils/utils.service.spec';
 import { mockUserService } from '../user/user.service.spec';
 import { SocketGateway } from '../socket/socket.gateway';
+import { MessageService } from '../Message/message.service';
+import { mockMessageService } from '../Message/message.service.spec';
 
 describe('SurveyController', () => {
   let app: INestApplication;
@@ -55,6 +57,10 @@ describe('SurveyController', () => {
         {
           provide: UtilsService,
           useValue: mockUtilsService,
+        },
+        {
+          provide: MessageService,
+          useValue: mockMessageService,
         },
       ],
     }).compile();

@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CategoryDB } from '../database/CategoryDB';
 import { GetCategoryDTO } from '../category/DTO/GetCategoryDTO';
 import { GenderDB } from '../database/GenderDB';
@@ -29,6 +25,10 @@ import { GetSurveyDetailsDTO } from '../survey/DTO/GetSurveyDetailsDTO';
 import { SurveyEntryDB } from '../database/SurveyEntryDB';
 import { GetSurveyEntryDTO } from '../survey/DTO/GetSurveyEntryDTO';
 import { StatusEnum } from '../database/enums/StatusEnum';
+import { MessageDB } from '../database/MessageDB';
+import { GetEventChatDTO } from '../Message/DTO/GetEventChatDTO';
+import { GetMessageDTO } from '../Message/DTO/GetMessageDTO';
+import { GetFriendProfileDTO } from '../user/DTO/GetFriendProfileDTO';
 
 @Injectable()
 export class UtilsService {
@@ -137,7 +137,7 @@ export class UtilsService {
    *
    * @returns {boolean} - Returns true if the user is the host or a participant.
    *
-   * @throws {ForbiddenException} - If the user is neither the host nor a participant.
+   *
    */
   async isHostOrParticipant(user: UserDB, eventId: string): Promise<boolean> {
     const event = await this.eventRepository.findOne({
@@ -153,13 +153,7 @@ export class UtilsService {
     }
     const isHost = event.host.id === user.id;
 
-    if (!isParticipant && !isHost) {
-      throw new ForbiddenException(
-        'You are not allowed to perform this action',
-      );
-    }
-
-    return true;
+    return isParticipant || isHost;
   }
 
   /**
@@ -175,6 +169,36 @@ export class UtilsService {
     const dto = new GetUserProfileDTO();
     dto.id = user.id;
     dto.isUser = isUser;
+    dto.pronouns = user.pronouns;
+    dto.profilePicture = user.profilePicture;
+    dto.profileText = user.profileText;
+    dto.firstName = user.firstName;
+    dto.username = user.username;
+    dto.city = user.city;
+    const birthday = new Date(user.birthday);
+    dto.age = this.calculateAge(birthday);
+    if (user.tags && user.tags.length > 0) {
+      dto.tags = user.tags.map((tag) => tag.title);
+    }
+    return dto;
+  }
+
+  /**
+   * Transforms a UserDB object into a GetUserProfileDTO.
+   * @param user - The user entity from the database.
+   * @param isUser - boolean if logged-in user is user who's visiting the profile
+   * @param areFriends - boolean if users are friends
+   * @returns {GetFriendProfileDTO} - The transformed user profile data transfer object.
+   */
+  transformUserDBtoGetFriendProfileDTO(
+    user: UserDB,
+    isUser: boolean,
+    areFriends: boolean,
+  ): GetFriendProfileDTO {
+    const dto = new GetFriendProfileDTO();
+    dto.id = user.id;
+    dto.isUser = isUser;
+    dto.areFriends = areFriends;
     dto.pronouns = user.pronouns;
     dto.profilePicture = user.profilePicture;
     dto.profileText = user.profileText;
@@ -238,10 +262,12 @@ export class UtilsService {
   /**
    * Transforms an EventDB object into a GetEventCardDTO.
    * @param event - The event entity from the database.
+   * @param friendsEvents - optional. An array of all events where friends are participating or hosting
    * @returns {Promise<GetEventCardDTO>} - A promise resolving to the transformed event card data transfer object.
    */
   async transformEventDBtoGetEventCardDTO(
     event: EventDB,
+    friendsEvents?: EventDB[],
   ): Promise<GetEventCardDTO> {
     const dto = new GetEventCardDTO();
     dto.id = event.id;
@@ -255,10 +281,13 @@ export class UtilsService {
     dto.isOnline = event.isOnline;
     dto.city = event.city;
     const participants = event.participants;
-    dto.participantsNumber = participants.length;
+    dto.participantsNumber = participants?.length || 0;
     dto.maxParticipantsNumber = event.participantsNumber;
     if (event.tags && event.tags.length > 0) {
       dto.tags = event.tags.map((tag) => tag.title);
+    }
+    if (friendsEvents) {
+      dto.participatingFriend = !!friendsEvents.find((e) => e.id == event.id);
     }
     return dto;
   }
@@ -494,6 +523,83 @@ export class UtilsService {
         const isUser = user.id === currentUserId;
         return this.transformUserDBtoGetUserProfileDTO(user, isUser);
       }),
+    };
+  }
+
+  /**
+   * Transforms a MessageDB entity into a ChatMessageDTO.
+   *
+   * @param message - The message entity to transform.
+   * @param currentUserId - The ID of the current user.
+   * @param eventHostId - ID of the event host.
+   * @returns The transformed ChatMessageDTO.
+   */
+  transformMessageDBtoChatMessageDTO(
+    message: MessageDB,
+    currentUserId: string,
+    eventHostId: string,
+  ): GetMessageDTO {
+    return {
+      id: message.id,
+      text: message.text,
+      timestamp: message.timestamp,
+      isHost: message.writer ? message.writer.id === eventHostId : false, // Safely check writer
+      writer: message.writer
+        ? this.transformUserDBtoGetUserProfileDTO(
+            message.writer,
+            message.writer.id === currentUserId,
+          )
+        : null, // Handle null writer case
+    };
+  }
+
+  /**
+   * Transforms an EventDB entity into a GetEventChatDTO, grouping messages into read and unread.
+   *
+   * @param messages - messages to be sorted
+   * @param currentUserId - The ID of the current user.
+   * @param hostId - ID of the event host
+   * @returns The transformed GetEventChatDTO.
+   */
+  transformEventChatToGetEventChatDTO(
+    messages: MessageDB[],
+    currentUserId: string,
+    hostId: string,
+  ): GetEventChatDTO {
+    const sortedMessages = messages.sort(
+      (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+    );
+
+    const readMessages = [];
+    const unreadMessages = [];
+
+    for (const message of sortedMessages) {
+      const isUnread = message.unreadUsers.some(
+        (user) => user.id === currentUserId,
+      );
+
+      const transformedMessage = this.transformMessageDBtoChatMessageDTO(
+        message,
+        currentUserId,
+        hostId,
+      );
+
+      if (isUnread) {
+        unreadMessages.push(transformedMessage);
+      } else {
+        readMessages.push(transformedMessage);
+      }
+    }
+
+    readMessages.sort(
+      (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+    );
+
+    return {
+      readMessages,
+      unreadMessages,
     };
   }
 }

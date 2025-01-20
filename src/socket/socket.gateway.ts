@@ -61,7 +61,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     [...hostingEvents, ...participatingEvents].forEach((event) => {
       const roomName = `event_${event.id}`;
-      client.join(roomName);
+      const pushRoomName = `event_${event.id}-push`;
+      client.join([roomName, pushRoomName]);
       this.addUserToRoom(userId, event.id);
     });
   }
@@ -92,5 +93,21 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   emitSurveyDetail(eventId: string, surveyId: number): void {
     this.server.to(`event_${eventId}`).emit('updateSurveyDetail', { surveyId });
+  }
+
+  emitUpdateChat(eventId: string): void {
+    this.server.to(`event_${eventId}`).emit('updateChatMessages');
+  }
+
+  emitNewMessageChat(eventId: string): void {
+    this.server.emit('newChatMessages', eventId);
+  }
+
+  emitNewInvitation(userId: string): void {
+    this.server.emit('newInvite', userId);
+  }
+
+  emitInvitationStatusChanged(userId: string): void {
+    this.server.emit('inviteStatusChange', userId);
   }
 }

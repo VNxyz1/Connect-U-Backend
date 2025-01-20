@@ -22,6 +22,7 @@ import { CreateSurveyResDTO } from './DTO/CreateSurveyResDTO';
 import { OkDTO } from '../serverDTO/OkDTO';
 import { GetSurveyDetailsDTO } from './DTO/GetSurveyDetailsDTO';
 import { SocketGateway } from '../socket/socket.gateway';
+import { MessageService } from '../Message/message.service';
 
 @ApiTags('survey')
 @Controller('survey')
@@ -30,6 +31,7 @@ export class SurveyController {
     private readonly surveyService: SurveyService,
     private readonly utilsService: UtilsService,
     private readonly socketService: SocketGateway,
+    private readonly messageService: MessageService,
   ) {}
 
   @ApiResponse({
@@ -53,6 +55,15 @@ export class SurveyController {
       eventId,
       body,
     );
+
+    // Create a system message for the survey creation
+    const systemMessageText = {
+      key: 'eventChatPage.server-messages.new-survey',
+      params: { title: body.title },
+    };
+    await this.messageService.createMessage(null, eventId, systemMessageText);
+    this.socketService.emitUpdateChat(eventId);
+    this.socketService.emitNewMessageChat(eventId);
 
     this.socketService.emitUpdateSurveys(eventId);
 

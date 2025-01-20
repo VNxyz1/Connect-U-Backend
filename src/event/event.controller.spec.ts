@@ -24,6 +24,7 @@ import { StatusEnum } from '../database/enums/StatusEnum';
 import { GetEventDetailsDTO } from './DTO/GetEventDetailsDTO';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { mockEventRepository } from './event.service.spec';
+import { UserService } from '../user/user.service';
 
 describe('EventController', () => {
   let app: INestApplication;
@@ -130,10 +131,10 @@ describe('EventController', () => {
     it('/GET eventDetails/:eventId should return event details for a valid ID', async () => {
       jest
         .spyOn(app.get(EventController).eventService, 'getEventById')
-        .mockResolvedValue(MockPrivateEvent);
+        .mockResolvedValue(MockEvent);
 
       return agent
-        .get(`/event/eventDetails/${MockPrivateEvent.id}`)
+        .get(`/event/eventDetails/${MockEvent.id}`)
         .expect('Content-Type', /json/)
         .expect(HttpStatus.OK)
         .expect((response) => {
@@ -152,7 +153,7 @@ describe('EventController', () => {
 
     it('/GET eventDetails/:eventId should return event details for a valid ID, and not show address when showAddress is false', async () => {
       const eventWithHiddenAddress = {
-        ...MockPrivateEvent,
+        ...MockPublicEvent,
         showAddress: false,
       };
       jest
@@ -200,7 +201,7 @@ describe('EventController', () => {
   describe('EventController - getAllEvents', () => {
     it('/GET event/allEvents should return all events', async () => {
       return agent
-        .get('/event/allEvents')
+        .get('/event/allEvents?page=0&size=12')
         .expect('Content-Type', /json/)
         .expect(HttpStatus.OK)
         .expect((response) => {
@@ -506,6 +507,305 @@ describe('EventController', () => {
     });
   });
 
+  describe('EventController - getFyPage', () => {
+    it('should return the fyPage of the logged in user', async () => {
+      const tokens = await mockAuthService.signIn();
+
+      jest
+        .spyOn(app.get(JwtService), 'verifyAsync')
+        .mockResolvedValue(mockAuthPayload);
+
+      return agent
+        .get('/event/fy-page?page=0&size=12')
+        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.OK)
+        .expect((response) => {
+          expect(Array.isArray(response.body)).toBe(true);
+          response.body.forEach((event: any) => {
+            expect(event).toHaveProperty('id');
+            expect(event).toHaveProperty('title');
+            expect(event).toHaveProperty('dateAndTime');
+          });
+        });
+    });
+  });
+
+  describe('EventController - getFilteredEvents', () => {
+    it('/GET event/filteredEvents should return filtered events based on query parameters', async () => {
+      const tokens = await mockAuthService.signIn();
+
+      jest
+        .spyOn(app.get(JwtService), 'verifyAsync')
+        .mockResolvedValue(mockAuthPayload);
+
+      jest.spyOn(app.get(UserService), 'findById').mockResolvedValue(mockUser);
+
+      const validQuery = {
+        isOnline: true,
+        isInPlace: false,
+        isPublic: true,
+        isHalfPublic: false,
+        genders: [1, 2],
+        page: 0,
+        size: 12,
+      };
+
+      jest
+        .spyOn(app.get(EventController).eventService, 'getFilteredEvents')
+        .mockResolvedValue([[MockPublicEvent], 2]);
+
+      return agent
+        .get('/event/filteredEvents')
+        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+        .query(validQuery)
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.OK)
+        .expect((response) => {
+          expect(response.body).toHaveProperty('total');
+          expect(response.body.total).toBe(2);
+          expect(response.body.events[0]).toHaveProperty('id');
+          expect(response.body.events[0]).toHaveProperty('title');
+          expect(response.body.events[0]).toHaveProperty('dateAndTime');
+        });
+    });
+
+    it('/GET event/filteredEvents should return 400 if both isOnline and isInPlace are false', async () => {
+      const invalidQuery = {
+        isOnline: false,
+        isInPlace: false,
+        isPublic: true,
+        isHalfPublic: false,
+        genders: [1, 2],
+        page: 0,
+        size: 12,
+      };
+
+      return agent
+        .get('/event/filteredEvents')
+        .query(invalidQuery)
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((response) => {
+          expect(response.body.message).toBe(
+            'An event must be either online or in place.',
+          );
+        });
+    });
+
+    it('/GET event/filteredEvents should return 400 if both isPublic and isHalfPublic are false', async () => {
+      const invalidQuery = {
+        isOnline: true,
+        isInPlace: false,
+        isPublic: false,
+        isHalfPublic: false,
+        genders: [1, 2],
+        page: 0,
+        size: 12,
+      };
+
+      return agent
+        .get('/event/filteredEvents')
+        .query(invalidQuery)
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((response) => {
+          expect(response.body.message).toBe(
+            'An event must be either public or half public.',
+          );
+        });
+    });
+
+    it('/GET event/filteredEvents should return events filtered by date range', async () => {
+      const tokens = await mockAuthService.signIn();
+
+      const validQuery = {
+        isOnline: true,
+        isInPlace: false,
+        isPublic: true,
+        isHalfPublic: false,
+        genders: [1, 2],
+        dates: ['2025-01-15', '2025-01-20'],
+        page: 0,
+        size: 12,
+      };
+
+      jest
+        .spyOn(app.get(EventController).eventService, 'getFilteredEvents')
+        .mockResolvedValue([[MockPublicEvent], 2]);
+
+      return agent
+        .get('/event/filteredEvents')
+        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+        .query(validQuery)
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.OK)
+        .expect((response) => {
+          expect(response.body).toHaveProperty('total');
+          expect(response.body.total).toBe(2);
+          expect(response.body.events[0]).toHaveProperty('id');
+          expect(response.body.events[0]).toHaveProperty('title');
+          expect(response.body.events[0]).toHaveProperty('dateAndTime');
+        });
+    });
+
+    it('/GET event/filteredEvents should return events filtered by categories', async () => {
+      const tokens = await mockAuthService.signIn();
+
+      const validQuery = {
+        isOnline: true,
+        isInPlace: false,
+        isPublic: true,
+        isHalfPublic: false,
+        genders: [1, 2],
+        categories: [1, 2, 3],
+        page: 0,
+        size: 12,
+      };
+
+      jest
+        .spyOn(app.get(EventController).eventService, 'getFilteredEvents')
+        .mockResolvedValue([[MockPublicEvent], 2]);
+
+      return agent
+        .get('/event/filteredEvents')
+        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+        .query(validQuery)
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.OK)
+        .expect((response) => {
+          expect(response.body).toHaveProperty('total');
+          expect(response.body.total).toBe(2);
+          expect(response.body.events[0]).toHaveProperty('id');
+          expect(response.body.events[0]).toHaveProperty('title');
+          expect(response.body.events[0]).toHaveProperty('dateAndTime');
+        });
+    });
+
+    it('/GET event/filteredEvents should return events filtered by cities', async () => {
+      const tokens = await mockAuthService.signIn();
+
+      const validQuery = {
+        isOnline: true,
+        isInPlace: false,
+        isPublic: true,
+        isHalfPublic: false,
+        genders: [1, 2],
+        cities: [35390, 61200],
+        page: 0,
+        size: 12,
+      };
+
+      jest
+        .spyOn(app.get(EventController).eventService, 'getFilteredEvents')
+        .mockResolvedValue([[MockPublicEvent], 2]);
+
+      return agent
+        .get('/event/filteredEvents')
+        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+        .query(validQuery)
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.OK)
+        .expect((response) => {
+          expect(response.body).toHaveProperty('total');
+          expect(response.body.total).toBe(2);
+          expect(response.body.events[0]).toHaveProperty('id');
+          expect(response.body.events[0]).toHaveProperty('title');
+          expect(response.body.events[0]).toHaveProperty('dateAndTime');
+        });
+    });
+
+    it('/GET event/filteredEvents should return events filtered by friends participation', async () => {
+      const tokens = await mockAuthService.signIn();
+
+      const validQuery = {
+        isOnline: true,
+        isInPlace: false,
+        isPublic: true,
+        isHalfPublic: false,
+        genders: [1, 2],
+        filterFriends: true,
+        page: 0,
+        size: 12,
+      };
+
+      jest
+        .spyOn(app.get(EventController).eventService, 'getFilteredEvents')
+        .mockResolvedValue([[MockPublicEvent], 2]);
+
+      return agent
+        .get('/event/filteredEvents')
+        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+        .query(validQuery)
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.OK)
+        .expect((response) => {
+          expect(response.body).toHaveProperty('total');
+          expect(response.body.total).toBe(2);
+          expect(response.body.events[0]).toHaveProperty('id');
+          expect(response.body.events[0]).toHaveProperty('title');
+          expect(response.body.events[0]).toHaveProperty('dateAndTime');
+        });
+    });
+
+    it('/GET event/filteredEvents should return 400 for invalid date format', async () => {
+      const invalidQuery = {
+        isOnline: true,
+        isInPlace: false,
+        isPublic: true,
+        isHalfPublic: false,
+        genders: [1, 2],
+        dates: ['2025-01-15', 'invalid-date'],
+        page: 0,
+        size: 12,
+      };
+
+      return agent
+        .get('/event/filteredEvents')
+        .query(invalidQuery)
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.BAD_REQUEST)
+        .expect((response) => {
+          expect(response.body.message).toEqual([
+            'each value in dates must be a valid ISO 8601 date string',
+          ]);
+        });
+    });
+
+    it('/GET event/filteredEvents should return events filtered by tags', async () => {
+      const tokens = await mockAuthService.signIn();
+
+      const validQuery = {
+        isOnline: true,
+        isInPlace: false,
+        isPublic: true,
+        isHalfPublic: false,
+        genders: [1, 2],
+        tags: [1, 2],
+        page: 0,
+        size: 12,
+      };
+
+      jest
+        .spyOn(app.get(EventController).eventService, 'getFilteredEvents')
+        .mockResolvedValue([[MockPublicEvent], 2]);
+
+      return agent
+        .get('/event/filteredEvents')
+        .set('Cookie', [`refresh_token=${tokens.refresh_token}`])
+        .query(validQuery)
+        .expect('Content-Type', /json/)
+        .expect(HttpStatus.OK)
+        .expect((response) => {
+          expect(response.body).toHaveProperty('total');
+          expect(response.body.total).toBe(2);
+          expect(response.body.events[0]).toHaveProperty('id');
+          expect(response.body.events[0]).toHaveProperty('title');
+          expect(response.body.events[0]).toHaveProperty('dateAndTime');
+        });
+    });
+  });
+
   afterAll(async () => {
     await app.close();
   });
@@ -555,8 +855,8 @@ const mockUser: UserDB = {
   participatedEvents: [],
   favoritedEvents: [],
   memories: [],
-  friends: Promise.resolve([]),
-  friendOf: Promise.resolve([]),
+  friends: [],
+  friendOf: [],
   listEntries: [],
   achievements: Promise.resolve([]),
   surveyEntries: [],
@@ -564,15 +864,14 @@ const mockUser: UserDB = {
   reactions: [],
   tags: [],
   unreadMessages: [],
+  viewEvents: [],
 };
 export const MockPublicEvent: EventDB = {
   id: '1',
-  timestamp: '2022-12-01T10:00:00',
+  timestamp: '2026-01-14T18:54:56',
   title: 'Tech Conference 2024',
   description: 'A conference for tech enthusiasts.',
-  dateAndTime: new Date(
-    new Date().setFullYear(new Date().getFullYear() + 1),
-  ).toISOString(),
+  dateAndTime: '2026-01-14T18:54:56',
   categories: [],
   host: mockUser,
   type: EventtypeEnum.public,
@@ -596,6 +895,39 @@ export const MockPublicEvent: EventDB = {
   memories: [],
   tags: [],
   messages: [],
+  viewEvents: [],
+};
+
+export const MockEvent: EventDB = {
+  id: '1',
+  timestamp: '2026-01-14T18:54:56',
+  title: 'Tech Conference 2024',
+  description: 'A conference for tech enthusiasts.',
+  dateAndTime: '2026-01-14T18:54:56',
+  categories: [],
+  host: mockUser,
+  type: EventtypeEnum.public,
+  isOnline: false,
+  showAddress: true,
+  streetNumber: '456',
+  street: 'Tech Ave',
+  zipCode: '67890',
+  city: 'Tech City',
+  participantsNumber: 100,
+  preferredGenders: [],
+  status: StatusEnum.upcoming,
+  picture: '',
+  startAge: 0,
+  endAge: 0,
+  participants: [],
+  requests: [],
+  lists: [],
+  surveys: [],
+  favorited: [],
+  memories: [],
+  tags: [],
+  messages: [],
+  viewEvents: [],
 };
 
 const MockPrivateEvent: EventDB = {
@@ -603,7 +935,7 @@ const MockPrivateEvent: EventDB = {
   timestamp: '2022-12-01T10:00:00',
   title: 'Tech Conference 2024',
   description: 'A conference for tech enthusiasts.',
-  dateAndTime: '2024-12-01T10:00:00',
+  dateAndTime: '2026-01-14T18:54:56',
   categories: [],
   host: mockUser,
   type: EventtypeEnum.private,
@@ -627,6 +959,7 @@ const MockPrivateEvent: EventDB = {
   memories: [],
   tags: [],
   messages: [],
+  viewEvents: [],
 };
 
 const MockEventDetailsDTO: GetEventDetailsDTO = {
@@ -636,12 +969,12 @@ const MockEventDetailsDTO: GetEventDetailsDTO = {
   host: null,
   isHost: false,
   isParticipant: false,
-  dateAndTime: '2024-12-01T10:00:00',
+  dateAndTime: '2026-01-14T18:54:56',
   title: 'Tech Conference 2024',
   description: 'A conference for tech enthusiasts.',
   picture: '',
   status: StatusEnum.upcoming,
-  type: EventtypeEnum.private,
+  type: EventtypeEnum.public,
   isOnline: false,
   streetNumber: '456',
   street: 'Tech Ave',
@@ -661,12 +994,12 @@ const MockEventDetailsWOAddress: GetEventDetailsDTO = {
   host: null,
   isHost: false,
   isParticipant: false,
-  dateAndTime: '2024-12-01T10:00:00',
+  dateAndTime: '2026-01-14T18:54:56',
   title: 'Tech Conference 2024',
   description: 'A conference for tech enthusiasts.',
   picture: '',
   status: StatusEnum.upcoming,
-  type: EventtypeEnum.private,
+  type: EventtypeEnum.public,
   isOnline: false,
   zipCode: '67890',
   city: 'Tech City',

@@ -35,6 +35,15 @@ import { SurveyController } from './survey/survey.controller';
 import { TagService } from './tag/tag.service';
 import { SchedulerService } from './scheduler/scheduler.service';
 import { TagController } from './tag/tag.controller';
+import { MessageController } from './Message/message.controller';
+import { MessageService } from './Message/message.service';
+import { FriendService } from './friend/friend.service';
+import { FriendsController } from './friend/friend.controller';
+import { PushNotificationService } from './push-notification/push-notification.service';
+import { InitSeeder } from './database/seeding/init.seeder';
+import { CityController } from './API/city.controller';
+import { CityService } from './API/city.service';
+import { PushNotificationController } from './push-notification/push-notification.controller';
 
 @Module({
   imports: [
@@ -68,6 +77,10 @@ import { TagController } from './tag/tag.controller';
     ListEntryController,
     SurveyController,
     TagController,
+    MessageController,
+    FriendsController,
+    CityController,
+    PushNotificationController,
   ],
   providers: [
     AppService,
@@ -85,6 +98,11 @@ import { TagController } from './tag/tag.controller';
     SurveyService,
     TagService,
     SchedulerService,
+    MessageService,
+    FriendService,
+    PushNotificationService,
+    InitSeeder,
+    CityService,
   ],
 })
 export class AppModule implements NestModule {

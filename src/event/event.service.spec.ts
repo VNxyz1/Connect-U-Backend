@@ -11,10 +11,12 @@ import { EventtypeEnum } from '../database/enums/EventtypeEnum';
 import { GenderEnum } from '../database/enums/GenderEnum';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { StatusEnum } from '../database/enums/StatusEnum';
-import { Repository } from 'typeorm';
+import { In, Not, Repository } from 'typeorm';
 import { SurveyEntryDB } from '../database/SurveyEntryDB';
 import { ListEntryDB } from '../database/ListEntryDB';
 import { SchedulerService } from '../scheduler/scheduler.service';
+import { FilterDTO } from './DTO/FilterDTO';
+import ViewedEventsDB from '../database/ViewedEventsDB';
 
 export const mockEventRepository = {
   create: jest.fn(),
@@ -25,6 +27,8 @@ export const mockEventRepository = {
     leftJoinAndSelect: jest.fn().mockReturnThis(),
     where: jest.fn().mockReturnThis(),
     getMany: jest.fn(),
+    skip: jest.fn().mockReturnThis(),
+    take: jest.fn().mockReturnThis(),
     orderBy: jest.fn().mockReturnThis(),
   })),
 };
@@ -64,8 +68,8 @@ const mockUser: UserDB = {
   participatedEvents: [],
   favoritedEvents: [],
   memories: [],
-  friends: Promise.resolve([]),
-  friendOf: Promise.resolve([]),
+  friends: [],
+  friendOf: [],
   listEntries: [],
   achievements: Promise.resolve([]),
   surveyEntries: [],
@@ -73,6 +77,7 @@ const mockUser: UserDB = {
   reactions: [],
   tags: [],
   unreadMessages: [],
+  viewEvents: [],
 };
 
 const participantUser: UserDB = {
@@ -100,8 +105,8 @@ const participantUser: UserDB = {
   participatedEvents: [],
   favoritedEvents: [],
   memories: [],
-  friends: Promise.resolve([]),
-  friendOf: Promise.resolve([]),
+  friends: [],
+  friendOf: [],
   listEntries: [],
   achievements: Promise.resolve([]),
   surveyEntries: [],
@@ -109,6 +114,7 @@ const participantUser: UserDB = {
   reactions: [],
   tags: [],
   unreadMessages: [],
+  viewEvents: [],
 };
 
 const mockCreateEventDTO: CreateEventDTO = {
@@ -135,7 +141,7 @@ const mockEventList: EventDB[] = [
     timestamp: '2022-12-01T10:00:00',
     title: 'Tech Conference 2024',
     description: 'A conference for tech enthusiasts.',
-    dateAndTime: '2024-12-01T10:00:00',
+    dateAndTime: '2026-01-14T18:54:56',
     categories: mockCategoryList,
     host: mockUser,
     type: EventtypeEnum.halfPrivate,
@@ -159,13 +165,14 @@ const mockEventList: EventDB[] = [
     memories: [],
     tags: [],
     messages: [],
+    viewEvents: [],
   },
   {
     id: '2',
     timestamp: '2022-12-01T10:00:00',
     title: 'Game Jam 2024',
     description: 'Game Jam to create awesome new games!',
-    dateAndTime: '2024-12-01T10:00:00',
+    dateAndTime: '2026-01-14T18:54:56',
     categories: mockCategoryList,
     host: mockUser,
     type: EventtypeEnum.halfPrivate,
@@ -189,14 +196,19 @@ const mockEventList: EventDB[] = [
     memories: [],
     tags: [],
     messages: [],
+    viewEvents: [],
   },
 ];
+
+const mockTotal = 2;
 
 const queryBuilderMock = {
   leftJoinAndSelect: jest.fn().mockReturnThis(),
   where: jest.fn().mockReturnThis(),
   getMany: jest.fn().mockResolvedValue(mockEventList),
   orderBy: jest.fn().mockReturnThis(),
+  skip: jest.fn().mockReturnThis(),
+  take: jest.fn().mockReturnThis(),
 };
 
 mockEventRepository.createQueryBuilder.mockReturnValue(queryBuilderMock);
@@ -224,6 +236,10 @@ describe('EventService', () => {
         },
         {
           provide: getRepositoryToken(SurveyEntryDB),
+          useClass: Repository,
+        },
+        {
+          provide: getRepositoryToken(ViewedEventsDB),
           useClass: Repository,
         },
         {
@@ -340,21 +356,34 @@ describe('EventService', () => {
   it('should get all events', async () => {
     mockEventRepository.find.mockResolvedValue(mockEventList);
 
-    const result = await service.getAllEvents();
+    const result = await service.getAllActiveEventsByPopularity();
 
     expect(mockEventRepository.find).toHaveBeenCalledWith({
-      relations: ['categories', 'participants', 'tags'],
-      order: {
-        timestamp: 'DESC',
+      where: {
+        status: Not(In([StatusEnum.cancelled, StatusEnum.finished])),
+        type: Not(EventtypeEnum.private),
       },
+      relations: {
+        categories: true,
+        participants: true,
+        tags: true,
+        viewEvents: true,
+      },
+      order: {
+        viewEvents: {
+          viewed: 'DESC',
+        },
+      },
+      skip: 0,
+      take: 12,
     });
     expect(result).toEqual(mockEventList);
   });
 
-  it('should throw a NotFoundException if no events are found', async () => {
+  it('should return an empty array if no events are found', async () => {
     mockEventRepository.find.mockResolvedValue([]);
 
-    await expect(service.getAllEvents()).rejects.toThrow(NotFoundException);
+    await expect(service.getAllActiveEventsByPopularity()).resolves.toEqual([]);
   });
 
   describe('EventService - getHostingEvents', () => {
@@ -531,18 +560,221 @@ describe('EventService', () => {
       ).rejects.toThrow(BadRequestException);
     });
   });
+
+  describe('fyPageAlgo', () => {
+    it('should return a EventDB array sorted by relevance', async () => {
+      jest.spyOn(service, 'getHostingEvents').mockResolvedValue([]);
+      jest.spyOn(service, 'getParticipatingEvents').mockResolvedValue([]);
+      jest.spyOn(mockEventRepository, 'find').mockResolvedValue([]);
+
+      const result = await service.fyPageAlgo(mockUser.id);
+
+      expect(mockEventRepository.find).toBeCalledTimes(4);
+      expect(result.length).toEqual(0);
+    });
+  });
+
+  describe('EventService - getFilteredEvents', () => {
+    it('should return events with no filters', async () => {
+      const mockQueryBuilder = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue(mockEventList),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest
+          .fn()
+          .mockResolvedValue([mockEventList, mockTotal]),
+      };
+
+      jest
+        .spyOn(mockEventRepository, 'createQueryBuilder')
+        .mockReturnValue(mockQueryBuilder as any);
+
+      const filters: FilterDTO = { genders: [1, 2, 3] };
+
+      const result = await service.getFilteredEvents('userId', filters);
+
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'event.status = :status',
+        { status: StatusEnum.upcoming },
+      );
+      expect(result).toEqual([mockEventList, mockTotal]);
+    });
+
+    it('should filter events by date', async () => {
+      const mockQueryBuilder = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue(mockEventList),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest
+          .fn()
+          .mockResolvedValue([mockEventList, mockTotal]),
+      };
+
+      jest
+        .spyOn(mockEventRepository, 'createQueryBuilder')
+        .mockReturnValue(mockQueryBuilder as any);
+
+      const filters: FilterDTO = { dates: ['2025-01-10'], genders: [1, 2, 3] };
+
+      const result = await service.getFilteredEvents('userId', filters);
+
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'DATE(event.dateAndTime) IN (:...dates)',
+        { dates: ['2025-01-10'] },
+      );
+      expect(result).toEqual([mockEventList, mockTotal]);
+    });
+
+    it('should filter events by title', async () => {
+      const mockQueryBuilder = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue(mockEventList),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest
+          .fn()
+          .mockResolvedValue([mockEventList, mockTotal]),
+      };
+
+      jest
+        .spyOn(mockEventRepository, 'createQueryBuilder')
+        .mockReturnValue(mockQueryBuilder as any);
+
+      const filters: FilterDTO = {
+        title: 'Tech Conference',
+        genders: [1, 2, 3],
+      };
+
+      const result = await service.getFilteredEvents('userId', filters);
+
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'event.title LIKE :title',
+        { title: '%Tech Conference%' },
+      );
+      expect(result).toEqual([mockEventList, mockTotal]);
+    });
+
+    it('should filter events by category', async () => {
+      const mockQueryBuilder = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue(mockEventList),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest
+          .fn()
+          .mockResolvedValue([mockEventList, mockTotal]),
+      };
+
+      jest
+        .spyOn(mockEventRepository, 'createQueryBuilder')
+        .mockReturnValue(mockQueryBuilder as any);
+
+      const filters: FilterDTO = { categories: [1, 2], genders: [1, 2, 3] };
+
+      const result = await service.getFilteredEvents('userId', filters);
+
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'categories.id IN (:...categories)',
+        { categories: [1, 2] },
+      );
+
+      expect(result).toEqual([mockEventList, mockTotal]);
+    });
+
+    it('should filter events by age range', async () => {
+      const mockQueryBuilder = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue(mockEventList),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest
+          .fn()
+          .mockResolvedValue([mockEventList, mockTotal]),
+      };
+
+      jest
+        .spyOn(mockEventRepository, 'createQueryBuilder')
+        .mockReturnValue(mockQueryBuilder as any);
+
+      const filters: FilterDTO = { minAge: 18, maxAge: 30, genders: [1, 2, 3] };
+
+      const result = await service.getFilteredEvents('userId', filters);
+
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'event.startAge >= :minAge',
+        { minAge: 18 },
+      );
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'event.endAge <= :maxAge',
+        { maxAge: 30 },
+      );
+      expect(result).toEqual([mockEventList, mockTotal]);
+    });
+
+    it('should filter events by cities', async () => {
+      const mockQueryBuilder = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue(mockEventList),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest
+          .fn()
+          .mockResolvedValue([mockEventList, mockTotal]),
+      };
+
+      jest
+        .spyOn(mockEventRepository, 'createQueryBuilder')
+        .mockReturnValue(mockQueryBuilder as any);
+
+      const filters: FilterDTO = {
+        cities: ['35390', '61200'],
+        genders: [1, 2, 3],
+      };
+
+      const result = await service.getFilteredEvents('userId', filters);
+
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'event.city IN (:...cities)',
+        { cities: ['35390', '61200'] },
+      );
+      expect(result).toEqual([mockEventList, mockTotal]);
+    });
+  });
 });
 
 export const mockEventService = {
   findById: jest.fn().mockResolvedValue(mockCreateEventDTO[1]),
   createEvent: jest.fn().mockResolvedValue(new EventDB()),
-  getEventById: jest.fn().mockResolvedValue(new EventDB()),
-  getAllEvents: jest.fn().mockResolvedValue(mockEventList),
+  getEventById: jest.fn().mockResolvedValue(mockCreateEventDTO[1]),
+  getAllActiveEventsByPopularity: jest.fn().mockResolvedValue(mockEventList),
   getHostingEvents: jest.fn().mockResolvedValue(mockEventList),
   getParticipatingEvents: jest.fn().mockResolvedValue(mockEventList),
   addUserToEvent: jest.fn().mockResolvedValue(new EventDB()),
   getUpcomingAndLiveEvents: jest.fn().mockResolvedValue(mockEventList),
   removeUserFromEvent: jest.fn().mockResolvedValue(new EventDB()),
+  fyPageAlgo: jest.fn().mockResolvedValue(mockEventList),
+  getFriendsEvents: jest.fn().mockResolvedValue(mockEventList),
+  setEventAsClicked: jest.fn().mockResolvedValue({}),
+  friendMultiplier: jest.fn().mockResolvedValue(1),
+  calculateRelevance: jest.fn().mockResolvedValue(2),
+  calculateFrequencyMaps: jest
+    .fn()
+    .mockResolvedValue([new Map(), new Map(), new Map()]),
+  getFilteredEvents: jest.fn().mockResolvedValue([mockEventList, 2]),
 };
 
 export const mockSchedulerService = {
