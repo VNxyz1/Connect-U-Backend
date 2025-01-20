@@ -1,5 +1,5 @@
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Not, Repository } from 'typeorm';
+import { Brackets, In, Not, Repository } from 'typeorm';
 import { EventDB } from '../database/EventDB';
 import { CreateEventDTO } from './DTO/CreateEventDTO';
 import { UserDB } from '../database/UserDB';
@@ -179,7 +179,9 @@ export class EventService {
       status: StatusEnum.upcoming,
     });
 
-    queryBuilder.andWhere('event.type != :eventType', { eventType: 3 });
+    queryBuilder.andWhere('event.type != :eventType', {
+      eventType: EventtypeEnum.private,
+    });
 
     if (title) {
       queryBuilder.andWhere('event.title LIKE :title', { title: `%${title}%` });
@@ -188,13 +190,15 @@ export class EventService {
     if (filterFriends) {
       const friends = await this.friendsService.getFriends(userId);
       const friendsIds = friends.map((friend) => friend.id);
+
       queryBuilder
-        .leftJoin('event.host', 'host')
+        .leftJoin('event.host', 'host') // Ensure the host relationship is joined
         .andWhere(
-          'participants.id IN (:...friendsIds) OR host.id IN (:...friendsIds)',
-          {
-            friendsIds: friendsIds,
-          },
+          new Brackets((qb) => {
+            qb.where('participants.id IN (:...friendsIds)', {
+              friendsIds,
+            }).orWhere('host.id IN (:...friendsIds)', { friendsIds });
+          }),
         );
     }
 
