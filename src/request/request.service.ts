@@ -11,6 +11,7 @@ import { UserDB } from '../database/UserDB';
 import { EventDB } from '../database/EventDB';
 import { EventtypeEnum } from '../database/enums/EventtypeEnum';
 import { FriendService } from '../friend/friend.service';
+import { RequestEnum } from '../database/enums/RequestEnum';
 
 @Injectable()
 export class RequestService {
@@ -73,7 +74,7 @@ export class RequestService {
     const request = this.requestRepository.create();
     request.user = user;
     request.event = event;
-    request.type = 1;
+    request.type = RequestEnum.joinRequest;
 
     return await this.requestRepository.save(request);
   }
@@ -92,7 +93,9 @@ export class RequestService {
     });
     if (!user) throw new NotFoundException('User not found');
 
-    return user.requests.filter((request) => request.type === 1);
+    return user.requests.filter(
+      (request) => request.type === RequestEnum.joinRequest,
+    );
   }
 
   /**
@@ -117,7 +120,7 @@ export class RequestService {
     }
 
     return event.requests.filter(
-      (request) => request.type === 1 && !request.denied,
+      (request) => request.type === RequestEnum.joinRequest && !request.denied,
     );
   }
 
@@ -277,7 +280,11 @@ export class RequestService {
     }
 
     const existingRequest = await this.requestRepository.findOne({
-      where: { user: { id: user.id }, event: { id: eventId }, type: 2 },
+      where: {
+        user: { id: user.id },
+        event: { id: eventId },
+        type: RequestEnum.invite,
+      },
     });
 
     if (existingRequest) {
@@ -297,7 +304,7 @@ export class RequestService {
     const invite = this.requestRepository.create();
     invite.user = user;
     invite.event = event;
-    invite.type = 2;
+    invite.type = RequestEnum.invite;
 
     await this.requestRepository.save(invite);
 
@@ -325,7 +332,9 @@ export class RequestService {
       );
     }
 
-    return event.requests.filter((request) => request.type === 2);
+    return event.requests.filter(
+      (request) => request.type === RequestEnum.invite,
+    );
   }
 
   /**
@@ -342,7 +351,9 @@ export class RequestService {
     });
     if (!user) throw new NotFoundException('User not found');
 
-    return user.requests.filter((request) => request.type === 2);
+    return user.requests.filter(
+      (request) => request.type === RequestEnum.invite,
+    );
   }
 
   /**
