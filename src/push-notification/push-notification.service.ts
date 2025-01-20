@@ -4,7 +4,7 @@ import { MessageDB } from '../database/MessageDB';
 import { InjectRepository } from '@nestjs/typeorm';
 import { StatusEnum } from '../database/enums/StatusEnum';
 import { RequestDB } from '../database/RequestDB';
-import {RequestEnum} from '../database/enums/RequestEnum';
+import { RequestEnum } from '../database/enums/RequestEnum';
 
 @Injectable()
 export class PushNotificationService {
