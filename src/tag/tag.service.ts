@@ -30,10 +30,17 @@ export class TagService {
   }
 
   async getAllTags(tagSearch: string): Promise<TagDB[]> {
-    return this.tagRepository.find({
+    const tags = await this.tagRepository.find({
       where: {
         title: Like(`%${tagSearch.toLowerCase()}%`),
       },
+      relations: ['events', 'users'],
+    });
+
+    return tags.sort((a, b) => {
+      const countA = a.events.length + a.users.length;
+      const countB = b.events.length + b.users.length;
+      return countB - countA;
     });
   }
 }
