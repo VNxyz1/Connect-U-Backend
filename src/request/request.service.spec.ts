@@ -14,6 +14,7 @@ import {
 import { GenderEnum } from '../database/enums/GenderEnum';
 import { StatusEnum } from '../database/enums/StatusEnum';
 import { FriendService } from '../friend/friend.service';
+import { RequestEnum } from '../database/enums/RequestEnum';
 
 describe('RequestService', () => {
   let service: RequestService;
@@ -144,7 +145,7 @@ describe('RequestService', () => {
     it('should retrieve all requests made by a specific user', async () => {
       const mockRequest = {
         id: 1,
-        type: 1,
+        type: RequestEnum.joinRequest,
         denied: false,
       } as RequestDB;
 
@@ -190,7 +191,7 @@ describe('RequestService', () => {
       const mockRequest = {
         id: 1,
         user: mockUserList[0],
-        type: 1,
+        type: RequestEnum.joinRequest,
         denied: false,
       } as RequestDB;
 
@@ -413,7 +414,7 @@ describe('RequestService', () => {
         id: 1,
         user: mockUser,
         event: mockEvent,
-        type: 2,
+        type: RequestEnum.invite,
       } as RequestDB;
 
       eventRepository.findOne.mockResolvedValue(mockEvent);
@@ -456,8 +457,8 @@ describe('RequestService', () => {
         id: 'event123',
         host: { id: 'host123' },
         requests: [
-          { id: 1, type: 2, user: { id: 'user123' } },
-          { id: 2, type: 2, user: { id: 'user456' } },
+          { id: 1, type: RequestEnum.invite, user: { id: 'user123' } },
+          { id: 2, type: RequestEnum.invite, user: { id: 'user456' } },
         ],
       } as EventDB;
       eventRepository.findOne.mockResolvedValue(mockEvent);
@@ -577,7 +578,7 @@ describe('RequestService', () => {
     it('should retrieve all invitations for a specific user', async () => {
       const mockRequest = {
         id: 1,
-        type: 2,
+        type: RequestEnum.invite,
         denied: false,
       } as RequestDB;
 
@@ -650,7 +651,7 @@ describe('RequestService', () => {
         id: 1,
         user: { id: 'user123' },
         event: mockEvent,
-        type: 1, // Join request type
+        type: RequestEnum.joinRequest,
       } as RequestDB;
 
       eventRepository.findOne.mockResolvedValue(mockEvent);
@@ -704,7 +705,7 @@ export const mockRequestService = {
     user: { id: 'user123' },
     event: { id: 'event123', host: { id: 'host123' } },
     denied: false,
-    type: 1,
+    type: RequestEnum.joinRequest,
   }),
   getJoinRequestsByUser: jest.fn().mockResolvedValue([
     {
@@ -712,7 +713,7 @@ export const mockRequestService = {
       user: { id: 'user123' },
       event: { id: 'event123', host: { id: 'host123' } },
       denied: false,
-      type: 1,
+      type: RequestEnum.joinRequest,
     },
   ]),
   getJoinRequestsForEvent: jest.fn().mockResolvedValue([
@@ -721,7 +722,7 @@ export const mockRequestService = {
       user: { id: 'user123' },
       event: { id: 'event123', host: { id: 'host123' } },
       denied: false,
-      type: 1,
+      type: RequestEnum.joinRequest,
     },
   ]),
   acceptJoinRequest: jest.fn().mockResolvedValue({
@@ -729,28 +730,28 @@ export const mockRequestService = {
     user: { id: 'user123' },
     event: { id: 'event123', host: { id: 'host123' } },
     denied: false,
-    type: 1,
+    type: RequestEnum.joinRequest,
   }),
   denyJoinRequest: jest.fn().mockResolvedValue({
     id: 1,
     user: { id: 'user123' },
     event: { id: 'event123', host: { id: 'host123' } },
     denied: false,
-    type: 1,
+    type: RequestEnum.joinRequest,
   }),
   deleteJoinRequest: jest.fn().mockResolvedValue({
     id: 1,
     user: { id: 'user123' },
     event: { id: 'event123', host: { id: 'host123' } },
     denied: false,
-    type: 1,
+    type: RequestEnum.joinRequest,
   }),
   createInvitation: jest.fn().mockResolvedValue({
     id: 1,
     user: { id: 'user123' },
     event: { id: 'event123', host: { id: 'host123' } },
     denied: false,
-    type: 1,
+    type: RequestEnum.joinRequest,
   }),
   getInvitationsForEvent: jest.fn().mockResolvedValue([
     {
@@ -765,7 +766,7 @@ export const mockRequestService = {
       user: { id: 'user123' },
       event: { id: 'event123', host: { id: 'host123' } },
       denied: false,
-      type: 1,
+      type: RequestEnum.joinRequest,
     },
   ]),
   acceptInvitation: jest.fn().mockResolvedValue({
@@ -773,21 +774,21 @@ export const mockRequestService = {
     user: { id: 'user123' },
     event: { id: 'event123', host: { id: 'host123' } },
     denied: false,
-    type: 1,
+    type: RequestEnum.joinRequest,
   }),
   denyInvitation: jest.fn().mockResolvedValue({
     id: 1,
     user: { id: 'user123' },
     event: { id: 'event123', host: { id: 'host123' } },
     denied: false,
-    type: 1,
+    type: RequestEnum.joinRequest,
   }),
   deleteInvitation: jest.fn().mockResolvedValue({
     id: 1,
     user: { id: 'user123' },
     event: { id: 'event123', host: { id: 'host123' } },
     denied: false,
-    type: 1,
+    type: RequestEnum.joinRequest,
   }),
 };
 
