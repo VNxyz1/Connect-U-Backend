@@ -178,7 +178,7 @@ export class RequestService {
   async denyJoinRequest(requestId: number, userId: string) {
     const request = await this.requestRepository.findOne({
       where: { id: requestId },
-      relations: ['event', 'event.host'],
+      relations: ['event', 'event.host', 'user'],
     });
 
     if (!request) {
