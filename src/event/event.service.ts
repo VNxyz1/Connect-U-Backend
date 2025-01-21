@@ -66,7 +66,6 @@ export class EventService {
     newEvent.categories = categories;
     newEvent.preferredGenders = preferredGenders;
     newEvent.tags = eventTags;
-    newEvent.picture = 'empty.png';
     const savedEvent = await this.eventRepository.save(newEvent);
 
     await this.schedulerService.scheduleEventStatusUpdate(savedEvent);
@@ -184,7 +183,10 @@ export class EventService {
     });
 
     if (title) {
-      queryBuilder.andWhere('event.title LIKE :title', { title: `%${title}%` });
+      const searchTerm = '%' + title.split(' ').join('%') + '%';
+      queryBuilder.andWhere('LOWER(event.title) LIKE LOWER(:title)', {
+        title: searchTerm,
+      });
     }
 
     if (filterFriends) {
@@ -311,15 +313,25 @@ export class EventService {
    * @returns {Promise<EventDB[]>} - The events where the user is a participant.
    */
   async getParticipatingEvents(userId: string): Promise<EventDB[]> {
-    const events = await this.eventRepository
-      .createQueryBuilder('event')
-      .leftJoinAndSelect('event.participants', 'participant')
-      .leftJoinAndSelect('event.categories', 'category')
-      .leftJoinAndSelect('event.tags', 'tag')
-      .leftJoinAndSelect('event.host', 'host')
-      .where('participant.id = :userId', { userId: userId })
-      .orderBy('event.dateAndTime', 'ASC')
-      .getMany();
+    const events = await this.eventRepository.find({
+      where: {
+        participants: {
+          id: userId,
+        },
+      },
+      relations: {
+        participants: true,
+        host: true,
+        categories: true,
+        tags: true,
+      },
+      loadRelationIds: {
+        relations: ['participants'],
+      },
+      order: {
+        dateAndTime: 'ASC',
+      },
+    });
 
     return events.length > 0 ? events : [];
   }
@@ -556,13 +568,23 @@ export class EventService {
         select: ['id', 'categories', 'tags', 'city'],
         relations: { categories: true, tags: true },
       }),
-      this.eventRepository.find({
-        where: {
-          status: Not(In([StatusEnum.finished, StatusEnum.cancelled])),
-          type: Not(EventtypeEnum.private),
-          host: { id: Not(userId) },
-          participants: { id: Not(userId) },
-        },
+      await this.eventRepository.find({
+        where: [
+          {
+            status: Not(In([StatusEnum.finished, StatusEnum.cancelled])),
+            type: Not(EventtypeEnum.private),
+            host: { id: Not(userId) },
+            participants: false,
+          },
+          {
+            status: Not(In([StatusEnum.finished, StatusEnum.cancelled])),
+            type: Not(EventtypeEnum.private),
+            host: { id: Not(userId) },
+            participants: {
+              id: Not(userId),
+            },
+          },
+        ],
         select: {
           participantsNumber: true,
           participants: true,
@@ -577,7 +599,12 @@ export class EventService {
           type: true,
           tags: true,
         },
-        relations: { categories: true, tags: true, participants: true },
+        relations: {
+          categories: true,
+          tags: true,
+          participants: true,
+          host: true,
+        },
       }),
       this.getFriendsEvents(userId),
     ]);
@@ -590,8 +617,12 @@ export class EventService {
     const [clickedCategories, clickedTags, clickedCities] =
       this.calculateFrequencyMaps(clickedEvents);
 
+    const activeWithoutParticipating = activeEvents.filter((event) => {
+      return this.removeParticipatingEvents(event, userId);
+    });
+
     // Calculate relevance scores for all active events
-    const relevanceScores = activeEvents.map((event) => {
+    const relevanceScores = activeWithoutParticipating.map((event) => {
       const hpRelevance = this.calculateRelevance(
         event,
         hpCategories,
@@ -622,6 +653,13 @@ export class EventService {
     return relevanceScores
       .sort((a, b) => b.relevance - a.relevance)
       .map((item) => item.event);
+  }
+
+  private removeParticipatingEvents(event: EventDB, userId: string) {
+    const found = event.participants?.find((p) => p.id == userId);
+    if (!found) {
+      return event;
+    }
   }
 
   /**

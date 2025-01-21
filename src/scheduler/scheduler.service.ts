@@ -29,12 +29,15 @@ export class SchedulerService implements OnModuleInit {
 
     if (eventTime > new Date()) {
       schedule.scheduleJob(eventTime, async () => {
-        event.status = StatusEnum.live;
-        await this.eventRepository.save(event);
+        const updatedEvent = await this.eventRepository.findOne({
+          where: { id: event.id },
+        });
+        updatedEvent.status = StatusEnum.live;
+        await this.eventRepository.save(updatedEvent);
 
-        this.logger.log(`Event ${event.id} status updated to live.`);
+        this.logger.log(`Event ${updatedEvent.id} status updated to live.`);
 
-        await this.scheduleFinishedStatusUpdate(event);
+        await this.scheduleFinishedStatusUpdate(updatedEvent);
       });
     }
   }
