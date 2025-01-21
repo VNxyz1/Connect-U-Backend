@@ -66,7 +66,6 @@ export class EventService {
     newEvent.categories = categories;
     newEvent.preferredGenders = preferredGenders;
     newEvent.tags = eventTags;
-    newEvent.picture = 'empty.png';
     const savedEvent = await this.eventRepository.save(newEvent);
 
     await this.schedulerService.scheduleEventStatusUpdate(savedEvent);
@@ -184,7 +183,10 @@ export class EventService {
     });
 
     if (title) {
-      queryBuilder.andWhere('event.title LIKE :title', { title: `%${title}%` });
+      const searchTerm = '%' + title.split(' ').join('%') + '%';
+      queryBuilder.andWhere('LOWER(event.title) LIKE LOWER(:title)', {
+        title: searchTerm,
+      });
     }
 
     if (filterFriends) {
