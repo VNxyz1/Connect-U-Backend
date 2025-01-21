@@ -68,7 +68,7 @@ export class EventService {
     newEvent.tags = eventTags;
     const savedEvent = await this.eventRepository.save(newEvent);
 
-    await this.schedulerService.scheduleEventStatusUpdate(savedEvent.id);
+    await this.schedulerService.scheduleEventStatusUpdate(savedEvent);
 
     return savedEvent;
   }

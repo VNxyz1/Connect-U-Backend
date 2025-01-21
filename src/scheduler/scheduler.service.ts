@@ -22,35 +22,31 @@ export class SchedulerService implements OnModuleInit {
 
   /**
    * Schedules an event status update at the specified time.
-   * @param eventId The event ID to schedule.
+   * @param event The event to schedule.
    */
-  async scheduleEventStatusUpdate(eventId: string): Promise<void> {
-    const event = await this.eventRepository.findOne({
-      where: { id: eventId },
-    });
-
+  async scheduleEventStatusUpdate(event: EventDB): Promise<void> {
     const eventTime = new Date(event.dateAndTime);
 
     if (eventTime > new Date()) {
       schedule.scheduleJob(eventTime, async () => {
-        event.status = StatusEnum.live;
-        await this.eventRepository.save(event);
+        const updatedEvent = await this.eventRepository.findOne({
+          where: { id: event.id },
+        });
+        updatedEvent.status = StatusEnum.live;
+        await this.eventRepository.save(updatedEvent);
 
-        this.logger.log(`Event ${event.id} status updated to live.`);
+        this.logger.log(`Event ${updatedEvent.id} status updated to live.`);
 
-        await this.scheduleFinishedStatusUpdate(event.id);
+        await this.scheduleFinishedStatusUpdate(updatedEvent);
       });
     }
   }
 
   /**
    * Schedules the 'finished' status update 24 hours after the event becomes live.
-   * @param eventId The event to schedule the 'finished' status update for.
+   * @param event The event to schedule the 'finished' status update for.
    */
-  async scheduleFinishedStatusUpdate(eventId: string): Promise<void> {
-    const event = await this.eventRepository.findOne({
-      where: { id: eventId },
-    });
+  async scheduleFinishedStatusUpdate(event: EventDB): Promise<void> {
     const finishedTime = new Date(event.dateAndTime);
     finishedTime.setHours(finishedTime.getHours() + 24);
 
@@ -88,13 +84,13 @@ export class SchedulerService implements OnModuleInit {
         if (eventTime <= now && finishedTime > now) {
           event.status = StatusEnum.live;
           await this.eventRepository.save(event);
-          await this.scheduleFinishedStatusUpdate(event.id);
+          await this.scheduleFinishedStatusUpdate(event);
         } else if (finishedTime <= now) {
           event.status = StatusEnum.finished;
           await this.eventRepository.save(event);
           await this.deleteEventRequests(event.id);
         } else {
-          await this.scheduleEventStatusUpdate(event.id);
+          await this.scheduleEventStatusUpdate(event);
         }
       } else if (event.status === StatusEnum.live) {
         if (finishedTime <= now) {
@@ -102,7 +98,7 @@ export class SchedulerService implements OnModuleInit {
           await this.eventRepository.save(event);
           await this.deleteEventRequests(event.id);
         } else {
-          await this.scheduleFinishedStatusUpdate(event.id);
+          await this.scheduleFinishedStatusUpdate(event);
         }
       }
     }

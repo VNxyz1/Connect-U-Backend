@@ -265,7 +265,6 @@ describe('EventService', () => {
   it('should create a new event', async () => {
     const newEvent = {
       ...mockCreateEventDTO,
-      id: '123',
       host: mockUser,
       categories: mockCategoryList,
       preferredGenders: mockGenderList,
@@ -285,7 +284,7 @@ describe('EventService', () => {
     expect(mockEventRepository.create).toHaveBeenCalledWith();
     expect(mockEventRepository.save).toHaveBeenCalledWith(newEvent);
     expect(mockSchedulerService.scheduleEventStatusUpdate).toHaveBeenCalledWith(
-      newEvent.id,
+      newEvent,
     );
     expect(result).toEqual(newEvent);
   });
