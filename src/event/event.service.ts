@@ -607,8 +607,12 @@ export class EventService {
     const [clickedCategories, clickedTags, clickedCities] =
       this.calculateFrequencyMaps(clickedEvents);
 
+    const activeWithoutParticipating = activeEvents.filter((event) => {
+      return this.removeParticipatingEvents(event, userId);
+    });
+
     // Calculate relevance scores for all active events
-    const relevanceScores = activeEvents.map((event) => {
+    const relevanceScores = activeWithoutParticipating.map((event) => {
       const hpRelevance = this.calculateRelevance(
         event,
         hpCategories,
@@ -639,6 +643,13 @@ export class EventService {
     return relevanceScores
       .sort((a, b) => b.relevance - a.relevance)
       .map((item) => item.event);
+  }
+
+  private removeParticipatingEvents(event: EventDB, userId: string) {
+    const found = event.participants?.find((p) => p.id == userId);
+    if (!found) {
+      return event;
+    }
   }
 
   /**
