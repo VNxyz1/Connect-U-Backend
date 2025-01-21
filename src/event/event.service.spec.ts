@@ -265,6 +265,7 @@ describe('EventService', () => {
   it('should create a new event', async () => {
     const newEvent = {
       ...mockCreateEventDTO,
+      id: '123',
       host: mockUser,
       categories: mockCategoryList,
       preferredGenders: mockGenderList,
@@ -284,7 +285,7 @@ describe('EventService', () => {
     expect(mockEventRepository.create).toHaveBeenCalledWith();
     expect(mockEventRepository.save).toHaveBeenCalledWith(newEvent);
     expect(mockSchedulerService.scheduleEventStatusUpdate).toHaveBeenCalledWith(
-      newEvent,
+      newEvent.id,
     );
     expect(result).toEqual(newEvent);
   });
@@ -655,10 +656,25 @@ describe('EventService', () => {
 
       const result = await service.getFilteredEvents('userId', filters);
 
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        'event.title LIKE :title',
-        { title: '%Tech Conference%' },
+      // Verify each `andWhere` call in order
+      expect(mockQueryBuilder.andWhere).toHaveBeenNthCalledWith(
+        1,
+        'event.status = :status',
+        { status: 1 },
       );
+
+      expect(mockQueryBuilder.andWhere).toHaveBeenNthCalledWith(
+        2,
+        'event.type != :eventType',
+        { eventType: 3 },
+      );
+
+      expect(mockQueryBuilder.andWhere).toHaveBeenNthCalledWith(
+        3,
+        'LOWER(event.title) LIKE LOWER(:title)',
+        { title: '%Tech%Conference%' },
+      );
+
       expect(result).toEqual([mockEventList, mockTotal]);
     });
 
