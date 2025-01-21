@@ -49,7 +49,7 @@ export class EventDB {
   @Column({ default: 0 })
   type: number;
 
-  @Column({ default: '' })
+  @Column({ default: 'empty.png' })
   picture: string;
 
   @Column({ default: false })
