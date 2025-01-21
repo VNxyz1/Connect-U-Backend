@@ -313,15 +313,25 @@ export class EventService {
    * @returns {Promise<EventDB[]>} - The events where the user is a participant.
    */
   async getParticipatingEvents(userId: string): Promise<EventDB[]> {
-    const events = await this.eventRepository
-      .createQueryBuilder('event')
-      .leftJoinAndSelect('event.participants', 'participant')
-      .leftJoinAndSelect('event.categories', 'category')
-      .leftJoinAndSelect('event.tags', 'tag')
-      .leftJoinAndSelect('event.host', 'host')
-      .where('participant.id = :userId', { userId: userId })
-      .orderBy('event.dateAndTime', 'ASC')
-      .getMany();
+    const events = await this.eventRepository.find({
+      where: {
+        participants: {
+          id: userId,
+        },
+      },
+      relations: {
+        participants: true,
+        host: true,
+        categories: true,
+        tags: true,
+      },
+      loadRelationIds: {
+        relations: ['participants'],
+      },
+      order: {
+        dateAndTime: 'ASC',
+      },
+    });
 
     return events.length > 0 ? events : [];
   }

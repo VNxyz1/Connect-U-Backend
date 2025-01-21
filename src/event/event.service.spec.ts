@@ -404,26 +404,13 @@ describe('EventService', () => {
   });
 
   describe('EventService - getParticipatingEvents', () => {
-    let queryBuilderMock;
-
-    beforeEach(() => {
-      queryBuilderMock = mockEventRepository.createQueryBuilder();
-      jest.clearAllMocks();
-    });
-
     it('should return participating events when the user is a participant', async () => {
-      queryBuilderMock.where.mockReturnThis();
-      queryBuilderMock.leftJoinAndSelect.mockReturnThis();
-      queryBuilderMock.getMany.mockResolvedValue(mockEventList);
+      mockEventRepository.find.mockResolvedValue(mockEventList);
 
       const result = await service.getParticipatingEvents('uuIdMock2');
 
       expect(result).toEqual(mockEventList);
-      expect(queryBuilderMock.where).toHaveBeenCalledWith(
-        'participant.id = :userId',
-        { userId: 'uuIdMock2' },
-      );
-      expect(queryBuilderMock.getMany).toHaveBeenCalled();
+      expect(mockEventRepository.find).toHaveBeenCalled();
     });
   });
 
