@@ -558,13 +558,23 @@ export class EventService {
         select: ['id', 'categories', 'tags', 'city'],
         relations: { categories: true, tags: true },
       }),
-      this.eventRepository.find({
-        where: {
-          status: Not(In([StatusEnum.finished, StatusEnum.cancelled])),
-          type: Not(EventtypeEnum.private),
-          host: { id: Not(userId) },
-          participants: { id: Not(userId) },
-        },
+      await this.eventRepository.find({
+        where: [
+          {
+            status: Not(In([StatusEnum.finished, StatusEnum.cancelled])),
+            type: Not(EventtypeEnum.private),
+            host: { id: Not(userId) },
+            participants: false,
+          },
+          {
+            status: Not(In([StatusEnum.finished, StatusEnum.cancelled])),
+            type: Not(EventtypeEnum.private),
+            host: { id: Not(userId) },
+            participants: {
+              id: Not(userId),
+            },
+          },
+        ],
         select: {
           participantsNumber: true,
           participants: true,
@@ -579,7 +589,12 @@ export class EventService {
           type: true,
           tags: true,
         },
-        relations: { categories: true, tags: true, participants: true },
+        relations: {
+          categories: true,
+          tags: true,
+          participants: true,
+          host: true,
+        },
       }),
       this.getFriendsEvents(userId),
     ]);
