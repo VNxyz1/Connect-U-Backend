@@ -63,8 +63,8 @@ export class UtilsService {
    */
   validateUserAge(birthday: Date, minAge: number): boolean {
     if (minAge) {
-    const age = this.calculateAge(birthday);
-    return age >= minAge;
+      const age = this.calculateAge(birthday);
+      return age >= minAge;
     } else {
       return true;
     }
@@ -80,8 +80,7 @@ export class UtilsService {
     if (maxAge) {
       const age = this.calculateAge(birthday);
       return age <= maxAge;
-    }
-    else {
+    } else {
       return true;
     }
   }
