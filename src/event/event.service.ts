@@ -194,7 +194,7 @@ export class EventService {
       const friendsIds = friends.map((friend) => friend.id);
 
       queryBuilder
-        .leftJoin('event.host', 'host') // Ensure the host relationship is joined
+        .leftJoin('event.host', 'host')
         .andWhere(
           new Brackets((qb) => {
             qb.where('participants.id IN (:...friendsIds)', {
@@ -249,16 +249,24 @@ export class EventService {
         .andWhere('preferredGender.id IS NOT NULL');
     }
 
-    if (isPublic === false) {
-      queryBuilder.andWhere('event.type != :eventType', {
-        eventType: EventtypeEnum.public,
-      });
-    }
-
-    if (isHalfPublic === false) {
-      queryBuilder.andWhere('event.type != :eventType', {
-        eventType: EventtypeEnum.halfPrivate,
-      });
+    if (isPublic === false || isHalfPublic === false) {
+      queryBuilder.andWhere(
+        new Brackets((qb) => {
+          if (isPublic === false) {
+            qb.andWhere('event.type != :publicType', {
+              publicType: EventtypeEnum.public,
+            });
+          }
+          if (isHalfPublic === false) {
+            qb.andWhere('event.type != :halfPrivateType', {
+              halfPrivateType: EventtypeEnum.halfPrivate,
+            });
+          }
+          qb.andWhere('event.type != :privateType', {
+            privateType: EventtypeEnum.private,
+          });
+        }),
+      );
     }
 
     if (isOnline === false) {
