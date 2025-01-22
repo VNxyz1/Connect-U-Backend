@@ -62,8 +62,12 @@ export class UtilsService {
    * @returns {boolean} - True if the user's age is greater than or equal to the minimum age, otherwise false.
    */
   validateUserAge(birthday: Date, minAge: number): boolean {
+    if (minAge) {
     const age = this.calculateAge(birthday);
     return age >= minAge;
+    } else {
+      return true;
+    }
   }
 
   /**
@@ -73,8 +77,13 @@ export class UtilsService {
    * @returns {boolean} - True if the user's age is less than or equal to the maximum age, otherwise false.
    */
   validateUserAgeMax(birthday: Date, maxAge: number): boolean {
-    const age = this.calculateAge(birthday);
-    return age <= maxAge;
+    if (maxAge) {
+      const age = this.calculateAge(birthday);
+      return age <= maxAge;
+    }
+    else {
+      return true;
+    }
   }
 
   /**

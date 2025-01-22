@@ -193,15 +193,13 @@ export class EventService {
       const friends = await this.friendsService.getFriends(userId);
       const friendsIds = friends.map((friend) => friend.id);
 
-      queryBuilder
-        .leftJoin('event.host', 'host')
-        .andWhere(
-          new Brackets((qb) => {
-            qb.where('participants.id IN (:...friendsIds)', {
-              friendsIds,
-            }).orWhere('host.id IN (:...friendsIds)', { friendsIds });
-          }),
-        );
+      queryBuilder.leftJoin('event.host', 'host').andWhere(
+        new Brackets((qb) => {
+          qb.where('participants.id IN (:...friendsIds)', {
+            friendsIds,
+          }).orWhere('host.id IN (:...friendsIds)', { friendsIds });
+        }),
+      );
     }
 
     if (dates?.length) {
