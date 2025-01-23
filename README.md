@@ -17,6 +17,7 @@
   <a href="https://jestjs.io/" target="_blank"><img src="https://img.shields.io/badge/Jest-C21325?logo=jest&logoColor=fff"/></a>
   <a href="https://eslint.org/" target="_blank"><img src="https://img.shields.io/badge/eslint-3A33D1?logo=eslint&logoColor=white"/></a>
   <a href="https://prettier.io/" target="_blank"><img src="https://img.shields.io/badge/prettier-1A2C34?logo=prettier&logoColor=F7BA3E"/></a>
+  <a href="https://swagger.io/" target="_blank"><img src="https://img.shields.io/badge/-Swagger-%23Clojure?logo=swagger&logoColor=white"/></a>
   <a href="https://jwt.io/" target="_blank"><img src="https://img.shields.io/badge/JWT-000000?logo=JSON%20web%20tokens&logoColor=white"/></a>
   <a href="https://connect-u.site/" target="_blank"><img src="https://img.shields.io/website-up-down-green-red/http/argo.connect-u.site.svg"/></a>
   <a href="https://dev.connect-u.site/api/docs" target="_blank"><img src="https://img.shields.io/website-up-down-green-red/http/argo.connect-u.site.svg?label=OpenAPI%20Docs"/></a>
@@ -34,6 +35,7 @@
         <li><a href="#environments">Environments</a></li>
         <li><a href="#test-data">Test data</a></li>
         <li><a href="#start-the-project">Start the project</a></li>
+        <li><a href="#api-documentation">API Documentation</a></li>
         <li><a href="#run-tests">Run tests</a></li>
         <li><a href="#linter">Linter</a></li>
         <li><a href="#format-code">Format code</a></li>
