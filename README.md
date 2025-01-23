@@ -4,7 +4,7 @@
 
 
 
-  <p align="center">The Backend of <a href="https://connect-u.site/" target="_blank">Connect-U</a>. Event planning made easy ‒ for private meetups or public events. <br/> Plan, Share, Connect.</p>
+<p align="center">The Backend of <a href="https://connect-u.site/" target="_blank">Connect-U</a>. Event planning made easy ‒ for private meetups or public events. <br/> Plan, Share, Connect.</p>
 
 
 <p align="center">
@@ -47,6 +47,12 @@
       </ul>
     </li>
     <li><a href="#file-structure">File structure</a></li>
+    <li>
+      <a href="#contributing">File structure</a>
+    </li>
+    <li>
+      <a href="#license">File structure</a>
+    </li>
   </ol>
 </details>
 
@@ -151,3 +157,13 @@ Connect-U-Backend
     │   ...
     
 ```
+
+## Contributing
+
+<a href="https://github.com/VNxyz1/Connect-U-Backend/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=VNxyz1/Connect-U-Backend" alt="contrib.rocks image" />
+</a>
+
+## License
+
+Distributed under the MIT License. See `LICENSE.md` for more information.
