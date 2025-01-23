@@ -48,10 +48,10 @@
     </li>
     <li><a href="#file-structure">File structure</a></li>
     <li>
-      <a href="#contributing">File structure</a>
+      <a href="#contributing">Contributing</a>
     </li>
     <li>
-      <a href="#license">File structure</a>
+      <a href="#license">License</a>
     </li>
   </ol>
 </details>
