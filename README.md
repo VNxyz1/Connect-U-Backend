@@ -95,6 +95,14 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
+### API Documentation
+To access the API Documentation just start the project and enter the address and port it is running on, with the route `/docs`.
+
+```
+# example
+localhost:3000/docs
+```
+
 ### Run tests
 
 ```bash
