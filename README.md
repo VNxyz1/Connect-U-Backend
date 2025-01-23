@@ -24,7 +24,32 @@
 </p>
 
 
-## Description
+<!-- TABLE OF CONTENTS -->
+<details>
+  <summary>Table of Contents</summary>
+  <ol>
+    <li>
+      <a href="#project-setup">Project setup</a>
+      <ul>
+        <li><a href="#environments">Environments</a></li>
+        <li><a href="#test-data">Test data</a></li>
+        <li><a href="#start-the-project">Start the project</a></li>
+        <li><a href="#run-tests">Run tests</a></li>
+        <li><a href="#linter">Linter</a></li>
+        <li><a href="#format-code">Format code</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="#build">Build</a>
+      <ul>
+        <li><a href="#locally">Locally</a></li>
+        <li><a href="#docker">Docker</a></li>
+      </ul>
+    </li>
+    <li><a href="#file-structure">File structure</a></li>
+  </ol>
+</details>
+
 
 
 ## Project setup
@@ -35,7 +60,21 @@ $ npm install -g @nestjs/cli
 $ npm install
 ```
 
-## Compile and run the project
+### Environments
+If started locally, the Project will use the environment defined in the `.env.development` file. If you want to make changes to the environment, just follow the guide in the `.env.development` and `.env.example` files.
+
+### Test data
+If you need test data to explore some functionalities, just set the environment variable `POPULATE_DB=true`, and specify how many users and events you want.
+
+```dotenv
+# fakerservice: Populates the DB with user- and event-data
+POPULATE_DB=true
+DESIRED_USERS=500
+DESIRED_EVENTS=200
+```
+Friend relations and event participation, as well as clicks on events will automatically be added to the database.
+
+### Start the project
 
 ```bash
 # development
@@ -50,14 +89,27 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
-## Run tests
+### Run tests
 
 ```bash
 # unit tests
 $ npm run test
 ```
 
+### Linter
+
+```bash
+$ npm run lint
+```
+
+### Format code
+
+```bash
+$ npm run format
+```
+
 ## Build
+### Locally
 Run `npm run build` to build the project. The build artifacts will be stored in the `dist/` directory.
 
 ### Docker
