@@ -298,7 +298,8 @@ export class RequestController {
     @Param('requestId') requestId: number,
     @User() currentUser: UserDB,
   ): Promise<OkDTO> {
-    await this.requestService.deleteInvitation(requestId, currentUser.id);
+    const request = await this.requestService.deleteInvitation(requestId, currentUser.id);
+    this.socketService.emitInvitationStatusChanged(request.user.id);
     return new OkDTO(true, 'Invitation successfully deleted');
   }
 }

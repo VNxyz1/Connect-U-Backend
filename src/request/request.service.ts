@@ -367,7 +367,7 @@ export class RequestService {
   async deleteInvitation(requestId: number, userId: string) {
     const request = await this.requestRepository.findOne({
       where: { id: requestId },
-      relations: ['event', 'event.host'],
+      relations: ['event', 'event.host', 'user'],
     });
     if (!request) {
       throw new NotFoundException('Request not found');
@@ -377,7 +377,7 @@ export class RequestService {
         'You are not the host and cant delete invitations',
       );
     }
-    await this.requestRepository.remove(request);
+    return await this.requestRepository.remove(request);
   }
 
   /**
