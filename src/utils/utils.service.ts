@@ -128,12 +128,13 @@ export class UtilsService {
       }
     }
 
-    if (![StatusEnum.live, StatusEnum.upcoming].includes(event.status)) {
+    if (
+      ![StatusEnum.live, StatusEnum.upcoming, undefined].includes(event.status)
+    ) {
       throw new BadRequestException(
         'The Event is outdated or not in a valid state.',
       );
     }
-
     return true;
   }
 

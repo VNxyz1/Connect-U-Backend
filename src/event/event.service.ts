@@ -16,6 +16,7 @@ import ViewEventEnum from '../database/enums/ViewEventEnum';
 import ViewedEventsDB from '../database/ViewedEventsDB';
 import { EventtypeEnum } from '../database/enums/EventtypeEnum';
 import { FriendService } from '../friend/friend.service';
+import { UtilsService } from '../utils/utils.service';
 
 export class EventService {
   constructor(
@@ -29,6 +30,7 @@ export class EventService {
     private readonly veRepository: Repository<ViewedEventsDB>,
     private readonly schedulerService: SchedulerService,
     private readonly friendsService: FriendService,
+    private readonly utilsService: UtilsService,
   ) {}
 
   /**
@@ -66,6 +68,9 @@ export class EventService {
     newEvent.categories = categories;
     newEvent.preferredGenders = preferredGenders;
     newEvent.tags = eventTags;
+
+    await this.utilsService.isUserAllowedToJoinEvent(user, newEvent);
+
     const savedEvent = await this.eventRepository.save(newEvent);
 
     await this.schedulerService.scheduleEventStatusUpdate(savedEvent);

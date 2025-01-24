@@ -17,6 +17,8 @@ import { ListEntryDB } from '../database/ListEntryDB';
 import { SchedulerService } from '../scheduler/scheduler.service';
 import { FilterDTO } from './DTO/FilterDTO';
 import ViewedEventsDB from '../database/ViewedEventsDB';
+import { UtilsService } from '../utils/utils.service';
+import { mockUtilsService } from '../utils/utils.service.spec';
 
 export const mockEventRepository = {
   create: jest.fn(),
@@ -245,6 +247,10 @@ describe('EventService', () => {
         {
           provide: SchedulerService,
           useValue: mockSchedulerService,
+        },
+        {
+          provide: UtilsService,
+          useValue: mockUtilsService,
         },
       ],
     }).compile();
