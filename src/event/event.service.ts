@@ -314,7 +314,20 @@ export class EventService {
       throw new NotFoundException('Events not found');
     }
 
-    return [events, total];
+    const eventsWithCategories = await Promise.all(
+      events.map((event) =>
+        this.eventRepository.findOne({
+          where: { id: event.id },
+          relations: {
+            categories: true,
+            participants: true,
+            tags: true,
+          },
+        }),
+      ),
+    );
+
+    return [eventsWithCategories, total];
   }
 
   /**
