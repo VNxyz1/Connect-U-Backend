@@ -62,8 +62,12 @@ export class UtilsService {
    * @returns {boolean} - True if the user's age is greater than or equal to the minimum age, otherwise false.
    */
   validateUserAge(birthday: Date, minAge: number): boolean {
-    const age = this.calculateAge(birthday);
-    return age >= minAge;
+    if (minAge) {
+      const age = this.calculateAge(birthday);
+      return age >= minAge;
+    } else {
+      return true;
+    }
   }
 
   /**
@@ -73,8 +77,12 @@ export class UtilsService {
    * @returns {boolean} - True if the user's age is less than or equal to the maximum age, otherwise false.
    */
   validateUserAgeMax(birthday: Date, maxAge: number): boolean {
-    const age = this.calculateAge(birthday);
-    return age <= maxAge;
+    if (maxAge) {
+      const age = this.calculateAge(birthday);
+      return age <= maxAge;
+    } else {
+      return true;
+    }
   }
 
   /**
@@ -120,12 +128,13 @@ export class UtilsService {
       }
     }
 
-    if (![StatusEnum.live, StatusEnum.upcoming].includes(event.status)) {
+    if (
+      ![StatusEnum.live, StatusEnum.upcoming, undefined].includes(event.status)
+    ) {
       throw new BadRequestException(
         'The Event is outdated or not in a valid state.',
       );
     }
-
     return true;
   }
 

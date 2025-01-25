@@ -73,6 +73,10 @@ export class ListService {
       throw new NotFoundException('List not found');
     }
 
+    if (list?.listEntries) {
+      list.listEntries.sort((a, b) => a.id - b.id);
+    }
+
     return list;
   }
 

@@ -17,6 +17,8 @@ import { UtilsService } from '../utils/utils.service';
 import { EventDB } from '../database/EventDB';
 import { EventService } from '../event/event.service';
 import { RequestService } from '../request/request.service';
+import { SocketGateway } from '../socket/socket.gateway';
+import { UserService } from '../user/user.service';
 
 @ApiTags('friends')
 @Controller('friends')
@@ -26,6 +28,8 @@ export class FriendsController {
     private readonly utilsService: UtilsService,
     private readonly eventService: EventService,
     private readonly requestService: RequestService,
+    private readonly userService: UserService,
+    private readonly sockets: SocketGateway,
   ) {}
 
   @ApiResponse({
@@ -55,6 +59,8 @@ export class FriendsController {
       throw new BadRequestException('You cannot befriend yourself');
     }
     await this.friendService.createFriend(user, username);
+    const newFriend = await this.userService.findByUsername(username);
+    this.sockets.emitFriendListUpdate(newFriend.id);
     return new OkDTO(true, 'Friend was added');
   }
 

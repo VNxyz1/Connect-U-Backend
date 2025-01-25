@@ -4,7 +4,7 @@
 
 
 
-  <p align="center">The Backend of <a href="https://connect-u.site/" target="_blank">Connect-U</a>. Event planning made easy ‒ for private meetups or public events. <br/> Plan, Share, Connect.</p>
+<p align="center">The Backend of <a href="https://connect-u.site/" target="_blank">Connect-U</a>. Event planning made easy ‒ for private meetups or public events. <br/> Plan, Share, Connect.</p>
 
 
 <p align="center">
@@ -15,13 +15,49 @@
   <a href="https://www.npmjs.com/" target="_blank"><img src="https://img.shields.io/badge/npm-CB3837?logo=npm&logoColor=fff"/></a>
   <a href="https://typeorm.io/" target="_blank"><img src="https://img.shields.io/badge/TypeORM-FE0803?logo=typeorm&logoColor=fff"/></a>
   <a href="https://jestjs.io/" target="_blank"><img src="https://img.shields.io/badge/Jest-C21325?logo=jest&logoColor=fff"/></a>
+  <a href="https://eslint.org/" target="_blank"><img src="https://img.shields.io/badge/eslint-3A33D1?logo=eslint&logoColor=white"/></a>
+  <a href="https://prettier.io/" target="_blank"><img src="https://img.shields.io/badge/prettier-1A2C34?logo=prettier&logoColor=F7BA3E"/></a>
+  <a href="https://swagger.io/" target="_blank"><img src="https://img.shields.io/badge/-Swagger-%23Clojure?logo=swagger&logoColor=white"/></a>
+  <a href="https://jwt.io/" target="_blank"><img src="https://img.shields.io/badge/JWT-000000?logo=JSON%20web%20tokens&logoColor=white"/></a>
   <a href="https://connect-u.site/" target="_blank"><img src="https://img.shields.io/website-up-down-green-red/http/argo.connect-u.site.svg"/></a>
   <a href="https://dev.connect-u.site/api/docs" target="_blank"><img src="https://img.shields.io/website-up-down-green-red/http/argo.connect-u.site.svg?label=OpenAPI%20Docs"/></a>
   <a href="https://github.com/VNxyz1/Connect-U-Backend/pkgs/container/connect-u-backend" target="_blank"><img src="https://img.shields.io/badge/Docker%20images-2496ED?logo=docker&logoColor=fff"/></a>
 </p>
 
 
-## Description
+<!-- TABLE OF CONTENTS -->
+<details>
+  <summary>Table of Contents</summary>
+  <ol>
+    <li>
+      <a href="#project-setup">Project setup</a>
+      <ul>
+        <li><a href="#environments">Environments</a></li>
+        <li><a href="#test-data">Test data</a></li>
+        <li><a href="#start-the-project">Start the project</a></li>
+        <li><a href="#api-documentation">API Documentation</a></li>
+        <li><a href="#run-tests">Run tests</a></li>
+        <li><a href="#linter">Linter</a></li>
+        <li><a href="#format-code">Format code</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="#build">Build</a>
+      <ul>
+        <li><a href="#locally">Locally</a></li>
+        <li><a href="#docker">Docker</a></li>
+      </ul>
+    </li>
+    <li><a href="#file-structure">File structure</a></li>
+    <li>
+      <a href="#contributing">Contributing</a>
+    </li>
+    <li>
+      <a href="#license">License</a>
+    </li>
+  </ol>
+</details>
+
 
 
 ## Project setup
@@ -32,7 +68,21 @@ $ npm install -g @nestjs/cli
 $ npm install
 ```
 
-## Compile and run the project
+### Environments
+If started locally, the Project will use the environment defined in the `.env.development` file. If you want to make changes to the environment, just follow the guide in the `.env.development` and `.env.example` files.
+
+### Test data
+If you need test data to explore some functionalities, just set the environment variable `POPULATE_DB=true`, and specify how many users and events you want.
+
+```dotenv
+# fakerservice: Populates the DB with user- and event-data
+POPULATE_DB=true
+DESIRED_USERS=500
+DESIRED_EVENTS=200
+```
+Friend relations and event participation, as well as clicks on events will automatically be added to the database.
+
+### Start the project
 
 ```bash
 # development
@@ -47,14 +97,35 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
-## Run tests
+### API Documentation
+To access the API Documentation just start the project and enter the address and port it is running on, with the route `/docs`.
+
+```
+# example
+localhost:3000/docs
+```
+
+### Run tests
 
 ```bash
 # unit tests
 $ npm run test
 ```
 
+### Linter
+
+```bash
+$ npm run lint
+```
+
+### Format code
+
+```bash
+$ npm run format
+```
+
 ## Build
+### Locally
 Run `npm run build` to build the project. The build artifacts will be stored in the `dist/` directory.
 
 ### Docker
@@ -96,3 +167,13 @@ Connect-U-Backend
     │   ...
     
 ```
+
+## Contributing
+
+<a href="https://github.com/VNxyz1/Connect-U-Backend/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=VNxyz1/Connect-U-Backend" alt="contrib.rocks image" />
+</a>
+
+## License
+
+Distributed under the MIT License. See `LICENSE.md` for more information.
