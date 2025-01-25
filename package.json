@@ -18,7 +18,8 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test-ci": "jest --ci --coverage"
   },
   "dependencies": {
     "@jorgebodega/typeorm-seeding": "^7.1.0",
@@ -85,9 +86,10 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "**/*.(controller|service|gateway).ts"
     ],
     "coverageDirectory": "../coverage",
+    "coverageReporters": ["json-summary"],
     "testEnvironment": "node"
   }
 }
