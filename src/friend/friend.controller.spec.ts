@@ -16,6 +16,7 @@ import { EventService } from '../event/event.service';
 import { mockEventService } from '../event/event.service.spec';
 import { RequestService } from '../request/request.service';
 import { mockRequestService } from '../request/request.service.spec';
+import { SocketGateway } from '../socket/socket.gateway';
 
 describe('FriendsController', () => {
   let app: INestApplication;
@@ -26,6 +27,7 @@ describe('FriendsController', () => {
       controllers: [FriendsController],
       providers: [
         ...mockProviders,
+        SocketGateway,
         {
           provide: JwtService,
           useValue: {
