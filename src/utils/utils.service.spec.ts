@@ -335,4 +335,5 @@ export const mockUtilsService = {
   ),
 
   isHostOrParticipant: jest.fn(() => true),
+  isUserAllowedToJoinEvent: jest.fn(() => true),
 };

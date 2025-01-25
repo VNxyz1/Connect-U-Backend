@@ -16,6 +16,7 @@ import ViewEventEnum from '../database/enums/ViewEventEnum';
 import ViewedEventsDB from '../database/ViewedEventsDB';
 import { EventtypeEnum } from '../database/enums/EventtypeEnum';
 import { FriendService } from '../friend/friend.service';
+import { UtilsService } from '../utils/utils.service';
 
 export class EventService {
   constructor(
@@ -29,6 +30,7 @@ export class EventService {
     private readonly veRepository: Repository<ViewedEventsDB>,
     private readonly schedulerService: SchedulerService,
     private readonly friendsService: FriendService,
+    private readonly utilsService: UtilsService,
   ) {}
 
   /**
@@ -66,6 +68,9 @@ export class EventService {
     newEvent.categories = categories;
     newEvent.preferredGenders = preferredGenders;
     newEvent.tags = eventTags;
+
+    await this.utilsService.isUserAllowedToJoinEvent(user, newEvent);
+
     const savedEvent = await this.eventRepository.save(newEvent);
 
     await this.schedulerService.scheduleEventStatusUpdate(savedEvent);
@@ -193,15 +198,13 @@ export class EventService {
       const friends = await this.friendsService.getFriends(userId);
       const friendsIds = friends.map((friend) => friend.id);
 
-      queryBuilder
-        .leftJoin('event.host', 'host') // Ensure the host relationship is joined
-        .andWhere(
-          new Brackets((qb) => {
-            qb.where('participants.id IN (:...friendsIds)', {
-              friendsIds,
-            }).orWhere('host.id IN (:...friendsIds)', { friendsIds });
-          }),
-        );
+      queryBuilder.leftJoin('event.host', 'host').andWhere(
+        new Brackets((qb) => {
+          qb.where('participants.id IN (:...friendsIds)', {
+            friendsIds,
+          }).orWhere('host.id IN (:...friendsIds)', { friendsIds });
+        }),
+      );
     }
 
     if (dates?.length) {
@@ -249,16 +252,24 @@ export class EventService {
         .andWhere('preferredGender.id IS NOT NULL');
     }
 
-    if (isPublic === false) {
-      queryBuilder.andWhere('event.type != :eventType', {
-        eventType: EventtypeEnum.public,
-      });
-    }
-
-    if (isHalfPublic === false) {
-      queryBuilder.andWhere('event.type != :eventType', {
-        eventType: EventtypeEnum.halfPrivate,
-      });
+    if (isPublic === false || isHalfPublic === false) {
+      queryBuilder.andWhere(
+        new Brackets((qb) => {
+          if (isPublic === false) {
+            qb.andWhere('event.type != :publicType', {
+              publicType: EventtypeEnum.public,
+            });
+          }
+          if (isHalfPublic === false) {
+            qb.andWhere('event.type != :halfPrivateType', {
+              halfPrivateType: EventtypeEnum.halfPrivate,
+            });
+          }
+          qb.andWhere('event.type != :privateType', {
+            privateType: EventtypeEnum.private,
+          });
+        }),
+      );
     }
 
     if (isOnline === false) {
@@ -303,7 +314,20 @@ export class EventService {
       throw new NotFoundException('Events not found');
     }
 
-    return [events, total];
+    const eventsWithCategories = await Promise.all(
+      events.map((event) =>
+        this.eventRepository.findOne({
+          where: { id: event.id },
+          relations: {
+            categories: true,
+            participants: true,
+            tags: true,
+          },
+        }),
+      ),
+    );
+
+    return [eventsWithCategories, total];
   }
 
   /**
