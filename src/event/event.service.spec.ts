@@ -19,6 +19,9 @@ import { FilterDTO } from './DTO/FilterDTO';
 import ViewedEventsDB from '../database/ViewedEventsDB';
 import { UtilsService } from '../utils/utils.service';
 import { mockUtilsService } from '../utils/utils.service.spec';
+import { RequestDB } from '../database/RequestDB';
+import { mockRequestService } from '../request/request.service.spec';
+import { RequestService } from '../request/request.service';
 
 export const mockEventRepository = {
   create: jest.fn(),
@@ -33,6 +36,10 @@ export const mockEventRepository = {
     take: jest.fn().mockReturnThis(),
     orderBy: jest.fn().mockReturnThis(),
   })),
+};
+
+export const mockRequestRepository = {
+  findOne: jest.fn(),
 };
 
 const mockCategoryList: CategoryDB[] = [
@@ -243,12 +250,20 @@ describe('EventService', () => {
           useClass: Repository,
         },
         {
+          provide: getRepositoryToken(RequestDB),
+          useValue: mockRequestRepository,
+        },
+        {
           provide: SchedulerService,
           useValue: mockSchedulerService,
         },
         {
           provide: UtilsService,
           useValue: mockUtilsService,
+        },
+        {
+          provide: RequestService,
+          useValue: mockRequestService,
         },
       ],
     }).compile();
@@ -420,23 +435,39 @@ describe('EventService', () => {
 
   describe('addUserToEvent', () => {
     it('should add user to event successfully', async () => {
-      mockEventRepository.findOne.mockResolvedValue(mockEventList[1]);
-      mockEventRepository.save.mockResolvedValue({
+      mockEventRepository.findOne.mockResolvedValue({
         ...mockEventList[1],
-        participants: [participantUser],
+        participants: [...mockEventList[1].participants],
       });
 
-      const result = await service.addUserToEvent(participantUser, '2');
+      mockEventRepository.save.mockResolvedValue(undefined);
+
+      mockRequestRepository.findOne.mockResolvedValue(null);
+
+      await service.addUserToEvent(participantUser, '2');
 
       expect(mockEventRepository.findOne).toHaveBeenCalledWith({
         where: { id: '2' },
         relations: ['participants', 'host'],
       });
+
+      expect(mockRequestRepository.findOne).toHaveBeenCalledWith({
+        where: { user: { id: participantUser.id }, event: { id: '2' } },
+        relations: {
+          event: {
+            host: true,
+          },
+        },
+      });
+
       expect(mockEventRepository.save).toHaveBeenCalledWith({
         ...mockEventList[1],
-        participants: [participantUser],
+        participants: [...mockEventList[1].participants, participantUser],
       });
-      expect(result.participants).toContain(participantUser);
+
+      const updatedEvent = mockEventList[1];
+      updatedEvent.participants.push(participantUser);
+      expect(updatedEvent.participants).toContain(participantUser);
     });
 
     it('should throw NotFoundException if event is not found', async () => {

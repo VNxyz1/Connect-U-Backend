@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { EventService } from './event/event.service';
 import { mockEventService } from './event/event.service.spec';
 import { OkDTO } from './serverDTO/OkDTO';
@@ -12,19 +11,10 @@ describe('AppController', () => {
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
       controllers: [AppController],
-      providers: [
-        AppService,
-        { provide: EventService, useValue: mockEventService },
-      ],
+      providers: [{ provide: EventService, useValue: mockEventService }],
     }).compile();
 
     appController = app.get<AppController>(AppController);
-  });
-
-  describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toEqual({ message: 'Hello World!' });
-    });
   });
 
   describe('health', () => {

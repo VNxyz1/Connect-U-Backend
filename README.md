@@ -19,6 +19,7 @@
   <a href="https://prettier.io/" target="_blank"><img src="https://img.shields.io/badge/prettier-1A2C34?logo=prettier&logoColor=F7BA3E"/></a>
   <a href="https://swagger.io/" target="_blank"><img src="https://img.shields.io/badge/-Swagger-%23Clojure?logo=swagger&logoColor=white"/></a>
   <a href="https://jwt.io/" target="_blank"><img src="https://img.shields.io/badge/JWT-000000?logo=JSON%20web%20tokens&logoColor=white"/></a>
+  <a href="https://www.openplzapi.org/de/" target="_blank"><img src="https://img.shields.io/badge/openPLZ%20API-API"/></a>
   <a href="https://connect-u.site/" target="_blank"><img src="https://img.shields.io/website-up-down-green-red/http/argo.connect-u.site.svg"/></a>
   <a href="https://dev.connect-u.site/api/docs" target="_blank"><img src="https://img.shields.io/website-up-down-green-red/http/argo.connect-u.site.svg?label=OpenAPI%20Docs"/></a>
   <a href="https://github.com/VNxyz1/Connect-U-Backend/pkgs/container/connect-u-backend" target="_blank"><img src="https://img.shields.io/badge/Docker%20images-2496ED?logo=docker&logoColor=fff"/></a>

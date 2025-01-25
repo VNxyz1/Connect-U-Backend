@@ -17,6 +17,9 @@ import ViewedEventsDB from '../database/ViewedEventsDB';
 import { EventtypeEnum } from '../database/enums/EventtypeEnum';
 import { FriendService } from '../friend/friend.service';
 import { UtilsService } from '../utils/utils.service';
+import { RequestEnum } from '../database/enums/RequestEnum';
+import { RequestDB } from '../database/RequestDB';
+import { RequestService } from '../request/request.service';
 
 export class EventService {
   constructor(
@@ -24,6 +27,8 @@ export class EventService {
     private readonly eventRepository: Repository<EventDB>,
     @InjectRepository(ListEntryDB)
     private readonly listEntryRepository: Repository<ListEntryDB>,
+    @InjectRepository(RequestDB)
+    private readonly requestRepository: Repository<RequestDB>,
     @InjectRepository(SurveyEntryDB)
     private readonly surveyEntryRepository: Repository<SurveyEntryDB>,
     @InjectRepository(ViewedEventsDB)
@@ -31,6 +36,7 @@ export class EventService {
     private readonly schedulerService: SchedulerService,
     private readonly friendsService: FriendService,
     private readonly utilsService: UtilsService,
+    private readonly requestService: RequestService,
   ) {}
 
   /**
@@ -419,12 +425,10 @@ export class EventService {
    * @param user - The user to be added to the event.
    * @param eventId - The ID of the event to which the user is being added.
    *
-   * @returns The updated event after the user has been added as a participant.
-   *
    * @throws NotFoundException If the event with the given `eventId` does not exist.
    * @throws BadRequestException If the user is the host of the event or is already a participant in the event.
    */
-  async addUserToEvent(user: UserDB, eventId: string): Promise<EventDB> {
+  async addUserToEvent(user: UserDB, eventId: string): Promise<void> {
     const event = await this.eventRepository.findOne({
       where: { id: eventId },
       relations: ['participants', 'host'],
@@ -451,9 +455,25 @@ export class EventService {
       );
     }
 
-    event.participants.push(user);
+    const existingRequest = await this.requestRepository.findOne({
+      where: { user: { id: user.id }, event: { id: eventId } },
+      relations: {
+        event: {
+          host: true,
+        },
+      },
+    });
 
-    return await this.eventRepository.save(event);
+    if (existingRequest) {
+      if (existingRequest.type === RequestEnum.invite) {
+        await this.requestService.acceptInvitation(existingRequest.id, user.id);
+        return;
+      }
+    } else {
+      event.participants.push(user);
+    }
+
+    await this.eventRepository.save(event);
   }
 
   /**
