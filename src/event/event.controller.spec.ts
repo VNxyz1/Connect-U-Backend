@@ -25,6 +25,7 @@ import { GetEventDetailsDTO } from './DTO/GetEventDetailsDTO';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { mockEventRepository } from './event.service.spec';
 import { UserService } from '../user/user.service';
+import { SocketGateway } from '../socket/socket.gateway';
 
 describe('EventController', () => {
   let app: INestApplication;
@@ -35,6 +36,7 @@ describe('EventController', () => {
       controllers: [EventController],
       providers: [
         ...mockProviders,
+        SocketGateway,
         UtilsService,
         {
           provide: getRepositoryToken(EventDB),
@@ -404,7 +406,7 @@ describe('EventController', () => {
 
       jest
         .spyOn(app.get(EventController).eventService, 'addUserToEvent')
-        .mockResolvedValue(MockPublicEvent);
+        .mockResolvedValue(undefined);
 
       jest
         .spyOn(app.get(EventController).eventService, 'getEventById')

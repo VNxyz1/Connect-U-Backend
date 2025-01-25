@@ -113,6 +113,7 @@ describe('RequestService', () => {
       userRepository.findOne.mockResolvedValue({ id: 'user123' } as UserDB);
       requestRepository.findOne.mockResolvedValue({
         id: 1,
+        type: RequestEnum.joinRequest,
       } as RequestDB);
 
       await expect(
