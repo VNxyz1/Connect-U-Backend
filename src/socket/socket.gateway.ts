@@ -110,4 +110,11 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   emitInvitationStatusChanged(userId: string): void {
     this.server.emit('inviteStatusChange', userId);
   }
+
+  /**
+   * @param userId Id of a user whos friendlist should be updated
+   */
+  emitFriendListUpdate(userId: string): void {
+    this.server.emit('updateFriendList', userId);
+  }
 }
