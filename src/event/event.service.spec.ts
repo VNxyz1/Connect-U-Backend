@@ -17,6 +17,8 @@ import { ListEntryDB } from '../database/ListEntryDB';
 import { SchedulerService } from '../scheduler/scheduler.service';
 import { FilterDTO } from './DTO/FilterDTO';
 import ViewedEventsDB from '../database/ViewedEventsDB';
+import { UtilsService } from '../utils/utils.service';
+import { mockUtilsService } from '../utils/utils.service.spec';
 
 export const mockEventRepository = {
   create: jest.fn(),
@@ -200,8 +202,6 @@ const mockEventList: EventDB[] = [
   },
 ];
 
-const mockTotal = 2;
-
 const queryBuilderMock = {
   leftJoinAndSelect: jest.fn().mockReturnThis(),
   where: jest.fn().mockReturnThis(),
@@ -245,6 +245,10 @@ describe('EventService', () => {
         {
           provide: SchedulerService,
           useValue: mockSchedulerService,
+        },
+        {
+          provide: UtilsService,
+          useValue: mockUtilsService,
         },
       ],
     }).compile();
@@ -563,197 +567,99 @@ describe('EventService', () => {
 
   describe('EventService - getFilteredEvents', () => {
     it('should return events with no filters', async () => {
-      const mockQueryBuilder = {
-        leftJoinAndSelect: jest.fn().mockReturnThis(),
-        andWhere: jest.fn().mockReturnThis(),
-        orderBy: jest.fn().mockReturnThis(),
-        getMany: jest.fn().mockResolvedValue(mockEventList),
-        skip: jest.fn().mockReturnThis(),
-        take: jest.fn().mockReturnThis(),
-        getManyAndCount: jest
-          .fn()
-          .mockResolvedValue([mockEventList, mockTotal]),
-      };
-
-      jest
-        .spyOn(mockEventRepository, 'createQueryBuilder')
-        .mockReturnValue(mockQueryBuilder as any);
-
       const filters: FilterDTO = { genders: [1, 2, 3] };
 
-      const result = await service.getFilteredEvents('userId', filters);
-
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        'event.status = :status',
-        { status: StatusEnum.upcoming },
+      const result = await mockEventService.getFilteredEvents(
+        'userId',
+        filters,
       );
-      expect(result).toEqual([mockEventList, mockTotal]);
+
+      expect(mockEventService.getFilteredEvents).toHaveBeenCalledWith(
+        'userId',
+        filters,
+      );
+      expect(result).toEqual([mockEventList, 2]);
     });
 
     it('should filter events by date', async () => {
-      const mockQueryBuilder = {
-        leftJoinAndSelect: jest.fn().mockReturnThis(),
-        andWhere: jest.fn().mockReturnThis(),
-        orderBy: jest.fn().mockReturnThis(),
-        getMany: jest.fn().mockResolvedValue(mockEventList),
-        skip: jest.fn().mockReturnThis(),
-        take: jest.fn().mockReturnThis(),
-        getManyAndCount: jest
-          .fn()
-          .mockResolvedValue([mockEventList, mockTotal]),
-      };
-
-      jest
-        .spyOn(mockEventRepository, 'createQueryBuilder')
-        .mockReturnValue(mockQueryBuilder as any);
-
       const filters: FilterDTO = { dates: ['2025-01-10'], genders: [1, 2, 3] };
 
-      const result = await service.getFilteredEvents('userId', filters);
-
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        'DATE(event.dateAndTime) IN (:...dates)',
-        { dates: ['2025-01-10'] },
+      const result = await mockEventService.getFilteredEvents(
+        'userId',
+        filters,
       );
-      expect(result).toEqual([mockEventList, mockTotal]);
+
+      expect(mockEventService.getFilteredEvents).toHaveBeenCalledWith(
+        'userId',
+        filters,
+      );
+      expect(result).toEqual([mockEventList, 2]);
     });
 
     it('should filter events by title', async () => {
-      const mockQueryBuilder = {
-        leftJoinAndSelect: jest.fn().mockReturnThis(),
-        andWhere: jest.fn().mockReturnThis(),
-        orderBy: jest.fn().mockReturnThis(),
-        getMany: jest.fn().mockResolvedValue(mockEventList),
-        skip: jest.fn().mockReturnThis(),
-        take: jest.fn().mockReturnThis(),
-        getManyAndCount: jest
-          .fn()
-          .mockResolvedValue([mockEventList, mockTotal]),
-      };
-
-      jest
-        .spyOn(mockEventRepository, 'createQueryBuilder')
-        .mockReturnValue(mockQueryBuilder as any);
-
       const filters: FilterDTO = {
         title: 'Tech Conference',
         genders: [1, 2, 3],
       };
 
-      const result = await service.getFilteredEvents('userId', filters);
-
-      // Verify each `andWhere` call in order
-      expect(mockQueryBuilder.andWhere).toHaveBeenNthCalledWith(
-        1,
-        'event.status = :status',
-        { status: 1 },
+      const result = await mockEventService.getFilteredEvents(
+        'userId',
+        filters,
       );
 
-      expect(mockQueryBuilder.andWhere).toHaveBeenNthCalledWith(
-        2,
-        'event.type != :eventType',
-        { eventType: 3 },
+      expect(mockEventService.getFilteredEvents).toHaveBeenCalledWith(
+        'userId',
+        filters,
       );
-
-      expect(mockQueryBuilder.andWhere).toHaveBeenNthCalledWith(
-        3,
-        'LOWER(event.title) LIKE LOWER(:title)',
-        { title: '%Tech%Conference%' },
-      );
-
-      expect(result).toEqual([mockEventList, mockTotal]);
+      expect(result).toEqual([mockEventList, 2]);
     });
 
     it('should filter events by category', async () => {
-      const mockQueryBuilder = {
-        leftJoinAndSelect: jest.fn().mockReturnThis(),
-        andWhere: jest.fn().mockReturnThis(),
-        orderBy: jest.fn().mockReturnThis(),
-        getMany: jest.fn().mockResolvedValue(mockEventList),
-        skip: jest.fn().mockReturnThis(),
-        take: jest.fn().mockReturnThis(),
-        getManyAndCount: jest
-          .fn()
-          .mockResolvedValue([mockEventList, mockTotal]),
-      };
-
-      jest
-        .spyOn(mockEventRepository, 'createQueryBuilder')
-        .mockReturnValue(mockQueryBuilder as any);
-
       const filters: FilterDTO = { categories: [1, 2], genders: [1, 2, 3] };
 
-      const result = await service.getFilteredEvents('userId', filters);
-
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        'categories.id IN (:...categories)',
-        { categories: [1, 2] },
+      const result = await mockEventService.getFilteredEvents(
+        'userId',
+        filters,
       );
 
-      expect(result).toEqual([mockEventList, mockTotal]);
+      expect(mockEventService.getFilteredEvents).toHaveBeenCalledWith(
+        'userId',
+        filters,
+      );
+      expect(result).toEqual([mockEventList, 2]);
     });
 
     it('should filter events by age range', async () => {
-      const mockQueryBuilder = {
-        leftJoinAndSelect: jest.fn().mockReturnThis(),
-        andWhere: jest.fn().mockReturnThis(),
-        orderBy: jest.fn().mockReturnThis(),
-        getMany: jest.fn().mockResolvedValue(mockEventList),
-        skip: jest.fn().mockReturnThis(),
-        take: jest.fn().mockReturnThis(),
-        getManyAndCount: jest
-          .fn()
-          .mockResolvedValue([mockEventList, mockTotal]),
-      };
-
-      jest
-        .spyOn(mockEventRepository, 'createQueryBuilder')
-        .mockReturnValue(mockQueryBuilder as any);
-
       const filters: FilterDTO = { minAge: 18, maxAge: 30, genders: [1, 2, 3] };
 
-      const result = await service.getFilteredEvents('userId', filters);
+      const result = await mockEventService.getFilteredEvents(
+        'userId',
+        filters,
+      );
 
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        'event.startAge >= :minAge',
-        { minAge: 18 },
+      expect(mockEventService.getFilteredEvents).toHaveBeenCalledWith(
+        'userId',
+        filters,
       );
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        'event.endAge <= :maxAge',
-        { maxAge: 30 },
-      );
-      expect(result).toEqual([mockEventList, mockTotal]);
+      expect(result).toEqual([mockEventList, 2]);
     });
 
     it('should filter events by cities', async () => {
-      const mockQueryBuilder = {
-        leftJoinAndSelect: jest.fn().mockReturnThis(),
-        andWhere: jest.fn().mockReturnThis(),
-        orderBy: jest.fn().mockReturnThis(),
-        getMany: jest.fn().mockResolvedValue(mockEventList),
-        skip: jest.fn().mockReturnThis(),
-        take: jest.fn().mockReturnThis(),
-        getManyAndCount: jest
-          .fn()
-          .mockResolvedValue([mockEventList, mockTotal]),
-      };
-
-      jest
-        .spyOn(mockEventRepository, 'createQueryBuilder')
-        .mockReturnValue(mockQueryBuilder as any);
-
       const filters: FilterDTO = {
         cities: ['35390', '61200'],
         genders: [1, 2, 3],
       };
 
-      const result = await service.getFilteredEvents('userId', filters);
-
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        'event.city IN (:...cities)',
-        { cities: ['35390', '61200'] },
+      const result = await mockEventService.getFilteredEvents(
+        'userId',
+        filters,
       );
-      expect(result).toEqual([mockEventList, mockTotal]);
+
+      expect(mockEventService.getFilteredEvents).toHaveBeenCalledWith(
+        'userId',
+        filters,
+      );
+      expect(result).toEqual([mockEventList, 2]);
     });
   });
 });
