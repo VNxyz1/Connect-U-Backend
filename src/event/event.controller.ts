@@ -53,6 +53,7 @@ import {
   PaginationParams,
 } from '../utils/PaginationParams';
 import { RequestService } from '../request/request.service';
+import { SocketGateway } from '../socket/socket.gateway';
 
 @ApiTags('event')
 @Controller('event')
@@ -64,6 +65,7 @@ export class EventController {
     public readonly requestService: RequestService,
     public readonly genderService: GenderService,
     public readonly tagService: TagService,
+    public readonly socketService: SocketGateway,
   ) {}
 
   @ApiResponse({
@@ -334,6 +336,7 @@ export class EventController {
     await this.utilsService.isUserAllowedToJoinEvent(user, event);
 
     await this.eventService.addUserToEvent(user, eventId);
+    this.socketService.emitInvitationStatusChanged(user.id);
     return new OkDTO(true, 'user was added to participant list');
   }
 

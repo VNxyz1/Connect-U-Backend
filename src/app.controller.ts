@@ -4,22 +4,13 @@ import {
   HttpStatus,
   ServiceUnavailableException,
 } from '@nestjs/common';
-import { AppService } from './app.service';
 import { OkDTO } from './serverDTO/OkDTO';
 import { EventService } from './event/event.service';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @Controller()
 export class AppController {
-  constructor(
-    private readonly appService: AppService,
-    private readonly eventService: EventService,
-  ) {}
-
-  @Get()
-  getHello(): { message: string } {
-    return { message: this.appService.getHello() };
-  }
+  constructor(private readonly eventService: EventService) {}
 
   @ApiResponse({
     type: OkDTO,

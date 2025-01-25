@@ -63,11 +63,15 @@ export class RequestService {
     });
 
     if (existingRequest) {
-      if (existingRequest.denied) {
-        existingRequest.denied = false;
-        return await this.requestRepository.save(existingRequest);
-      } else {
-        throw new BadRequestException('Request already exists');
+      if (existingRequest.type === RequestEnum.joinRequest) {
+        if (existingRequest.denied) {
+          existingRequest.denied = false;
+          return await this.requestRepository.save(existingRequest);
+        } else {
+          throw new BadRequestException('Request already exists');
+        }
+      } else if (existingRequest.type === RequestEnum.invite) {
+        return await this.acceptInvitation(existingRequest.id, userId);
       }
     }
 
@@ -392,7 +396,7 @@ export class RequestService {
   async acceptInvitation(requestId: number, userId: string) {
     const request = await this.requestRepository.findOne({
       where: { id: requestId },
-      relations: ['event', 'user', 'event.participants'],
+      relations: ['event', 'user', 'event.participants', 'event.host'],
     });
     if (!request) {
       throw new NotFoundException('Request not found');
@@ -475,6 +479,6 @@ export class RequestService {
       where: { event: { id: eventId }, user: { id: userId } },
     });
 
-    return !!existingRequest; // Return true if a request exists, otherwise false
+    return !!existingRequest;
   }
 }

@@ -165,6 +165,24 @@ describe('UserController', () => {
     });
   });
 
+  it('/PATCH userData - should return BadRequest for missing fields', async () => {
+    const response = await request(app.getHttpServer())
+      .patch('/user/userData')
+      .set('Authorization', 'Bearer valid-token')
+      .send({
+        email: 'new.email@example.com',
+        firstName: '',
+      })
+      .expect('Content-Type', /json/)
+      .expect(HttpStatus.BAD_REQUEST);
+
+    expect(response.body).toEqual({
+      statusCode: 400,
+      message: ['First name cannot contain only whitespace'],
+      error: 'Bad Request',
+    });
+  });
+
   it('/PATCH userData - should return BadRequest for invalid user data', async () => {
     jest
       .spyOn(mockUserService, 'updateUser')
@@ -215,6 +233,24 @@ describe('UserController', () => {
     });
   });
 
+  it('/PATCH password - should return BadRequest for missing fields', async () => {
+    const response = await request(app.getHttpServer())
+      .patch('/user/password')
+      .set('Authorization', 'Bearer valid-token')
+      .send({
+        newPassword: 'NewPassword123',
+        newPasswordConfirm: 'NewPassword123',
+      })
+      .expect('Content-Type', /json/)
+      .expect(HttpStatus.BAD_REQUEST);
+
+    expect(response.body).toEqual({
+      statusCode: 400,
+      message: ['oldPassword must be a string'],
+      error: 'Bad Request',
+    });
+  });
+
   it('/PATCH password - should return BadRequest for mismatched passwords', async () => {
     const response = await request(app.getHttpServer())
       .patch('/user/password')
@@ -230,6 +266,28 @@ describe('UserController', () => {
     expect(response.body).toEqual({
       statusCode: 400,
       message: 'New password and password confirmation must match',
+      error: 'Bad Request',
+    });
+  });
+
+  it('/PATCH password - should return BadRequest for short password', async () => {
+    const response = await request(app.getHttpServer())
+      .patch('/user/password')
+      .set('Authorization', 'Bearer valid-token')
+      .send({
+        oldPassword: 'Old',
+        newPassword: 'New',
+        newPasswordConfirm: 'New',
+      })
+      .expect('Content-Type', /json/)
+      .expect(HttpStatus.BAD_REQUEST);
+
+    expect(response.body).toEqual({
+      statusCode: 400,
+      message: [
+        'newPassword must be longer than or equal to 8 characters',
+        'newPasswordConfirm must be longer than or equal to 8 characters',
+      ],
       error: 'Bad Request',
     });
   });
